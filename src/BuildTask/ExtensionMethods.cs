@@ -5,6 +5,8 @@ using Microsoft.Build.Framework;
 
 namespace SlnGen.Build.Tasks
 {
+    using Microsoft.Build.Evaluation;
+
     internal static class ExtensionMethods
     {
         private static readonly Lazy<Assembly> BuildManagerAssemblyLazy = new Lazy<Assembly>(() => typeof(BuildManager).Assembly);
@@ -38,6 +40,15 @@ namespace SlnGen.Build.Tasks
             }
 
             return null;
+        }
+
+        public static string ToSolutionSection(this Project project)
+        {
+            var guid = project.GetPropertyValue("ProjectGuid");
+            var assemblyName = project.GetPropertyValue("AssemblyName");
+            var path = project.FullPath;
+            const string TypeGuid = "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}";
+            return $@"Project(""{TypeGuid}"") = ""{assemblyName}"", ""{path}"", ""{guid}""{Environment.NewLine}EndProject";
         }
     }
 }

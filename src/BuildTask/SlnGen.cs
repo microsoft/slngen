@@ -10,6 +10,8 @@ using Microsoft.Build.Framework;
 
 namespace SlnGen.Build.Tasks
 {
+    using System.IO;
+
     public class SlnGen : TaskBase
     {
         public ITaskItem[] ProjectReferences { get; set; }
@@ -27,17 +29,36 @@ namespace SlnGen.Build.Tasks
             //    Thread.Sleep(500);
             //}
 
-            ProjectInstance projectInstance = BuildEngine.GetProjectInstance();
+            var projectInstance = BuildEngine.GetProjectInstance();
 
-            LogMessage("Loading project references...", MessageImportance.High);
+            this.LogMessage("Loading project references...", MessageImportance.High);
 
-            MSBuildProjectLoader projectLoader = new MSBuildProjectLoader(projectInstance.GlobalProperties, ToolsVersion, BuildEngine, ProjectLoadSettings.IgnoreMissingImports);
+            var projectLoader = new MSBuildProjectLoader(projectInstance.GlobalProperties, ToolsVersion, BuildEngine, ProjectLoadSettings.IgnoreMissingImports);
 
-            ProjectCollection projectCollection = projectLoader.LoadProjectsAndReferences(ProjectReferences.Select(i => i.GetMetadata("FullPath")));
+            var projectCollection = projectLoader.LoadProjectsAndReferences(ProjectReferences.Select(i => i.GetMetadata("FullPath")).Concat(new[] { this.ProjectFullPath }));
 
-            LogMessage($"Loaded {projectCollection.LoadedProjects.Count} projects");
+            this.LogMessage($"Loaded {projectCollection.LoadedProjects.Count} projects");
 
-            LogMessage("Generating solution file...", MessageImportance.High);
+            this.LogMessage("Generating solution file...", MessageImportance.High);
+
+            var solution = new Solution();
+            foreach (var project in projectCollection.LoadedProjects)
+            {
+                solution.Projects.Add(project);
+            }
+
+            var parent = Directory.GetParent(this.ProjectFullPath).FullName;
+            var solutionPath = Path.Combine(parent, $"{Path.GetFileNameWithoutExtension(this.ProjectFullPath)}.sln");
+
+            File.WriteAllText(solutionPath, solution.ToString());
+
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = @"cmd",
+                Arguments = $"/C start devenv.exe {solutionPath}",
+                WindowStyle = ProcessWindowStyle.Hidden
+            });
 
             //foreach (Project project in projectCollection.LoadedProjects)
             //{
