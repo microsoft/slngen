@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!--<Import Project="$(CustomBeforeMicrosoftCommonTargets)" Condition="'$(CustomBeforeMicrosoftCommonTargets)' != '' and Exists('$(CustomBeforeMicrosoftCommonTargets)')"/>-->
+  
+  <PropertyGroup>
+    <SlnGenAssemblyFile Condition=" '$(SlnGenAssemblyFile)' == '' ">$(MSBuildThisFileDirectory)bin\Debug\SlnGen.Build.Tasks.dll</SlnGenAssemblyFile>
+    
+    <SlnGenDependsOn Condition=" '$(SlnGenDependsOn)' != '' ">AssignProjectConfiguration;_SplitProjectReferencesByFileExistence;$(SlnGenDependsOn)</SlnGenDependsOn>
+    <SlnGenDependsOn Condition=" '$(SlnGenDependsOn)' == '' ">AssignProjectConfiguration;_SplitProjectReferencesByFileExistence</SlnGenDependsOn>
+    
+    <SlnGenGlobalProperties Condition=" '$(SlnGenGlobalProperties)' != '' ">DesignTimeBuild=true;BuildingProject=false;$(SlnGenGlobalProperties)</SlnGenGlobalProperties>
+    <SlnGenGlobalProperties Condition=" '$(SlnGenGlobalProperties)' == '' ">DesignTimeBuild=true;BuildingProject=false</SlnGenGlobalProperties>
+  </PropertyGroup>
+
+  <Target Name="SlnGen" DependsOnTargets="$(SlnGenDependsOn)">
+    
+    <SlnGen
+      ProjectFullPath="$(MSBuildProjectFullPath)"
+      ProjectReferences="@(_MSBuildProjectReferenceExistent)"
+      ToolsVersion="$(MSBuildToolsVersion)"
+      />
+
+  </Target>
+
+  <UsingTask TaskName="SlnGen" AssemblyFile="$(SlnGenAssemblyFile)" />
+
+</Project>

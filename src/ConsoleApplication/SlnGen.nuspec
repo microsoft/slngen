@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Microsoft.$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>cbtdev</authors>
+    <owners>cbtdev</owners>
+    <projectUrl>http://cbt-userguide/DevTools.html</projectUrl>
+    <licenseUrl>http://sharepoint/sites/sqlises/SitePages/NugetInternalUseOnly.aspx</licenseUrl>
+    <iconUrl>http://sqlisnuget/Icons/SlnGen.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <releaseNotes>Source code is available under TFS collection http://sqlbuvsts01:8080/main,
+$/IS Shared/Engineering System/Main/Product/Source/SlnGen </releaseNotes>
+    <copyright>$copyright$</copyright>
+    <tags>Visual Studio solution generate gen vs sln tool</tags>
+  </metadata>
+  <files>
+     <file src="SlnGen.exe.config" target="tools" />
+     <file src="SlnGen.pdb" target="tools" />
+     <file src="Microsoft.Build*.dll" target="tools" />
+     <file src="System.Threading.Tasks.Dataflow.dll" target="tools" />
+  </files>
+</package>
