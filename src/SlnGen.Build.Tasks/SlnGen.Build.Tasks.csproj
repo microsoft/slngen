@@ -37,13 +37,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ExtensionMethods.cs" />
-    <Compile Include="FolderInfo.cs" />
+    <Compile Include="SolutionFolder.cs" />
     <Compile Include="MSBuildProjectLoader.cs" />
-    <Compile Include="ProjectInfo.cs" />
+    <Compile Include="SolutionProject.cs" />
     <Compile Include="SlnGen.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Solution.cs" />
-    <Compile Include="TaskLoggingHelper.cs" />
+    <Compile Include="SolutionFile.cs" />
+    <Compile Include="TaskBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="SlnGen.targets" />

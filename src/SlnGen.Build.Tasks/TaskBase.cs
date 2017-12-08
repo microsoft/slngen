@@ -1,6 +1,6 @@
 ﻿using Microsoft.Build.Framework;
 
-namespace BuildTask
+namespace SlnGen.Build.Tasks
 {
     public abstract class TaskBase : ITask
     {

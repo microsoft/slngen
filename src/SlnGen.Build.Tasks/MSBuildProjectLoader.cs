@@ -123,9 +123,7 @@ namespace SlnGen.Build.Tasks
         /// <param name="projectLoadSettings">Specifies the <see cref="ProjectLoadSettings"/> to use when loading projects.</param>
         private void LoadProject(string projectPath, ProjectCollection projectCollection, ProjectLoadSettings projectLoadSettings)
         {
-            Project project;
-
-            if (TryLoadProject(projectPath, projectCollection.DefaultToolsVersion, projectCollection, projectLoadSettings, out project))
+            if (TryLoadProject(projectPath, projectCollection.DefaultToolsVersion, projectCollection, projectLoadSettings, out var project))
             {
                 LoadProjectReferences(project, _projectLoadSettings);
             }
