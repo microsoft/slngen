@@ -37,7 +37,8 @@
 
             this.LogMessage("Generating solution file...", MessageImportance.High);
 
-            var solution = new Solution(projectCollection, this.ProjectFullPath);
+            // filter out the traversal (.proj) files.
+            var solution = new Solution(projectCollection.LoadedProjects.Where(e => !e.FullPath.EndsWith(".proj")).Select(p => new ProjectInfo(p, p.FullPath == this.ProjectFullPath)));
 
             var parent = Directory.GetParent(this.ProjectFullPath).FullName;
             var solutionPath = Path.Combine(parent, $"{Path.GetFileNameWithoutExtension(this.ProjectFullPath)}.sln");

@@ -36,24 +36,20 @@
         /// <summary>
         /// Gets the projects.
         /// </summary>
-        private readonly List<ProjectInfo> projects = new List<ProjectInfo>();
+        private readonly IEnumerable<ProjectInfo> projects;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Solution" /> class.
         /// </summary>
-        /// <param name="projectCollection">The project collection.</param>
-        /// <param name="defaultProjectPath">The default project path.</param>
+        /// <param name="projects">The project collection.</param>
         /// <param name="configurations">The configurations.</param>
         /// <param name="platforms">The platforms.</param>
         /// <param name="fileFormatVersion">The file format version.</param>
-        public Solution(ProjectCollection projectCollection, string defaultProjectPath, string[] configurations, string[] platforms, string fileFormatVersion)
+        public Solution(IEnumerable<ProjectInfo> projects, string[] configurations, string[] platforms, string fileFormatVersion)
         {
             this.Guid = System.Guid.NewGuid().ToString().ToUpperInvariant();
-            foreach (var project in projectCollection.LoadedProjects)
-            {
-                this.projects.Add(new ProjectInfo(project, project.FullPath == defaultProjectPath));
-            }
 
+            this.projects = projects;
             this.configurations = configurations;
             this.platforms = platforms;
             this.fileFormatVersion = fileFormatVersion;
@@ -62,10 +58,9 @@
         /// <summary>
         /// Initializes a new instance of the <see cref="Solution" /> class.
         /// </summary>
-        /// <param name="projectCollection">The project collection.</param>
-        /// <param name="defaultProjectPath">The default project path.</param>
-        public Solution(ProjectCollection projectCollection, string defaultProjectPath)
-            : this(projectCollection, defaultProjectPath, new[] { "Debug", "Release" }, new[] { "Any CPU" }, "12.00")
+        /// <param name="projects">The projects.</param>
+        public Solution(IEnumerable<ProjectInfo> projects)
+            : this(projects, new[] { "Debug", "Release" }, new[] { "Any CPU" }, "12.00")
         {
         }
 
@@ -89,18 +84,22 @@
                 builder.AppendLine(project.ToString());
             }
 
-            builder.AppendLine("Global");
-            builder.AppendLine(this.BuildSolutionConfigurationPlatforms());
-            builder.AppendLine(this.BuildProjectConfigurationPlatforms());
+            var nestedProjects = new NestedProjectsSection(this.projects);
 
-            if (this.projects.Count > 1)
+            if (this.projects.Count() > 1)
             {
-                var nestedProjects = new NestedProjectsSection(this.projects);
                 foreach (var folder in nestedProjects.Folders)
                 {
                     builder.AppendLine(folder.ToString());
                 }
+            }
 
+            builder.AppendLine("Global");
+            builder.AppendLine(this.BuildSolutionConfigurationPlatforms());
+            builder.AppendLine(this.BuildProjectConfigurationPlatforms());
+
+            if (this.projects.Count() > 1)
+            {
                 builder.AppendLine(nestedProjects.Build());
             }
 
@@ -161,7 +160,7 @@
 
             private StringBuilder nestedProjects = new StringBuilder();
 
-            public NestedProjectsSection(List<ProjectInfo> projects)
+            public NestedProjectsSection(IEnumerable<ProjectInfo> projects)
             {
                 var commonPrefix = new string(
                     projects.First(e => !e.Default).FullPath.Substring(0, projects.Min(s => s.FullPath.Length))
@@ -200,7 +199,7 @@
                     {
                         return;
                     }
-
+                    
                     currentGuid = parentGuid;
                     parent = Directory.GetParent(parent).FullName;
                 }
