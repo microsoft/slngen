@@ -24,18 +24,15 @@ namespace SlnGen.Build.Tasks
 
         protected override void ExecuteTask()
         {
-            //while (!Debugger.IsAttached)
-            //{
-            //    Thread.Sleep(500);
-            //}
-
             var projectInstance = BuildEngine.GetProjectInstance();
 
             this.LogMessage("Loading project references...", MessageImportance.High);
 
             var projectLoader = new MSBuildProjectLoader(projectInstance.GlobalProperties, ToolsVersion, BuildEngine, ProjectLoadSettings.IgnoreMissingImports);
 
-            var projectCollection = projectLoader.LoadProjectsAndReferences(ProjectReferences.Select(i => i.GetMetadata("FullPath")).Concat(new[] { this.ProjectFullPath }));
+            this.ProjectReferences = this.ProjectReferences ?? new ITaskItem[0];
+
+            var projectCollection = projectLoader.LoadProjectsAndReferences(this.ProjectReferences.Select(i => i.GetMetadata("FullPath")).Concat(new[] { this.ProjectFullPath }));
 
             this.LogMessage($"Loaded {projectCollection.LoadedProjects.Count} projects");
 
@@ -44,7 +41,7 @@ namespace SlnGen.Build.Tasks
             var solution = new Solution();
             foreach (var project in projectCollection.LoadedProjects)
             {
-                solution.Projects.Add(project);
+                solution.Projects.Add(new ProjectInfo(project));
             }
 
             var parent = Directory.GetParent(this.ProjectFullPath).FullName;
@@ -59,14 +56,6 @@ namespace SlnGen.Build.Tasks
                 Arguments = $"/C start devenv.exe {solutionPath}",
                 WindowStyle = ProcessWindowStyle.Hidden
             });
-
-            //foreach (Project project in projectCollection.LoadedProjects)
-            //{
-            //    LogMessage($"  {project.FullPath}");
-            //    LogMessage($"    Name        = {project.GetPropertyValue("ProjectName")}");
-            //    LogMessage($"    ProjectGuid = {project.GetPropertyValue("ProjectGuid")}");
-            //    LogMessage("");
-            //}
         }
     }
 }

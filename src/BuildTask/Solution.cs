@@ -3,53 +3,59 @@
     using System;
     using System.Collections.Generic;
     using System.Text;
-    using Microsoft.Build.Evaluation;
 
     /// <summary>
     /// Solution class.
     /// </summary>
-    public class Solution
+    internal class Solution
     {
         /// <summary>
         /// The solution header
         /// </summary>
-        private const string Header = "Microsoft Visual Studio Solution File, Format Version 12.00";
+        private const string Header = "Microsoft Visual Studio Solution File, Format Version {0}";
+
+        /// <summary>
+        /// The file format version
+        /// </summary>
+        private readonly string fileFormatVersion;
 
         /// <summary>
         /// The configurations
         /// </summary>
-        private readonly string[] configurations = { "Debug", "Release" };
+        private readonly string[] configurations;
 
         /// <summary>
         /// The platforms
         /// </summary>
-        private readonly string[] platforms = { "Any CPU" };
+        private readonly string[] platforms;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Solution"/> class.
+        /// Initializes a new instance of the <see cref="Solution" /> class.
         /// </summary>
         /// <param name="configurations">The configurations.</param>
         /// <param name="platforms">The platforms.</param>
-        public Solution(string[] configurations, string[] platforms)
-            : this()
+        /// <param name="fileFormatVersion">The file format version.</param>
+        public Solution(string[] configurations, string[] platforms, string fileFormatVersion)
         {
+            this.Guid = System.Guid.NewGuid().ToString().ToUpperInvariant();
+            this.Projects = new List<ProjectInfo>();
             this.configurations = configurations;
             this.platforms = platforms;
+            this.fileFormatVersion = fileFormatVersion;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Solution"/> class.
+        /// Initializes a new instance of the <see cref="Solution" /> class.
         /// </summary>
         public Solution()
+            : this(new[] { "Debug", "Release" }, new[] { "Any CPU" }, "12.00")
         {
-            this.Guid = System.Guid.NewGuid().ToString().ToUpperInvariant();
-            this.Projects = new List<Project>();
         }
 
         /// <summary>
         /// Gets or sets the projects.
         /// </summary>
-        public List<Project> Projects { get; set; }
+        public List<ProjectInfo> Projects { get; set; }
 
         /// <summary>
         /// Gets the unique identifier.
@@ -64,11 +70,11 @@
         /// </returns>
         public override string ToString()
         {
-            var builder = new StringBuilder(Header);
+            var builder = new StringBuilder(string.Format(Header, this.fileFormatVersion));
             builder.AppendLine();
             foreach (var project in this.Projects)
             {
-                builder.AppendLine(project.ToSolutionSection());
+                builder.AppendLine(project.ToString());
             }
 
             builder.AppendLine("Global");
@@ -111,7 +117,7 @@
                 {
                     foreach (var platform in this.platforms)
                     {
-                        var guid = project.GetPropertyValue("ProjectGuid");
+                        var guid = project.Guid;
                         builder.AppendLine($@"		{guid}.{configuration}|{platform}.ActiveCfg = {configuration}|{platform}");
                         builder.AppendLine($@"		{guid}.{configuration}|{platform}.Build.0 = {configuration}|{platform}");
                     }
