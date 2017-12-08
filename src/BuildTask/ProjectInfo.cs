@@ -22,7 +22,7 @@
         };
 
 
-        public ProjectInfo(Project project)
+        public ProjectInfo(Project project, bool @default)
         {
             var legacy = !bool.Parse(project.GetPropertyValueOrDefault("UsingMicrosoftNETSdk", "false"));
             this.FullPath = project.FullPath;
@@ -30,7 +30,10 @@
             this.AssemblyName = project.GetPropertyValue("AssemblyName");
             var guid = $"{{{System.Guid.NewGuid().ToString().ToUpperInvariant()}}}";
             this.Guid = legacy ? project.GetPropertyValueOrDefault("ProjectGuid") ?? guid : guid;
+            this.Default = @default;
         }
+
+        public bool Default { get; }
 
         public string Guid { get; }
 

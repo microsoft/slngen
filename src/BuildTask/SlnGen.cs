@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading;
-using BuildTask;
-using Microsoft.Build.Evaluation;
-using Microsoft.Build.Execution;
-using Microsoft.Build.Framework;
-
-namespace SlnGen.Build.Tasks
+﻿namespace SlnGen.Build.Tasks
 {
+    using System.Diagnostics;
     using System.IO;
+    using System.Linq;
+    using BuildTask;
+    using Microsoft.Build.Evaluation;
+    using Microsoft.Build.Framework;
 
     public class SlnGen : TaskBase
     {
@@ -22,33 +17,32 @@ namespace SlnGen.Build.Tasks
         [Required]
         public string ToolsVersion { get; set; }
 
+        /// <summary>
+        /// Executes the task.
+        /// </summary>
         protected override void ExecuteTask()
         {
-            var projectInstance = BuildEngine.GetProjectInstance();
+            var projectInstance = this.BuildEngine.GetProjectInstance();
 
             this.LogMessage("Loading project references...", MessageImportance.High);
 
-            var projectLoader = new MSBuildProjectLoader(projectInstance.GlobalProperties, ToolsVersion, BuildEngine, ProjectLoadSettings.IgnoreMissingImports);
+            var projectLoader = new MSBuildProjectLoader(projectInstance.GlobalProperties, this.ToolsVersion, this.BuildEngine, ProjectLoadSettings.IgnoreMissingImports);
 
             this.ProjectReferences = this.ProjectReferences ?? new ITaskItem[0];
 
-            var projectCollection = projectLoader.LoadProjectsAndReferences(this.ProjectReferences.Select(i => i.GetMetadata("FullPath")).Concat(new[] { this.ProjectFullPath }));
+            var projectPaths = this.ProjectReferences.Select(i => i.GetMetadata("FullPath")).Concat(new[] { this.ProjectFullPath }).ToArray();
+            var projectCollection = projectLoader.LoadProjectsAndReferences(projectPaths);
 
             this.LogMessage($"Loaded {projectCollection.LoadedProjects.Count} projects");
 
             this.LogMessage("Generating solution file...", MessageImportance.High);
 
-            var solution = new Solution();
-            foreach (var project in projectCollection.LoadedProjects)
-            {
-                solution.Projects.Add(new ProjectInfo(project));
-            }
+            var solution = new Solution(projectCollection, this.ProjectFullPath);
 
             var parent = Directory.GetParent(this.ProjectFullPath).FullName;
             var solutionPath = Path.Combine(parent, $"{Path.GetFileNameWithoutExtension(this.ProjectFullPath)}.sln");
 
             File.WriteAllText(solutionPath, solution.ToString());
-
 
             Process.Start(new ProcessStartInfo
             {
