@@ -1,36 +1,13 @@
 ﻿using Microsoft.Build.Evaluation;
 using Microsoft.Build.Framework;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SlnGen.Build.Tasks
+namespace SlnGen.Build.Tasks.Internal
 {
-    /// <summary>
-    /// Represents statistics of operations performed by the <see cref="MSBuildProjectLoader"/> class.
-    /// </summary>
-    public sealed class MSBuildProjectLoaderStatistics
-    {
-        private readonly ConcurrentDictionary<string, TimeSpan> _projectLoadTimes = new ConcurrentDictionary<string, TimeSpan>();
-
-        internal MSBuildProjectLoaderStatistics()
-        {
-        }
-
-        /// <summary>
-        /// Gets an <see cref="IDictionary{String,TimeSpan}"/> of project load times.
-        /// </summary>
-        public IDictionary<string, TimeSpan> ProjectLoadTimes => _projectLoadTimes;
-
-        internal bool TryAddProjectLoadTime(string path, TimeSpan timeSpan)
-        {
-            return _projectLoadTimes.TryAdd(path, timeSpan);
-        }
-    }
-
     /// <summary>
     /// A class for loading MSBuild projects and their project references.
     /// </summary>

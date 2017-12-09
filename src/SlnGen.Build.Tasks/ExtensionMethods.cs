@@ -44,7 +44,7 @@ namespace SlnGen.Build.Tasks
         /// <param name="name">The name of the property to get the value of.</param>
         /// <param name="defaultValue">A default value to return in the case when the property has no value.</param>
         /// <returns>The value of the property if one exists, otherwise the default value specified.</returns>
-        public static string GetPropertyValue(this Project project, string name, string defaultValue)
+        public static string GetPropertyValueOrDefault(this Project project, string name, string defaultValue)
         {
             string value = project.GetPropertyValue(name);
 

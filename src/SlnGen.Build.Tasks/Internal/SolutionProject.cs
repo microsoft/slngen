@@ -1,11 +1,11 @@
-﻿using Microsoft.Build.Evaluation;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.Build.Evaluation;
 
-namespace SlnGen.Build.Tasks
+namespace SlnGen.Build.Tasks.Internal
 {
-    internal class SolutionProject
+    internal sealed class SolutionProject
     {
         public const string UsingMicrosoftNetSdkPropertyName = "UsingMicrosoftNETSdk";
 
@@ -31,9 +31,9 @@ namespace SlnGen.Build.Tasks
 
             ProjectTypeGuid = GetProjectTypeGuid(project);
 
-            ProjectName = project.GetPropertyValue("AssemblyName", Path.GetFileNameWithoutExtension(project.FullPath));
+            ProjectName = project.GetPropertyValueOrDefault("AssemblyName", Path.GetFileNameWithoutExtension(project.FullPath));
 
-            ProjectGuid = isLegacyProjectSystem ? project.GetPropertyValue("ProjectGuid", Guid.NewGuid().ToString().ToUpperInvariant()) : Guid.NewGuid().ToString().ToUpperInvariant();
+            ProjectGuid = isLegacyProjectSystem ? project.GetPropertyValueOrDefault("ProjectGuid", Guid.NewGuid().ToString().ToUpperInvariant()) : Guid.NewGuid().ToString().ToUpperInvariant();
 
             IsMainProject = isMainProject;
         }
@@ -47,12 +47,6 @@ namespace SlnGen.Build.Tasks
         public string ProjectName { get; }
 
         public string ProjectTypeGuid { get; }
-
-        /// <inheritdoc />
-        public override string ToString()
-        {
-            return $@"Project(""{ProjectTypeGuid}"") = ""{ProjectName}"", ""{FullPath}"", ""{ProjectGuid}""{Environment.NewLine}EndProject";
-        }
 
         private static string GetProjectTypeGuid(Project project)
         {

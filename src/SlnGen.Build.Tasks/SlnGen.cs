@@ -1,6 +1,7 @@
 ﻿using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
+using SlnGen.Build.Tasks.Internal;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -70,7 +71,10 @@ namespace SlnGen.Build.Tasks
 
             GenerateSolutionFile(projectCollection.LoadedProjects);
 
-            LaunchVisualStudio();
+            if (!ShouldLaunchVisualStudio)
+            {
+                LaunchVisualStudio();
+            }
         }
 
         private void GenerateSolutionFile(ICollection<Project> projects)
@@ -89,11 +93,6 @@ namespace SlnGen.Build.Tasks
 
         private void LaunchVisualStudio()
         {
-            if (!ShouldLaunchVisualStudio)
-            {
-                return;
-            }
-
             ProcessStartInfo processStartInfo;
 
             if (!String.IsNullOrWhiteSpace(DevEnvFullPath))
