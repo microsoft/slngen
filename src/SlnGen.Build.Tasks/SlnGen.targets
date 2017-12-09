@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <!--<Import Project="$(CustomBeforeMicrosoftCommonTargets)" Condition="'$(CustomBeforeMicrosoftCommonTargets)' != '' and Exists('$(CustomBeforeMicrosoftCommonTargets)')"/>-->
+  <Import Project="$(CustomBeforeSlnGenTargets)" Condition="'$(CustomBeforeSlnGenTargets)' != '' and Exists('$(CustomBeforeSlnGenTargets)')"/>
   
   <PropertyGroup>
     <SlnGenAssemblyFile Condition=" '$(SlnGenAssemblyFile)' == '' ">$(MSBuildThisFileDirectory)bin\Debug\SlnGen.Build.Tasks.dll</SlnGenAssemblyFile>
@@ -11,18 +11,30 @@
     
     <SlnGenGlobalProperties Condition=" '$(SlnGenGlobalProperties)' != '' ">DesignTimeBuild=true;BuildingProject=false;$(SlnGenGlobalProperties)</SlnGenGlobalProperties>
     <SlnGenGlobalProperties Condition=" '$(SlnGenGlobalProperties)' == '' ">DesignTimeBuild=true;BuildingProject=false</SlnGenGlobalProperties>
+
   </PropertyGroup>
 
   <Target Name="SlnGen" DependsOnTargets="$(SlnGenDependsOn)">
-    
+
     <SlnGen
+      CollectStats="$([MSBuild]::ValueOrDefault('$(SlnGenCollectStats)', 'false'))"
+      DevEnvFullPath="$(SlnGenDevEnvFullPath)"
+      GlobalProperties="$(SlnGenGlobalProperties)"
+      GlobalPropertiesToRemove="$(SlnGenGlobalPropertiesToRemove)"
       ProjectFullPath="$(MSBuildProjectFullPath)"
       ProjectReferences="@(_MSBuildProjectReferenceExistent)"
-      ToolsVersion="$(MSBuildToolsVersion)"
+      InheritGlobalProperties="$([MSBuild]::ValueOrDefault('$(SlnGenInheritGlobalProperties)', 'true'))"
+      ShouldLaunchVisualStudio="$([MSBuild]::ValueOrDefault('$(SlnGenShouldLaunchVisualStudio)', 'true'))"
+      SolutionFileFullPath="$(SlnGenSolutionFileFullPath)"
+      ToolsVersion="$([MSBuild]::ValueOrDefault('$(SlnGenToolsVersion)', '$(MSBuildToolsVersion)'))"
+      UseShellExecute="$([MSBuild]::ValueOrDefault('$(SlnGenUseShellExecute)', 'true'))"
+      
       />
 
   </Target>
 
   <UsingTask TaskName="SlnGen" AssemblyFile="$(SlnGenAssemblyFile)" />
+
+  <Import Project="$(CustomAfterSlnGenTargets)" Condition="'$(CustomAfterSlnGenTargets)' != '' and Exists('$(CustomAfterSlnGenTargets)')"/>
 
 </Project>

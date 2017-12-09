@@ -1,4 +1,5 @@
 ﻿using Microsoft.Build.Framework;
+using System;
 
 namespace SlnGen.Build.Tasks
 {
@@ -27,8 +28,8 @@ namespace SlnGen.Build.Tasks
                 subcategory: null,
                 code: code,
                 file: includeLocation ? BuildEngine?.ProjectFileOfTaskNode : null,
-                lineNumber: includeLocation ? (int)BuildEngine?.LineNumberOfTaskNode : 0,
-                columnNumber: includeLocation ? (int)BuildEngine?.ColumnNumberOfTaskNode : 0,
+                lineNumber: includeLocation ? (int) BuildEngine?.LineNumberOfTaskNode : 0,
+                columnNumber: includeLocation ? (int) BuildEngine?.ColumnNumberOfTaskNode : 0,
                 endLineNumber: 0,
                 endColumnNumber: 0,
                 message: message,
@@ -36,7 +37,7 @@ namespace SlnGen.Build.Tasks
                 senderName: null));
         }
 
-        protected void LogMessage(string message, MessageImportance importance = MessageImportance.Normal)
+        protected void LogMessageNormal(string message, params object[] args)
         {
             BuildEngine?.LogMessageEvent(new BuildMessageEventArgs(
                 subcategory: null,
@@ -49,7 +50,43 @@ namespace SlnGen.Build.Tasks
                 message: message,
                 helpKeyword: null,
                 senderName: null,
-                importance: importance));
+                importance: MessageImportance.Normal,
+                eventTimestamp: DateTime.Now,
+                messageArgs: args));
+        }
+
+        protected void LogMessageHigh(string message, params object[] args)
+        {
+            BuildEngine?.LogMessageEvent(new BuildMessageEventArgs(
+                subcategory: null,
+                code: null,
+                file: null,
+                lineNumber: 0,
+                columnNumber: 0,
+                endLineNumber: 0,
+                endColumnNumber: 0,
+                message: message,
+                helpKeyword: null,
+                senderName: null,
+                importance: MessageImportance.High,
+                eventTimestamp: DateTime.Now,
+                messageArgs: args));
+        }
+
+        protected void LogMessageLow(string message, params object[] args)
+        {
+            BuildEngine?.LogMessageEvent(new BuildMessageEventArgs(
+                subcategory: null,
+                code: null,
+                file: null,
+                lineNumber: 0,
+                columnNumber: 0,
+                endLineNumber: 0,
+                endColumnNumber: 0,
+                message: message,
+                helpKeyword: null,
+                senderName: null,
+                importance: MessageImportance.Low));
         }
 
         protected void LogWarning(string message, string code = null, bool includeLocation = false)
