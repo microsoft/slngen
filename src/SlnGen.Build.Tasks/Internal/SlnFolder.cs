@@ -2,9 +2,9 @@
 
 namespace SlnGen.Build.Tasks.Internal
 {
-    internal sealed class SolutionFolder
+    internal sealed class SlnFolder
     {
-        public SolutionFolder(string path, string guid)
+        public SlnFolder(string path, string guid)
         {
             Name = Path.GetFileName(path);
             FullPath = path;

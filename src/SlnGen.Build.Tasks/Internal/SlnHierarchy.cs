@@ -9,19 +9,19 @@ namespace SlnGen.Build.Tasks.Internal
     /// Represents the hierarchy of projects in a Visual Studio solution.
     /// </summary>
     /// <remarks>This assumes all projects are on the same drive.</remarks>
-    internal sealed class SolutionHierarchy
+    internal sealed class SlnHierarchy
     {
-        private readonly List<SolutionFolder> _folders = new List<SolutionFolder>();
+        private readonly List<SlnFolder> _folders = new List<SlnFolder>();
         private readonly Dictionary<string, string> _hierarchy = new Dictionary<string, string>();
         private readonly Dictionary<string, string> _itemId = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-        public SolutionHierarchy(IReadOnlyList<SolutionProject> projects)
+        public SlnHierarchy(IReadOnlyList<SlnProject> projects)
         {
             string commonPrefix = new string(
                 projects.First(e => !e.IsMainProject).FullPath.Substring(0, projects.Min(s => s.FullPath.Length))
                     .TakeWhile((c, i) => projects.All(s => s.FullPath[i] == c)).ToArray());
 
-            foreach (SolutionProject project in projects)
+            foreach (SlnProject project in projects)
             {
                 if (project.IsMainProject)
                 {
@@ -32,11 +32,11 @@ namespace SlnGen.Build.Tasks.Internal
             }
         }
 
-        public IReadOnlyCollection<SolutionFolder> Folders => _folders;
+        public IReadOnlyCollection<SlnFolder> Folders => _folders;
 
         public IReadOnlyDictionary<string, string> Hierarchy => _hierarchy;
 
-        private void BuildHierarchyBottomUp(SolutionProject project, string root)
+        private void BuildHierarchyBottomUp(SlnProject project, string root)
         {
             string parent = Directory.GetParent(project.FullPath).FullName;
             string currentGuid = project.ProjectGuid;
@@ -48,7 +48,7 @@ namespace SlnGen.Build.Tasks.Internal
                 {
                     parentGuid = $"{{{Guid.NewGuid().ToString().ToUpperInvariant()}}}";
                     _itemId.Add(parent, parentGuid);
-                    _folders.Add(new SolutionFolder(parent, parentGuid));
+                    _folders.Add(new SlnFolder(parent, parentGuid));
                 }
 
                 _hierarchy[currentGuid] = parentGuid;

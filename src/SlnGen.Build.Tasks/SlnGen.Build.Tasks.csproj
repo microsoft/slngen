@@ -38,13 +38,13 @@
   <ItemGroup>
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="Internal\MSBuildProjectLoaderStatistics.cs" />
-    <Compile Include="Internal\SolutionFolder.cs" />
+    <Compile Include="Internal\SlnFolder.cs" />
     <Compile Include="Internal\MSBuildProjectLoader.cs" />
-    <Compile Include="Internal\SolutionNestedProjects.cs" />
-    <Compile Include="Internal\SolutionProject.cs" />
+    <Compile Include="Internal\SlnHierarchy.cs" />
+    <Compile Include="Internal\SlnProject.cs" />
     <Compile Include="SlnGen.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Internal\SolutionFile.cs" />
+    <Compile Include="Internal\SlnFile.cs" />
     <Compile Include="TaskBase.cs" />
   </ItemGroup>
   <ItemGroup>

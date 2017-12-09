@@ -86,7 +86,7 @@ namespace SlnGen.Build.Tasks
 
             LogMessage($"Generating Visual Studio solution \"{SolutionFileFullPath}\"...", MessageImportance.High);
 
-            SolutionFile solution = new SolutionFile(projects.Where(ShouldIncludeInSolution).Select(p => new SolutionProject(p, p.FullPath == ProjectFullPath)));
+            SlnFile solution = new SlnFile(projects.Where(ShouldIncludeInSolution).Select(p => SlnProject.FromProject(p, p.FullPath == ProjectFullPath)));
 
             File.WriteAllText(SolutionFileFullPath, solution.ToString());
         }
