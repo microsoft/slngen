@@ -44,7 +44,7 @@ namespace SlnGen.Build.Tasks.Internal
 
         public string ProjectTypeGuid { get; }
 
-        public static SlnProject FromProject(Project project, bool isMainProject = false)
+        public static SlnProject FromProject(Project project, IReadOnlyDictionary<string, string> customProjectTypeGuids, bool isMainProject = false)
         {
             string name = project.GetPropertyValueOrDefault(AssemblyNamePropertyName, Path.GetFileNameWithoutExtension(project.FullPath));
 
@@ -53,9 +53,15 @@ namespace SlnGen.Build.Tasks.Internal
 
             string extension = Path.GetExtension(project.FullPath);
 
-            if (String.IsNullOrWhiteSpace(extension) || !KnownProjectTypeGuids.TryGetValue(extension, out string projectTypeGuid))
+            string projectTypeGuid = DefaultProjectTypeGuid;
+
+            if (!String.IsNullOrWhiteSpace(extension))
             {
-                projectTypeGuid = DefaultProjectTypeGuid;
+                // Get the item from the custom project type GUIDs first which can override ours
+                if (customProjectTypeGuids == null || !customProjectTypeGuids.TryGetValue(extension, out projectTypeGuid))
+                {
+                    KnownProjectTypeGuids.TryGetValue(extension, out projectTypeGuid);
+                }
             }
 
             string projectGuid = isLegacyProjectSystem ? project.GetPropertyValueOrDefault(ProjectGuidPropertyName, Guid.NewGuid().ToString().ToUpperInvariant()) : Guid.NewGuid().ToString().ToUpperInvariant();

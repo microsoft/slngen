@@ -12,10 +12,17 @@ namespace SlnGen.Build.Tasks
 {
     public class SlnGen : TaskBase
     {
+        public const string CustomProjectTypeGuidMetadataName = "ProjectTypeGuid";
+
         /// <summary>
         /// Gets or sets a value indicating if statistics should be collected when loading projects.
         /// </summary>
         public bool CollectStats { get; set; }
+
+        /// <summary>
+        /// Gets or sets a list of custom project type GUIDs.
+        /// </summary>
+        public ITaskItem[] CustomProjectTypeGuids { get; set; } = new ITaskItem[0];
 
         /// <summary>
         /// Gets or sets an optional full path to Visual Studio's devenv.exe to use when opening the solution file.
@@ -69,6 +76,32 @@ namespace SlnGen.Build.Tasks
         /// </summary>
         public bool UseShellExecute { get; set; }
 
+        internal Dictionary<string, string> ParseCustomProjectTypeGuids()
+        {
+            Dictionary<string, string> projectTypeGuids = new Dictionary<string, string>();
+            
+            foreach (ITaskItem taskItem in CustomProjectTypeGuids)
+            {
+                string extension = taskItem.ItemSpec.Trim();
+
+                // Only consider items that start with a "." because they are supposed to be file extensions
+                if (!extension.StartsWith("."))
+                {
+                    continue;
+                }
+
+                string projectTypeGuidString = taskItem.GetMetadata(CustomProjectTypeGuidMetadataName)?.Trim();
+
+                if (!String.IsNullOrWhiteSpace(projectTypeGuidString) && Guid.TryParse(projectTypeGuidString, out Guid projectTypeGuid))
+                {
+                    // Trim and ToLower the file extension, ToUpperInvariant the project type GUID
+                    projectTypeGuids[taskItem.ItemSpec.Trim().ToLowerInvariant()] = projectTypeGuid.ToString().ToUpperInvariant();
+                }
+            }
+
+            return projectTypeGuids;
+        }
+
         /// <summary>
         /// Executes the task.
         /// </summary>
@@ -98,9 +131,11 @@ namespace SlnGen.Build.Tasks
                 SolutionFileFullPath = Path.ChangeExtension(ProjectFullPath, ".sln");
             }
 
+            Dictionary<string, string> customProjectTypeGuids = ParseCustomProjectTypeGuids();
+
             LogMessageHigh($"Generating Visual Studio solution \"{SolutionFileFullPath}\"...");
 
-            SlnFile solution = new SlnFile(projects.Where(ShouldIncludeInSolution).Select(p => SlnProject.FromProject(p, p.FullPath == ProjectFullPath)));
+            SlnFile solution = new SlnFile(projects.Where(ShouldIncludeInSolution).Select(p => SlnProject.FromProject(p, customProjectTypeGuids, p.FullPath == ProjectFullPath)));
 
             File.WriteAllText(SolutionFileFullPath, solution.ToString());
         }

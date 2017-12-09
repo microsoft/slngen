@@ -18,17 +18,17 @@
 
     <SlnGen
       CollectStats="$([MSBuild]::ValueOrDefault('$(SlnGenCollectStats)', 'false'))"
+      CustomProjectTypeGuids="@(SlnGenCustomProjectTypeGuid)"
       DevEnvFullPath="$(SlnGenDevEnvFullPath)"
       GlobalProperties="$(SlnGenGlobalProperties)"
       GlobalPropertiesToRemove="$(SlnGenGlobalPropertiesToRemove)"
+      InheritGlobalProperties="$([MSBuild]::ValueOrDefault('$(SlnGenInheritGlobalProperties)', 'true'))"
       ProjectFullPath="$(MSBuildProjectFullPath)"
       ProjectReferences="@(_MSBuildProjectReferenceExistent)"
-      InheritGlobalProperties="$([MSBuild]::ValueOrDefault('$(SlnGenInheritGlobalProperties)', 'true'))"
       ShouldLaunchVisualStudio="$([MSBuild]::ValueOrDefault('$(SlnGenShouldLaunchVisualStudio)', 'true'))"
       SolutionFileFullPath="$(SlnGenSolutionFileFullPath)"
       ToolsVersion="$([MSBuild]::ValueOrDefault('$(SlnGenToolsVersion)', '$(MSBuildToolsVersion)'))"
       UseShellExecute="$([MSBuild]::ValueOrDefault('$(SlnGenUseShellExecute)', 'true'))"
-      
       />
 
   </Target>

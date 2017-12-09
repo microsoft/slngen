@@ -47,8 +47,10 @@
   <ItemGroup>
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="MockProject.cs" />
+    <Compile Include="MockTaskItem.cs" />
     <Compile Include="SlnFileTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SlnGenTests.cs" />
     <Compile Include="SlnProjectTests.cs" />
     <Compile Include="TestBase.cs" />
   </ItemGroup>

@@ -69,7 +69,7 @@ namespace SlnGen.Build.Tasks.UnitTests
 
             Project expectedProject = MockProject.Create(fullPath, globalProperties);
 
-            SlnProject actualProject = SlnProject.FromProject(expectedProject, isMainProject);
+            SlnProject actualProject = SlnProject.FromProject(expectedProject, null, isMainProject);
 
             actualProject.FullPath.ShouldBe(expectedProject.FullPath);
 
