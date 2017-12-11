@@ -15,6 +15,11 @@ namespace SlnGen.Build.Tasks
         public const string CustomProjectTypeGuidMetadataName = "ProjectTypeGuid";
 
         /// <summary>
+        /// Gets or sets a value indicating if MSBuild is currently building a Visual Studio solution file.
+        /// </summary>
+        public bool BuildingSolutionFile { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating if statistics should be collected when loading projects.
         /// </summary>
         public bool CollectStats { get; set; }
@@ -79,7 +84,7 @@ namespace SlnGen.Build.Tasks
         internal Dictionary<string, string> ParseCustomProjectTypeGuids()
         {
             Dictionary<string, string> projectTypeGuids = new Dictionary<string, string>();
-            
+
             foreach (ITaskItem taskItem in CustomProjectTypeGuids)
             {
                 string extension = taskItem.ItemSpec.Trim();
@@ -107,20 +112,31 @@ namespace SlnGen.Build.Tasks
         /// </summary>
         protected override void ExecuteTask()
         {
-            IDictionary<string, string> globalProperties = GetGlobalProperties();
-
-            // Load up the full project closure
-            ProjectCollection projectCollection = LoadProjectsAndReferences(globalProperties);
-
-            // Return if loading projects logged any errors
-            if (!HasLoggedErrors)
+            if (BuildingSolutionFile)
             {
-                GenerateSolutionFile(projectCollection.LoadedProjects);
-
-                if (!HasLoggedErrors && ShouldLaunchVisualStudio)
+                if (!File.Exists(SolutionFileFullPath))
                 {
-                    LaunchVisualStudio();
+                    LogError($"Could not find part of the path '{SolutionFileFullPath}'.");
+                    return;
                 }
+            }
+            else
+            {
+                IDictionary<string, string> globalProperties = GetGlobalProperties();
+
+                // Load up the full project closure
+                ProjectCollection projectCollection = LoadProjectsAndReferences(globalProperties);
+
+                // Return if loading projects logged any errors
+                if (!HasLoggedErrors)
+                {
+                    GenerateSolutionFile(projectCollection.LoadedProjects);
+                }
+            }
+
+            if (!HasLoggedErrors && ShouldLaunchVisualStudio)
+            {
+                LaunchVisualStudio();
             }
         }
 

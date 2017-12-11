@@ -11,9 +11,16 @@
 
   </PropertyGroup>
 
-  <Target Name="SlnGen" DependsOnTargets="AssignProjectConfiguration;_SplitProjectReferencesByFileExistence;$(SlnGenDependsOn)">
+  <Target Name="SlnGen"
+          Condition=" '$(BuildingSolutionFile)' != 'true' Or '$(SolutionDir)' == '$(MSBuildProjectDirectory)\' "
+          DependsOnTargets="AssignProjectConfiguration;_SplitProjectReferencesByFileExistence;$(SlnGenDependsOn)">
+
+    <PropertyGroup>
+      <SlnGenSolutionFileFullPath Condition=" '$(SlnGenSolutionFileFullPath)' == '' And '$(BuildingSolutionFile)' == 'true' ">$(SolutionPath)</SlnGenSolutionFileFullPath>
+    </PropertyGroup>
 
     <SlnGen
+      BuildingSolutionFile="$(BuildingSolutionFile)"
       CollectStats="$([MSBuild]::ValueOrDefault('$(SlnGenCollectStats)', 'false'))"
       CustomProjectTypeGuids="@(SlnGenCustomProjectTypeGuid)"
       DevEnvFullPath="$(SlnGenDevEnvFullPath)"
