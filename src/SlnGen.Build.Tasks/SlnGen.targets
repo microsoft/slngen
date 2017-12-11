@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <Import Project="$(CustomBeforeSlnGenTargets)" Condition="'$(CustomBeforeSlnGenTargets)' != '' and Exists('$(CustomBeforeSlnGenTargets)')"/>
+  
+  <PropertyGroup>
+    <SlnGenAssemblyFile Condition=" '$(SlnGenAssemblyFile)' == '' ">$(MSBuildThisFileDirectory)SlnGen.Build.Tasks.dll</SlnGenAssemblyFile>
+    
+    <SlnGenGlobalProperties Condition=" '$(SlnGenGlobalProperties)' != '' ">DesignTimeBuild=true;BuildingProject=false;$(SlnGenGlobalProperties)</SlnGenGlobalProperties>
+    <SlnGenGlobalProperties Condition=" '$(SlnGenGlobalProperties)' == '' ">DesignTimeBuild=true;BuildingProject=false</SlnGenGlobalProperties>
+
+  </PropertyGroup>
+
+  <Target Name="SlnGen"
+          Condition=" '$(BuildingSolutionFile)' != 'true' Or '$(SolutionDir)' == '$(MSBuildProjectDirectory)\' "
+          DependsOnTargets="AssignProjectConfiguration;_SplitProjectReferencesByFileExistence;$(SlnGenDependsOn)">
+
+    <PropertyGroup>
+      <SlnGenSolutionFileFullPath Condition=" '$(SlnGenSolutionFileFullPath)' == '' And '$(BuildingSolutionFile)' == 'true' ">$(SolutionPath)</SlnGenSolutionFileFullPath>
+    </PropertyGroup>
+
+    <SlnGen
+      BuildingSolutionFile="$(BuildingSolutionFile)"
+      CollectStats="$([MSBuild]::ValueOrDefault('$(SlnGenCollectStats)', 'false'))"
+      CustomProjectTypeGuids="@(SlnGenCustomProjectTypeGuid)"
+      DevEnvFullPath="$(SlnGenDevEnvFullPath)"
+      GlobalProperties="$(SlnGenGlobalProperties)"
+      GlobalPropertiesToRemove="$(SlnGenGlobalPropertiesToRemove)"
+      InheritGlobalProperties="$([MSBuild]::ValueOrDefault('$(SlnGenInheritGlobalProperties)', 'true'))"
+      ProjectFullPath="$(MSBuildProjectFullPath)"
+      ProjectReferences="@(_MSBuildProjectReferenceExistent)"
+      ShouldLaunchVisualStudio="$([MSBuild]::ValueOrDefault('$(SlnGenLaunchVisualStudio)', 'true'))"
+      SolutionFileFullPath="$(SlnGenSolutionFileFullPath)"
+      ToolsVersion="$([MSBuild]::ValueOrDefault('$(SlnGenToolsVersion)', '$(MSBuildToolsVersion)'))"
+      UseShellExecute="$([MSBuild]::ValueOrDefault('$(SlnGenUseShellExecute)', 'true'))"
+      />
+
+  </Target>
+
+  <UsingTask TaskName="SlnGen" AssemblyFile="$(SlnGenAssemblyFile)" />
+
+  <Import Project="$(CustomAfterSlnGenTargets)" Condition="'$(CustomAfterSlnGenTargets)' != '' and Exists('$(CustomAfterSlnGenTargets)')"/>
+
+</Project>
