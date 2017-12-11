@@ -37,24 +37,6 @@ namespace SlnGen.Build.Tasks
                 senderName: null));
         }
 
-        protected void LogMessageNormal(string message, params object[] args)
-        {
-            BuildEngine?.LogMessageEvent(new BuildMessageEventArgs(
-                subcategory: null,
-                code: null,
-                file: null,
-                lineNumber: 0,
-                columnNumber: 0,
-                endLineNumber: 0,
-                endColumnNumber: 0,
-                message: message,
-                helpKeyword: null,
-                senderName: null,
-                importance: MessageImportance.Normal,
-                eventTimestamp: DateTime.Now,
-                messageArgs: args));
-        }
-
         protected void LogMessageHigh(string message, params object[] args)
         {
             BuildEngine?.LogMessageEvent(new BuildMessageEventArgs(
@@ -86,7 +68,27 @@ namespace SlnGen.Build.Tasks
                 message: message,
                 helpKeyword: null,
                 senderName: null,
-                importance: MessageImportance.Low));
+                importance: MessageImportance.Low,
+                eventTimestamp: DateTime.MaxValue,
+                messageArgs: args));
+        }
+
+        protected void LogMessageNormal(string message, params object[] args)
+        {
+            BuildEngine?.LogMessageEvent(new BuildMessageEventArgs(
+                subcategory: null,
+                code: null,
+                file: null,
+                lineNumber: 0,
+                columnNumber: 0,
+                endLineNumber: 0,
+                endColumnNumber: 0,
+                message: message,
+                helpKeyword: null,
+                senderName: null,
+                importance: MessageImportance.Normal,
+                eventTimestamp: DateTime.Now,
+                messageArgs: args));
         }
 
         protected void LogWarning(string message, string code = null, bool includeLocation = false)

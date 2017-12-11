@@ -22,7 +22,7 @@ namespace SlnGen.Build.Tasks.UnitTests
 
             for (int i = 0; i < projectCount; i++)
             {
-                projects[i] = new SlnProject(GetTempFileName(), $"Project{i:D6}", Guid.NewGuid().ToString().ToUpperInvariant(), Guid.NewGuid().ToString().ToUpperInvariant(), isMainProject: i == 0);
+                projects[i] = new SlnProject(GetTempFileName(), $"Project{i:D6}", Guid.NewGuid().ToSolutionString(), Guid.NewGuid().ToSolutionString(), isMainProject: i == 0);
             }
 
             ValidateProjectInSolution(projects);
@@ -38,7 +38,6 @@ namespace SlnGen.Build.Tasks.UnitTests
         }
 
         [Test]
-        [Ignore("This is currently failing because the hierarchy code expects at least one project not be the main project")]
         public void SingleProject()
         {
             // TODO: Get this working

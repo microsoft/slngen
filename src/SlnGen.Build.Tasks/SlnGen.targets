@@ -4,17 +4,14 @@
   <Import Project="$(CustomBeforeSlnGenTargets)" Condition="'$(CustomBeforeSlnGenTargets)' != '' and Exists('$(CustomBeforeSlnGenTargets)')"/>
   
   <PropertyGroup>
-    <SlnGenAssemblyFile Condition=" '$(SlnGenAssemblyFile)' == '' ">$(MSBuildThisFileDirectory)bin\Debug\SlnGen.Build.Tasks.dll</SlnGenAssemblyFile>
-    
-    <SlnGenDependsOn Condition=" '$(SlnGenDependsOn)' != '' ">AssignProjectConfiguration;_SplitProjectReferencesByFileExistence;$(SlnGenDependsOn)</SlnGenDependsOn>
-    <SlnGenDependsOn Condition=" '$(SlnGenDependsOn)' == '' ">AssignProjectConfiguration;_SplitProjectReferencesByFileExistence</SlnGenDependsOn>
+    <SlnGenAssemblyFile Condition=" '$(SlnGenAssemblyFile)' == '' ">$(MSBuildThisFileDirectory)SlnGen.Build.Tasks.dll</SlnGenAssemblyFile>
     
     <SlnGenGlobalProperties Condition=" '$(SlnGenGlobalProperties)' != '' ">DesignTimeBuild=true;BuildingProject=false;$(SlnGenGlobalProperties)</SlnGenGlobalProperties>
     <SlnGenGlobalProperties Condition=" '$(SlnGenGlobalProperties)' == '' ">DesignTimeBuild=true;BuildingProject=false</SlnGenGlobalProperties>
 
   </PropertyGroup>
 
-  <Target Name="SlnGen" DependsOnTargets="$(SlnGenDependsOn)">
+  <Target Name="SlnGen" DependsOnTargets="AssignProjectConfiguration;_SplitProjectReferencesByFileExistence;$(SlnGenDependsOn)">
 
     <SlnGen
       CollectStats="$([MSBuild]::ValueOrDefault('$(SlnGenCollectStats)', 'false'))"
@@ -25,7 +22,7 @@
       InheritGlobalProperties="$([MSBuild]::ValueOrDefault('$(SlnGenInheritGlobalProperties)', 'true'))"
       ProjectFullPath="$(MSBuildProjectFullPath)"
       ProjectReferences="@(_MSBuildProjectReferenceExistent)"
-      ShouldLaunchVisualStudio="$([MSBuild]::ValueOrDefault('$(SlnGenShouldLaunchVisualStudio)', 'true'))"
+      ShouldLaunchVisualStudio="$([MSBuild]::ValueOrDefault('$(SlnGenLaunchVisualStudio)', 'true'))"
       SolutionFileFullPath="$(SlnGenSolutionFileFullPath)"
       ToolsVersion="$([MSBuild]::ValueOrDefault('$(SlnGenToolsVersion)', '$(MSBuildToolsVersion)'))"
       UseShellExecute="$([MSBuild]::ValueOrDefault('$(SlnGenUseShellExecute)', 'true'))"

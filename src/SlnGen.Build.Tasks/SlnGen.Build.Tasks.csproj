@@ -48,7 +48,9 @@
     <Compile Include="TaskBase.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="SlnGen.targets" />
+    <None Include="SlnGen.targets">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

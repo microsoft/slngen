@@ -77,11 +77,11 @@ namespace SlnGen.Build.Tasks.Internal
                 writer.WriteLine("EndProject");
             }
 
-            SlnHierarchy nestedProjects = new SlnHierarchy(_projects);
+            SlnHierarchy hierarchy = SlnHierarchy.FromProjects(_projects);
 
-            if (_projects.Count > 1)
+            if (hierarchy.Folders.Count > 0)
             {
-                foreach (SlnFolder folder in nestedProjects.Folders)
+                foreach (SlnFolder folder in hierarchy.Folders)
                 {
                     writer.WriteLine($@"Project(""{folder.TypeGuid}"") = ""{folder.Name}"", ""{folder.FullPath}"", ""{folder.Guid}""");
                     writer.WriteLine("EndProject");
@@ -117,7 +117,7 @@ namespace SlnGen.Build.Tasks.Internal
             if (_projects.Count > 1)
             {
                 writer.WriteLine(@"	GlobalSection(NestedProjects) = preSolution");
-                foreach (KeyValuePair<string, string> nestedProject in nestedProjects.Hierarchy)
+                foreach (KeyValuePair<string, string> nestedProject in hierarchy.Hierarchy)
                 {
                     writer.WriteLine($@"		{nestedProject.Key} = {nestedProject.Value}");
                 }

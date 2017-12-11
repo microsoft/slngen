@@ -53,6 +53,15 @@ namespace SlnGen.Build.Tasks
         }
 
         /// <summary>
+        /// Gets the current Guid as a string for use in a Visual Studio solution file.
+        /// </summary>
+        /// <returns>The current GUID in as a string with braces and in upper case.</returns>
+        public static string ToSolutionString(this Guid guid)
+        {
+            return guid.ToString("B").ToUpperInvariant();
+        }
+
+        /// <summary>
         /// Attempts to get the current <see cref="ProjectInstance"/> of the executing task via reflection.
         /// </summary>
         /// <param name="buildEngine">A <see cref="IBuildEngine"/> for the currently executing task.</param>

@@ -94,8 +94,8 @@ namespace SlnGen.Build.Tasks
 
                 if (!String.IsNullOrWhiteSpace(projectTypeGuidString) && Guid.TryParse(projectTypeGuidString, out Guid projectTypeGuid))
                 {
-                    // Trim and ToLower the file extension, ToUpperInvariant the project type GUID
-                    projectTypeGuids[taskItem.ItemSpec.Trim().ToLowerInvariant()] = projectTypeGuid.ToString().ToUpperInvariant();
+                    // Trim and ToLower the file extension
+                    projectTypeGuids[taskItem.ItemSpec.Trim().ToLowerInvariant()] = projectTypeGuid.ToSolutionString();
                 }
             }
 
@@ -137,7 +137,7 @@ namespace SlnGen.Build.Tasks
 
             SlnFile solution = new SlnFile(projects.Where(ShouldIncludeInSolution).Select(p => SlnProject.FromProject(p, customProjectTypeGuids, p.FullPath == ProjectFullPath)));
 
-            File.WriteAllText(SolutionFileFullPath, solution.ToString());
+            solution.Save(SolutionFileFullPath);
         }
 
         private IDictionary<string, string> GetGlobalProperties()
@@ -169,7 +169,7 @@ namespace SlnGen.Build.Tasks
                 LogMessageLow("Global Properties:");
                 foreach (KeyValuePair<string, string> globalProperty in globalProperties)
                 {
-                    LogMessageLow($"{0} = {1}", MessageImportance.Low, globalProperty.Key, globalProperty.Value);
+                    LogMessageLow("  {0} = {1}", globalProperty.Key, globalProperty.Value);
                 }
             }
 
@@ -268,6 +268,11 @@ namespace SlnGen.Build.Tasks
 
         private IEnumerable<string> ParseList(string items)
         {
+            if (String.IsNullOrWhiteSpace(items))
+            {
+                return Enumerable.Empty<string>();
+            }
+
             char[] itemSeparators = {';'};
 
             // Split by ';'
@@ -280,7 +285,12 @@ namespace SlnGen.Build.Tasks
 
         private IEnumerable<KeyValuePair<string, string>> ParseProperties(string properties)
         {
-            char[] propertySeparators = {'='};
+            if (String.IsNullOrWhiteSpace(properties))
+            {
+                return Enumerable.Empty<KeyValuePair<string, string>>();
+            }
+
+            char[] propertySeparators = { '=' };
 
             // Split by ';'
             return ParseList(properties)

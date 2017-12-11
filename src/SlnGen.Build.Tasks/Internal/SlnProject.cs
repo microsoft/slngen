@@ -64,7 +64,7 @@ namespace SlnGen.Build.Tasks.Internal
                 }
             }
 
-            string projectGuid = isLegacyProjectSystem ? project.GetPropertyValueOrDefault(ProjectGuidPropertyName, Guid.NewGuid().ToString().ToUpperInvariant()) : Guid.NewGuid().ToString().ToUpperInvariant();
+            string projectGuid = isLegacyProjectSystem ? project.GetPropertyValueOrDefault(ProjectGuidPropertyName, Guid.NewGuid().ToSolutionString()) : Guid.NewGuid().ToSolutionString();
 
             return new SlnProject(project.FullPath, name, projectGuid, projectTypeGuid, isMainProject);
         }

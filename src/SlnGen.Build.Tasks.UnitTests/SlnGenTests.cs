@@ -11,7 +11,7 @@ namespace SlnGen.Build.Tasks.UnitTests
         [Test]
         public void ParseCustomProjectTypeGuidsDeduplicatesList()
         {
-            const string expectedProjectTypeGuid = "C139C737-2894-46A0-B1EB-DDD052FD8DCB";
+            const string expectedProjectTypeGuid = "{C139C737-2894-46A0-B1EB-DDD052FD8DCB}";
 
             ITaskItem[] customProjectTypeGuids =
             {
@@ -33,13 +33,13 @@ namespace SlnGen.Build.Tasks.UnitTests
         {
             ValidateParseCustomProjectTypeGuids(
                 " .FoO  ", "  9d9339782d2a4fb2b72d8746d88e73b7 ",
-                ".foo", "9D933978-2D2A-4FB2-B72D-8746D88E73B7");
+                ".foo", "{9D933978-2D2A-4FB2-B72D-8746D88E73B7}");
         }
 
         [Test]
         public void ParseCustomProjectTypeGuidsIgnoresNonFileExtensions()
         {
-            const string expectedProjectTypeGuid = "C139C737-2894-46A0-B1EB-DDD052FD8DCB";
+            const string expectedProjectTypeGuid = "{C139C737-2894-46A0-B1EB-DDD052FD8DCB}";
 
             ITaskItem[] customProjectTypeGuids =
             {
