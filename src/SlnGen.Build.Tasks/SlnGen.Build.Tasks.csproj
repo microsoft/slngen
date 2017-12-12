@@ -1,51 +1,12 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{B21C529B-E539-4A24-B190-DB57B1FB4E8C}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SlnGen.Build.Tasks</RootNamespace>
-    <AssemblyName>SlnGen.Build.Tasks</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <TargetFramework>net45</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Build" />
     <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="System" />
     <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="ExtensionMethods.cs" />
-    <Compile Include="Internal\MSBuildProjectLoaderStatistics.cs" />
-    <Compile Include="Internal\SlnFolder.cs" />
-    <Compile Include="Internal\MSBuildProjectLoader.cs" />
-    <Compile Include="Internal\SlnHierarchy.cs" />
-    <Compile Include="Internal\SlnProject.cs" />
-    <Compile Include="SlnGen.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Internal\SlnFile.cs" />
-    <Compile Include="TaskBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="SlnGen.targets">
@@ -58,5 +19,19 @@
       <Version>2.1.7</Version>
     </PackageReference>
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <None Update="SlnGen.nuspec">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <Target Name="DefineNuspecFile" BeforeTargets="PrepareForBuild;BeforeBuild">
+    <PropertyGroup>
+      <NuspecFile>$(OutputPath)SlnGen.nuspec</NuspecFile>
+    </PropertyGroup>
+  </Target>
+  <Target Name="DefineNuspecProperties" BeforeTargets="GenerateNuSpec" AfterTargets="GetNuGetPackageVersion">
+    <PropertyGroup>
+	  <NuspecProperties>$(NuSpecProperties);version=$(NuGetPackageVersion)</NuspecProperties>
+    </PropertyGroup>
+  </Target>
 </Project>
