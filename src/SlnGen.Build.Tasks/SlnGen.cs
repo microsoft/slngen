@@ -81,6 +81,20 @@ namespace SlnGen.Build.Tasks
         /// </summary>
         public bool UseShellExecute { get; set; }
 
+        /// <summary>
+        /// Checks whether a project should be included in the solution or not. 
+        /// </summary>
+        /// <param name="project">The project.</param>
+        /// <returns><c> true </c> if it should be included, <c> false </c> otherwise.</returns>
+        internal static bool ShouldIncludeInSolution(Project project)
+        {
+            return
+                // Filter out projects that explicitly should not be included
+                !project.GetPropertyValue("IncludeInSolutionFile").Equals("false", StringComparison.OrdinalIgnoreCase)
+                && // Filter out traversal projects by looking for an IsTraversal property
+                !project.GetPropertyValue("IsTraversal").Equals("true", StringComparison.OrdinalIgnoreCase);
+        }
+
         internal Dictionary<string, string> ParseCustomProjectTypeGuids()
         {
             Dictionary<string, string> projectTypeGuids = new Dictionary<string, string>();
@@ -318,15 +332,6 @@ namespace SlnGen.Build.Tasks
                 .Select(i => new KeyValuePair<string, string>(i.First().Trim(), i.Last().Trim()))
                 // Ignore items with an empty key or value
                 .Where(i => !String.IsNullOrWhiteSpace(i.Key) && !String.IsNullOrWhiteSpace(i.Value));
-        }
-
-        private bool ShouldIncludeInSolution(Project project)
-        {
-            return
-                // Filter out projects that explicitly should not be included
-                !project.GetPropertyValue("IncludeInSolutionFile").Equals("false", StringComparison.OrdinalIgnoreCase)
-                && // Filter out traversal projects by looking for an IsTraversal property
-                !project.GetPropertyValue("IsTraversal").Equals("true", StringComparison.OrdinalIgnoreCase);
         }
     }
 }
