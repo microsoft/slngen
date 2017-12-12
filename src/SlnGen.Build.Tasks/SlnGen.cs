@@ -163,7 +163,16 @@ namespace SlnGen.Build.Tasks
 
             Dictionary<string, string> customProjectTypeGuids = ParseCustomProjectTypeGuids();
 
-            LogMessageHigh($"Generating Visual Studio solution \"{SolutionFileFullPath}\"...");
+            LogMessageHigh($"Generating Visual Studio solution \"{SolutionFileFullPath}\" ...");
+
+            if (customProjectTypeGuids.Count > 0)
+            {
+                LogMessageLow("Custom Project Type GUIDs:");
+                foreach (KeyValuePair<string, string> item in customProjectTypeGuids)
+                {
+                    LogMessageLow("  {0} = {1}", item.Key, item.Value);
+                }
+            }
 
             SlnFile solution = new SlnFile(projects.Where(ShouldIncludeInSolution).Select(p => SlnProject.FromProject(p, customProjectTypeGuids, p.FullPath == ProjectFullPath)));
 
@@ -245,12 +254,16 @@ namespace SlnGen.Build.Tasks
 
             try
             {
-                LogMessageNormal($"{processStartInfo.FileName} {processStartInfo.Arguments}");
-
                 Process process = new Process
                 {
                     StartInfo = processStartInfo,
                 };
+
+                LogMessageHigh("Opening Visual Studio solution...");
+                LogMessageLow("  FileName = {0}", processStartInfo.FileName);
+                LogMessageLow("  Arguments = {0}", processStartInfo.Arguments);
+                LogMessageLow("  UseShellExecute = {0}", processStartInfo.UseShellExecute);
+                LogMessageLow("  WindowStyle = {0}", processStartInfo.WindowStyle);
 
                 if (!process.Start())
                 {
@@ -292,7 +305,7 @@ namespace SlnGen.Build.Tasks
             foreach (KeyValuePair<string, TimeSpan> item in projectLoader.Statistics.ProjectLoadTimes.OrderByDescending(i => i.Value))
             {
                 // String.Format(CultureInfo.CurrentCulture, "{0,5}", ;
-                LogMessageLow($"  {Math.Round(item.Value.TotalMilliseconds, 0),5}  {item.Key}", MessageImportance.Low);
+                LogMessageLow($"  {Math.Round(item.Value.TotalMilliseconds, 0),5} ms  {item.Key}", MessageImportance.Low);
             }
         }
 

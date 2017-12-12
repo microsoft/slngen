@@ -40,7 +40,6 @@ namespace SlnGen.Build.Tasks.UnitTests
         [Test]
         public void SingleProject()
         {
-            // TODO: Get this working
             SlnProject projectA = new SlnProject(GetTempFileName(), "ProjectA", "C95D800E-F016-4167-8E1B-1D3FF94CE2E2", "88152E7E-47E3-45C8-B5D3-DDB15B2F0435", isMainProject: true);
 
             ValidateProjectInSolution(projectA);

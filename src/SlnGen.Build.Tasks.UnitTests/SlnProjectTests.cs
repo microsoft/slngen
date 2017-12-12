@@ -37,38 +37,35 @@ namespace SlnGen.Build.Tasks.UnitTests
         }
 
         [Test]
+        public void ShouldIncludeInSolutionExclusion()
+        {
+            Dictionary<string, string> globalProperties = new Dictionary<string, string>
+            {
+                {"IncludeInSolutionFile", "false"}
+            };
+
+            Project project = CreateProject("foo", ".csproj", globalProperties: globalProperties);
+
+            SlnGen.ShouldIncludeInSolution(project).ShouldBeFalse();
+        }
+
+        [Test]
+        public void ShouldIncludeInSolutionTraversalProject()
+        {
+            Dictionary<string, string> globalProperties = new Dictionary<string, string>
+            {
+                {"IsTraversal", "true"}
+            };
+
+            Project project = CreateProject("dirs", ".proj", globalProperties: globalProperties);
+
+            SlnGen.ShouldIncludeInSolution(project).ShouldBeFalse();
+        }
+
+        [Test]
         public void UseAssemblyNameProperty()
         {
             CreateAndValidateProject(expectedGuid: "3EA7B89C-F85F-49F4-B99D-1BC184C08186", expectedName: "Project.Name");
-        }
-
-        [Test]
-        public void ShouldIncludeTraversalProject()
-        {
-            var project = this.CreateProject(
-                name: "dirs",
-                extension: ".proj",
-                globalProperties: new Dictionary<string, string>
-                {
-                    { "IsTraversal", "true" }
-                });
-
-            Assert.IsFalse(SlnGen.ShouldIncludeInSolution(project));
-        }
-
-
-        [Test]
-        public void ShouldIncludeInSolutionExplicitExclusion()
-        {
-            var project = this.CreateProject(
-                name: "dirs",
-                extension: ".proj",
-                globalProperties: new Dictionary<string, string>
-                                  {
-                                      { "IncludeInSolutionFile", "false" }
-                                  });
-
-            SlnGen.ShouldIncludeInSolution(project).ShouldBeFalse();
         }
 
         [Test]
@@ -79,7 +76,7 @@ namespace SlnGen.Build.Tasks.UnitTests
 
         private SlnProject CreateAndValidateProject(bool isMainProject = false, string expectedGuid = null, string expectedName = null, string extension = ".csproj", IDictionary<string, string> globalProperties = null)
         {
-            var expectedProject = this.CreateProject(expectedGuid, expectedName, extension, globalProperties);
+            Project expectedProject = CreateProject(expectedGuid, expectedName, extension, globalProperties);
 
             SlnProject actualProject = SlnProject.FromProject(expectedProject, null, isMainProject);
 
@@ -107,7 +104,7 @@ namespace SlnGen.Build.Tasks.UnitTests
 
         private Project CreateProject(string projectGuid = null, string name = null, string extension = ".csproj", IDictionary<string, string> globalProperties = null)
         {
-            string fullPath = this.GetTempFileName(extension);
+            string fullPath = GetTempFileName(extension);
 
             if (globalProperties == null)
             {
