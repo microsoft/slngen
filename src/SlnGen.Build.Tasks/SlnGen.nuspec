@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>SlnGen</id>
+    <version>0.0.0</version>
+    <authors>jeffkl;amrh</authors>
+    <owners>jeffkl;amrh</owners>
+    <description>MSBuild-based Visual Studio solution file generator</description>
+     <releaseNotes>
+      Initial release
+    </releaseNotes>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <tags>msbuild;visualstudio;solution</tags>
+    <licenseUrl>https://github.com/jeffkl/SlnGen/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/jeffkl/SlnGen</projectUrl>
+  </metadata>
+  <files>
+    <file src="SlnGen.Build.Tasks.dll" target="build"/>
+    <file src="SlnGen.targets" target="build"/>
+  </files>
+</package>
