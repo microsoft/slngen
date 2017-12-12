@@ -43,6 +43,35 @@ namespace SlnGen.Build.Tasks.UnitTests
         }
 
         [Test]
+        public void ShouldIncludeTraversalProject()
+        {
+            var project = this.CreateProject(
+                name: "dirs",
+                extension: ".proj",
+                globalProperties: new Dictionary<string, string>
+                {
+                    { "IsTraversal", "true" }
+                });
+
+            Assert.IsFalse(SlnGen.ShouldIncludeInSolution(project));
+        }
+
+
+        [Test]
+        public void ShouldIncludeInSolutionExplicitExclusion()
+        {
+            var project = this.CreateProject(
+                name: "dirs",
+                extension: ".proj",
+                globalProperties: new Dictionary<string, string>
+                                  {
+                                      { "IncludeInSolutionFile", "false" }
+                                  });
+
+            SlnGen.ShouldIncludeInSolution(project).ShouldBeFalse();
+        }
+
+        [Test]
         public void UseFileName()
         {
             CreateAndValidateProject(expectedGuid: "DE681393-7151-459D-862C-918CCD2CB371");
@@ -50,24 +79,7 @@ namespace SlnGen.Build.Tasks.UnitTests
 
         private SlnProject CreateAndValidateProject(bool isMainProject = false, string expectedGuid = null, string expectedName = null, string extension = ".csproj", IDictionary<string, string> globalProperties = null)
         {
-            string fullPath = GetTempFileName(extension);
-
-            if (globalProperties == null)
-            {
-                globalProperties = new Dictionary<string, string>();
-            }
-
-            if (!String.IsNullOrWhiteSpace(expectedGuid))
-            {
-                globalProperties[SlnProject.ProjectGuidPropertyName] = expectedGuid;
-            }
-
-            if (!String.IsNullOrWhiteSpace(expectedName))
-            {
-                globalProperties[SlnProject.AssemblyNamePropertyName] = expectedName;
-            }
-
-            Project expectedProject = MockProject.Create(fullPath, globalProperties);
+            var expectedProject = this.CreateProject(expectedGuid, expectedName, extension, globalProperties);
 
             SlnProject actualProject = SlnProject.FromProject(expectedProject, null, isMainProject);
 
@@ -91,6 +103,28 @@ namespace SlnGen.Build.Tasks.UnitTests
             actualProject.IsMainProject.ShouldBe(isMainProject);
 
             return actualProject;
+        }
+
+        private Project CreateProject(string projectGuid = null, string name = null, string extension = ".csproj", IDictionary<string, string> globalProperties = null)
+        {
+            string fullPath = this.GetTempFileName(extension);
+
+            if (globalProperties == null)
+            {
+                globalProperties = new Dictionary<string, string>();
+            }
+
+            if (!String.IsNullOrWhiteSpace(projectGuid))
+            {
+                globalProperties[SlnProject.ProjectGuidPropertyName] = projectGuid;
+            }
+
+            if (!String.IsNullOrWhiteSpace(name))
+            {
+                globalProperties[SlnProject.AssemblyNamePropertyName] = name;
+            }
+
+            return MockProject.Create(fullPath, globalProperties);
         }
     }
 }
