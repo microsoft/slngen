@@ -26,8 +26,14 @@ Or add it your [Directory.Build.props](https://docs.microsoft.com/en-us/visualst
 Generate and open a Visual Studio solution with MSBuild:
 
 ```
-MSBuild /t:SlnGen
+> MSBuild /t:SlnGen
 ```
 
-## Documentation
-To configure SlnGen, read the documentation at [https://jeffkl.github.io/SlnGen/](https://jeffkl.github.io/SlnGen/).
+You can also create a [DOSKEY](https://en.wikipedia.org/wiki/DOSKEY) alias as a shortcut
+
+```
+> doskey slngen=msbuild /nologo /v:m /t:slngen
+```
+
+More documentation is available at [jeffkl.github.io/SlnGen](https://jeffkl.github.io/SlnGen).
+
