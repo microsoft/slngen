@@ -325,7 +325,7 @@ namespace SlnGen.Build.Tasks
             return
                 // Filter out projects that explicitly should not be included
                 !project.GetPropertyValue("IncludeInSolutionFile").Equals("false", StringComparison.OrdinalIgnoreCase)
-                || // Filter out traversal projects by looking for an IsTraversal property
+                && // Filter out traversal projects by looking for an IsTraversal property
                 !project.GetPropertyValue("IsTraversal").Equals("true", StringComparison.OrdinalIgnoreCase);
         }
     }
