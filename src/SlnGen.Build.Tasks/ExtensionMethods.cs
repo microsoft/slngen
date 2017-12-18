@@ -1,8 +1,12 @@
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
+using SlnGen.Build.Tasks.Internal;
 using System;
+using System.IO;
+using System.Linq;
 using System.Reflection;
+using System.Text;
 
 namespace SlnGen.Build.Tasks
 {
@@ -38,6 +42,26 @@ namespace SlnGen.Build.Tasks
         #endregion Types used for getting to internal properties of the MSBuild API
 
         /// <summary>
+        /// Converts the specified path to its long form.
+        /// </summary>
+        /// <returns>The specified path in its long form and correct case according to the file system.</returns>
+        public static string GetLongPathName(this DirectoryInfo directoryInfo)
+        {
+            if (!directoryInfo.Exists)
+            {
+                throw new DirectoryNotFoundException($"Could not find part of the path \"{directoryInfo.FullName}\"");
+            }
+
+            StringBuilder stringBuilder = new StringBuilder(directoryInfo.FullName.Length + 1);
+
+            int result = NativeMethods.GetLongPathName(directoryInfo.FullName, stringBuilder, stringBuilder.Capacity);
+
+            stringBuilder[0] = char.ToUpperInvariant(stringBuilder[0]);
+
+            return stringBuilder.ToString(0, result);
+        }
+
+        /// <summary>
         /// Gets the value of the given property in this project.
         /// </summary>
         /// <param name="project">The <see cref="Project"/> to get the property value from.</param>
@@ -50,6 +74,25 @@ namespace SlnGen.Build.Tasks
 
             // MSBuild always returns String.Empty if the property has no value
             return value == String.Empty ? defaultValue : value;
+        }
+
+        /// <summary>
+        /// Returns the absolute path for the specified path string in the correct case according to the file system.
+        /// </summary>
+        public static string ToFullPathInCorrectCase(this string str)
+        {
+            string fullPath = Path.GetFullPath(str);
+
+            if (!File.Exists(fullPath))
+            {
+                throw new FileNotFoundException($"Could not find part of the path \"{fullPath}\"");
+            }
+
+            string filename = Path.GetFileName(fullPath);
+
+            string directory = Directory.GetParent(fullPath).GetLongPathName();
+
+            return Directory.EnumerateFiles(directory, filename).First();
         }
 
         /// <summary>

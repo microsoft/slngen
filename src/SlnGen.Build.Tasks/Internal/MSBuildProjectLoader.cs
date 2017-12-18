@@ -100,7 +100,7 @@ namespace SlnGen.Build.Tasks.Internal
         /// <param name="projectLoadSettings">Specifies the <see cref="ProjectLoadSettings"/> to use when loading projects.</param>
         private void LoadProject(string projectPath, ProjectCollection projectCollection, ProjectLoadSettings projectLoadSettings)
         {
-            if (TryLoadProject(projectPath, projectCollection.DefaultToolsVersion, projectCollection, projectLoadSettings, out var project))
+            if (TryLoadProject(projectPath, projectCollection.DefaultToolsVersion, projectCollection, projectLoadSettings, out Project project))
             {
                 LoadProjectReferences(project, _projectLoadSettings);
             }
@@ -143,9 +143,11 @@ namespace SlnGen.Build.Tasks.Internal
 
             bool shouldLoadProject;
 
+            string fullPath = path.ToFullPathInCorrectCase();
+
             lock (_loadedProjects)
             {
-                shouldLoadProject = _loadedProjects.Add(Path.GetFullPath(path));
+                shouldLoadProject = _loadedProjects.Add(fullPath);
             }
 
             if (!shouldLoadProject)
@@ -157,7 +159,7 @@ namespace SlnGen.Build.Tasks.Internal
 
             try
             {
-                project = new Project(path, null, toolsVersion, projectCollection, projectLoadSettings);
+                project = new Project(fullPath, null, toolsVersion, projectCollection, projectLoadSettings);
             }
             catch (Exception e)
             {
