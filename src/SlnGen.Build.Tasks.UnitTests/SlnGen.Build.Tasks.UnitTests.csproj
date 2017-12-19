@@ -53,6 +53,7 @@
     <Compile Include="SlnGenTests.cs" />
     <Compile Include="SlnProjectTests.cs" />
     <Compile Include="TestBase.cs" />
+    <Compile Include="ToFullPathInCorrectCaseTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SlnGen.Build.Tasks\SlnGen.Build.Tasks.csproj">
