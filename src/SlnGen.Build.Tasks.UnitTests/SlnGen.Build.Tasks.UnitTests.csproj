@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ExtensionMethods.cs" />
+    <Compile Include="MockBuildEngine.cs" />
     <Compile Include="MockProject.cs" />
     <Compile Include="MockTaskItem.cs" />
     <Compile Include="SlnFileTests.cs" />

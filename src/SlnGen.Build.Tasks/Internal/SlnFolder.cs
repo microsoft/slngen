@@ -4,6 +4,8 @@ namespace SlnGen.Build.Tasks.Internal
 {
     internal sealed class SlnFolder
     {
+        public const string ProjectTypeGuid = "{2150E333-8FDC-42A3-9474-1A3956D46DE8}";
+
         public SlnFolder(string path, string guid)
         {
             Name = Path.GetFileName(path);
@@ -17,6 +19,6 @@ namespace SlnGen.Build.Tasks.Internal
 
         public string Name { get; }
 
-        public string TypeGuid => "{2150E333-8FDC-42A3-9474-1A3956D46DE8}";
+        public string TypeGuid => ProjectTypeGuid;
     }
 }

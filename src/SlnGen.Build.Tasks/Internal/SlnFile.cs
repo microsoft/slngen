@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -32,6 +33,11 @@ namespace SlnGen.Build.Tasks.Internal
         private readonly IReadOnlyList<SlnProject> _projects;
 
         /// <summary>
+        /// A list of absolute paths to include as Solution Items.
+        /// </summary>
+        private readonly List<string> _solutionItems = new List<string>();
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SlnFile" /> class.
         /// </summary>
         /// <param name="projects">The project collection.</param>
@@ -56,6 +62,19 @@ namespace SlnGen.Build.Tasks.Internal
         }
 
         /// <summary>
+        /// Gets a list of solution items.
+        /// </summary>
+        public IReadOnlyCollection<string> SolutionItems => _solutionItems;
+
+        /// <summary>
+        /// Adds the specified solution items.
+        /// </summary>
+        public void AddSolutionItems(IEnumerable<string> items)
+        {
+            _solutionItems.AddRange(items);
+        }
+
+        /// <summary>
         /// Saves the Visual Studio solution to a file.
         /// </summary>
         /// <param name="path">The full path to the file to write to.</param>
@@ -74,6 +93,18 @@ namespace SlnGen.Build.Tasks.Internal
             foreach (SlnProject project in _projects)
             {
                 writer.WriteLine($@"Project(""{project.ProjectTypeGuid}"") = ""{project.Name}"", ""{project.FullPath}"", ""{project.ProjectGuid}""");
+                writer.WriteLine("EndProject");
+            }
+
+            if (SolutionItems.Count > 0)
+            {
+                writer.WriteLine($@"Project(""{SlnFolder.ProjectTypeGuid}"") = ""Solution Items"", ""Solution Items"", ""{Guid.NewGuid().ToSolutionString()}"" ");
+                writer.WriteLine("	ProjectSection(SolutionItems) = preProject");
+                foreach (string solutionItem in SolutionItems)
+                {
+                    writer.WriteLine($"		{solutionItem} = {solutionItem}");
+                }
+                writer.WriteLine("	EndProjectSection");
                 writer.WriteLine("EndProject");
             }
 

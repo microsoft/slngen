@@ -5,4 +5,8 @@
       <Version>2.0.20-beta</Version>
     </PackageReference>
   </ItemGroup>
+
+  <ItemGroup>
+    <SlnGenSolutionItem Include="$(MSBuildThisFileDirectory)\Directory.Build.props" />
+  </ItemGroup>
 </Project>
