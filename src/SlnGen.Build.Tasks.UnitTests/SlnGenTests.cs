@@ -2,6 +2,8 @@
 using NUnit.Framework;
 using Shouldly;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace SlnGen.Build.Tasks.UnitTests
 {
@@ -54,6 +56,29 @@ namespace SlnGen.Build.Tasks.UnitTests
             };
 
             ValidateParseCustomProjectTypeGuids(customProjectTypeGuids, ".foo", expectedProjectTypeGuid);
+        }
+
+        [Test]
+        public void SolutionItems()
+        {
+            Dictionary<string, string> solutionItems = new Dictionary<string, string>
+            {
+                {"foo", Path.GetFullPath("foo")},
+                {"bar", Path.GetFullPath("bar")}
+            };
+
+            IBuildEngine buildEngine = new MockBuildEngine();
+
+            SlnGen slnGen = new SlnGen
+            {
+                BuildEngine = buildEngine,
+                SolutionItems = solutionItems.Select(i => new MockTaskItem(i.Key)
+                {
+                    {"FullPath", i.Value}
+                }).ToArray<ITaskItem>()
+            };
+
+            slnGen.GetSolutionItems(path => true).ShouldBe(solutionItems.Values);
         }
 
         private static void ValidateParseCustomProjectTypeGuids(string fileExtension, string projectTypeGuid, string expectedFileExtension, string expectedProjectTypeGuid)

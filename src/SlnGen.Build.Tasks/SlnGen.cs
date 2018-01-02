@@ -71,6 +71,11 @@ namespace SlnGen.Build.Tasks
         public string SolutionFileFullPath { get; set; }
 
         /// <summary>
+        /// Gets or sets a list of items to be shown in the Visual Studio solution file.
+        /// </summary>
+        public ITaskItem[] SolutionItems { get; set; } = new ITaskItem[0];
+
+        /// <summary>
         /// Gets or sets the tools version of the project.
         /// </summary>
         [Required]
@@ -82,7 +87,7 @@ namespace SlnGen.Build.Tasks
         public bool UseShellExecute { get; set; }
 
         /// <summary>
-        /// Checks whether a project should be included in the solution or not. 
+        /// Checks whether a project should be included in the solution or not.
         /// </summary>
         /// <param name="project">The project.</param>
         /// <returns><c> true </c> if it should be included, <c> false </c> otherwise.</returns>
@@ -93,6 +98,34 @@ namespace SlnGen.Build.Tasks
                 !project.GetPropertyValue("IncludeInSolutionFile").Equals("false", StringComparison.OrdinalIgnoreCase)
                 && // Filter out traversal projects by looking for an IsTraversal property
                 !project.GetPropertyValue("IsTraversal").Equals("true", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Gets the solution items' full paths.
+        /// </summary>
+        /// <returns>An <see cref="IEnumerable{String}"/> of full paths to include as solution items.</returns>
+        internal IEnumerable<string> GetSolutionItems()
+        {
+            return GetSolutionItems(File.Exists);
+        }
+
+        /// <summary>
+        /// Gets the solution items' full paths.
+        /// </summary>
+        /// <returns>An <see cref="IEnumerable{String}"/> of full paths to include as solution items.</returns>
+        internal IEnumerable<string> GetSolutionItems(Func<string, bool> fileExists)
+        {
+            foreach (string solutionItem in SolutionItems.Select(i => i.GetMetadata("FullPath")).Where(i => !String.IsNullOrWhiteSpace(i)))
+            {
+                if (!fileExists(solutionItem))
+                {
+                    LogMessageLow($"The solution item \"{solutionItem}\" does not exist and will not be added to the solution.");
+                }
+                else
+                {
+                    yield return solutionItem;
+                }
+            }
         }
 
         internal Dictionary<string, string> ParseCustomProjectTypeGuids()
@@ -175,6 +208,8 @@ namespace SlnGen.Build.Tasks
             }
 
             SlnFile solution = new SlnFile(projects.Where(ShouldIncludeInSolution).Select(p => SlnProject.FromProject(p, customProjectTypeGuids, p.FullPath == ProjectFullPath)));
+
+            solution.AddSolutionItems(GetSolutionItems());
 
             solution.Save(SolutionFileFullPath);
         }
