@@ -1,4 +1,5 @@
-﻿using Microsoft.Build.Evaluation;
+﻿using JetBrains.Annotations;
+using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using SlnGen.Build.Tasks.Internal;
@@ -128,6 +129,7 @@ namespace SlnGen.Build.Tasks
             }
         }
 
+        [NotNull]
         internal Dictionary<string, string> ParseCustomProjectTypeGuids()
         {
             Dictionary<string, string> projectTypeGuids = new Dictionary<string, string>();

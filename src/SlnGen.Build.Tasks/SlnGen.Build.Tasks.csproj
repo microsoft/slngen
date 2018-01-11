@@ -16,9 +16,8 @@
     <None Include="version.json" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Nerdbank.GitVersioning">
-      <Version>2.1.7</Version>
-    </PackageReference>
+    <PackageReference Include="JetBrains.Annotations" Version="10.2.1" PrivateAssets="All" />
+    <PackageReference Include="Nerdbank.GitVersioning" Version="2.1.7"/>
   </ItemGroup>
   <ItemGroup>
     <None Update="SlnGen.nuspec">
