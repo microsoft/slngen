@@ -78,7 +78,7 @@ namespace SlnGen.Build.Tasks.UnitTests
         {
             Project expectedProject = CreateProject(expectedGuid, expectedName, extension, globalProperties);
 
-            SlnProject actualProject = SlnProject.FromProject(expectedProject, null, isMainProject);
+            SlnProject actualProject = SlnProject.FromProject(expectedProject, new Dictionary<string, string>(), isMainProject);
 
             actualProject.FullPath.ShouldBe(expectedProject.FullPath);
 

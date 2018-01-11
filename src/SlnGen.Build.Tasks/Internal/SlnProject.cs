@@ -1,4 +1,5 @@
-﻿using Microsoft.Build.Evaluation;
+﻿using JetBrains.Annotations;
+using Microsoft.Build.Evaluation;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -25,7 +26,7 @@ namespace SlnGen.Build.Tasks.Internal
             {".wixproj", "930C7802-8A8C-48F9-8165-68863BCCD9DD"}
         };
 
-        public SlnProject(string fullPath, string name, string projectGuid, string projectTypeGuid, bool isMainProject)
+        public SlnProject([NotNull] string fullPath, [NotNull] string name, [NotNull] string projectGuid, [NotNull] string projectTypeGuid, bool isMainProject)
         {
             FullPath = fullPath ?? throw new ArgumentNullException(nameof(fullPath));
             Name = name ?? throw new ArgumentNullException(nameof(name));
@@ -44,8 +45,19 @@ namespace SlnGen.Build.Tasks.Internal
 
         public string ProjectTypeGuid { get; }
 
-        public static SlnProject FromProject(Project project, IReadOnlyDictionary<string, string> customProjectTypeGuids, bool isMainProject = false)
+        [NotNull]
+        public static SlnProject FromProject([NotNull] Project project, [NotNull] IReadOnlyDictionary<string, string> customProjectTypeGuids, bool isMainProject = false)
         {
+            if (project == null)
+            {
+                throw new ArgumentNullException(nameof(project));
+            }
+
+            if (customProjectTypeGuids == null)
+            {
+                throw new ArgumentNullException(nameof(customProjectTypeGuids));
+            }
+
             string name = project.GetPropertyValueOrDefault(AssemblyNamePropertyName, Path.GetFileNameWithoutExtension(project.FullPath));
 
             // Legacy projects do not set UsingMicrosoftNETSdk to "true"
@@ -53,15 +65,10 @@ namespace SlnGen.Build.Tasks.Internal
 
             string extension = Path.GetExtension(project.FullPath);
 
-            string projectTypeGuid = DefaultProjectTypeGuid;
-
-            if (!String.IsNullOrWhiteSpace(extension))
+            // Get the item from the custom project type GUIDs first which can override ours
+            if (String.IsNullOrWhiteSpace(extension) || !customProjectTypeGuids.TryGetValue(extension, out string projectTypeGuid) && !KnownProjectTypeGuids.TryGetValue(extension, out projectTypeGuid))
             {
-                // Get the item from the custom project type GUIDs first which can override ours
-                if (customProjectTypeGuids == null || !customProjectTypeGuids.TryGetValue(extension, out projectTypeGuid))
-                {
-                    KnownProjectTypeGuids.TryGetValue(extension, out projectTypeGuid);
-                }
+                projectTypeGuid = DefaultProjectTypeGuid;
             }
 
             string projectGuid = isLegacyProjectSystem ? project.GetPropertyValueOrDefault(ProjectGuidPropertyName, Guid.NewGuid().ToSolutionString()) : Guid.NewGuid().ToSolutionString();
