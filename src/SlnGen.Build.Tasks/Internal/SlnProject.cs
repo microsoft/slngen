@@ -17,13 +17,14 @@ namespace SlnGen.Build.Tasks.Internal
         {
             {".ccproj", "151D2E53-A2C4-4D7D-83FE-D05416EBD58E"},
             {".csproj", DefaultProjectTypeGuid},
+            {".fsproj", "F2A71F9B-5D33-465A-A702-920D77279786" },
             {".nativeProj", "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942"},
             {".nuproj", "FF286327-C783-4F7A-AB73-9BCBAD0D4460"},
             {".vbproj", "F184B08F-C81C-45F6-A57F-5ABD9991F28F"},
             {".vcproj", "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942"},
             {".vcxproj", "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942"},
             {".vjsproj", "E6FDF86B-F3D1-11D4-8576-0002A516ECE8"},
-            {".wixproj", "930C7802-8A8C-48F9-8165-68863BCCD9DD"}
+            {".wixproj", "930C7802-8A8C-48F9-8165-68863BCCD9DD"},
         };
 
         public SlnProject([NotNull] string fullPath, [NotNull] string name, [NotNull] string projectGuid, [NotNull] string projectTypeGuid, bool isMainProject)
