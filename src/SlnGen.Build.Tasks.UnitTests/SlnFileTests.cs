@@ -7,12 +7,14 @@ using MSBuildSolutionFile = Microsoft.Build.Construction.SolutionFile;
 
 namespace SlnGen.Build.Tasks.UnitTests
 {
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Linq;
+
     [TestFixture]
     public class SlnFileTests : TestBase
     {
         // TODO: Test hierarchy
-        // TODO: Test configurations and platforms
-
         [Test]
         public void LotsOfProjects()
         {
@@ -20,9 +22,17 @@ namespace SlnGen.Build.Tasks.UnitTests
 
             SlnProject[] projects = new SlnProject[projectCount];
 
+            var configurations = new[] { "Debug", "Release" };
+            var platforms = new[] { "x64", "x86", "Any CPU", "amd64" };
+
+            var randomGenerator = new Random(Guid.NewGuid().GetHashCode());
+
             for (int i = 0; i < projectCount; i++)
             {
-                projects[i] = new SlnProject(GetTempFileName(), $"Project{i:D6}", Guid.NewGuid().ToSolutionString(), Guid.NewGuid().ToSolutionString(), isMainProject: i == 0);
+                // pick random and shuffled configurations and platforms
+                var projectConfigurations = configurations.OrderBy(a => Guid.NewGuid()).Take(randomGenerator.Next(1, configurations.Length)).ToList();
+                var projectPlatforms = platforms.OrderBy(a => Guid.NewGuid()).Take(randomGenerator.Next(1, platforms.Length)).ToList();
+                projects[i] = new SlnProject(GetTempFileName(), $"Project{i:D6}", Guid.NewGuid().ToSolutionString(), Guid.NewGuid().ToSolutionString(), projectConfigurations, projectPlatforms, isMainProject: i == 0);
             }
 
             ValidateProjectInSolution(projects);
@@ -31,8 +41,8 @@ namespace SlnGen.Build.Tasks.UnitTests
         [Test]
         public void MultipleProjects()
         {
-            SlnProject projectA = new SlnProject(GetTempFileName(), "ProjectA", "C95D800E-F016-4167-8E1B-1D3FF94CE2E2", "88152E7E-47E3-45C8-B5D3-DDB15B2F0435", isMainProject: true);
-            SlnProject projectB = new SlnProject(GetTempFileName(), "ProjectB", "EAD108BE-AC70-41E6-A8C3-450C545FDC0E", "F38341C3-343F-421A-AE68-94CD9ADCD32F", isMainProject: false);
+            SlnProject projectA = new SlnProject(GetTempFileName(), "ProjectA", "C95D800E-F016-4167-8E1B-1D3FF94CE2E2", "88152E7E-47E3-45C8-B5D3-DDB15B2F0435", new[] { "Debug" }, new[] { "x64" }, isMainProject: true);
+            SlnProject projectB = new SlnProject(GetTempFileName(), "ProjectB", "EAD108BE-AC70-41E6-A8C3-450C545FDC0E", "F38341C3-343F-421A-AE68-94CD9ADCD32F", new[] { "Debug" }, new[] { "x64" }, isMainProject: false);
 
             ValidateProjectInSolution(projectA, projectB);
         }
@@ -40,7 +50,7 @@ namespace SlnGen.Build.Tasks.UnitTests
         [Test]
         public void SingleProject()
         {
-            SlnProject projectA = new SlnProject(GetTempFileName(), "ProjectA", "C95D800E-F016-4167-8E1B-1D3FF94CE2E2", "88152E7E-47E3-45C8-B5D3-DDB15B2F0435", isMainProject: true);
+            SlnProject projectA = new SlnProject(GetTempFileName(), "ProjectA", "C95D800E-F016-4167-8E1B-1D3FF94CE2E2", "88152E7E-47E3-45C8-B5D3-DDB15B2F0435", new[] { "Debug" }, new[] { "x64" }, isMainProject: true);
 
             ValidateProjectInSolution(projectA);
         }
@@ -64,6 +74,10 @@ namespace SlnGen.Build.Tasks.UnitTests
                 projectInSolution.AbsolutePath.ShouldBe(slnProject.FullPath);
                 projectInSolution.ProjectGuid.ShouldBe(slnProject.ProjectGuid);
                 projectInSolution.ProjectName.ShouldBe(slnProject.Name);
+
+                var configurationPlatforms = from configuration in slnProject.Configurations from platform in slnProject.Platforms select $"{configuration}|{platform}";
+
+                CollectionAssert.AreEquivalent(projectInSolution.ProjectConfigurations.Keys, configurationPlatforms);
 
                 customValidator?.Invoke(slnProject, projectInSolution);
             }
