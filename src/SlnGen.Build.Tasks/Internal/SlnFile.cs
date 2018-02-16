@@ -91,6 +91,7 @@ namespace SlnGen.Build.Tasks.Internal
                 {
                     writer.WriteLine($"		{solutionItem} = {solutionItem}");
                 }
+
                 writer.WriteLine("	EndProjectSection");
                 writer.WriteLine("EndProject");
             }
@@ -110,35 +111,12 @@ namespace SlnGen.Build.Tasks.Internal
 
             writer.WriteLine("	GlobalSection(SolutionConfigurationPlatforms) = preSolution");
 
-            //HashSet<string> globalConfigurations = new HashSet<string>(_projects.SelectMany(p => p.Configurations));
-            //HashSet<string> globalPlatforms = new HashSet<string>(_projects.SelectMany(p => p.Platforms));
-            List<string> configurations = new List<string>();
-            List<string> platforms = new List<string>();
-            foreach (SlnProject project in _projects)
+            IEnumerable<string> globalConfigurations = new HashSet<string>(_projects.SelectMany(p => p.Configurations)).Distinct();
+            IEnumerable<string> globalPlatforms = new HashSet<string>(_projects.SelectMany(p => p.Platforms)).Distinct();
+            
+            foreach (string configuration in globalConfigurations)
             {
-                foreach (var configuration in project.Configurations)
-                {
-                    if (!configurations.Contains(configuration))
-                    {
-                        configurations.Add(configuration);
-                    }
-                }
-            }
-
-            foreach (SlnProject project in _projects)
-            {
-                foreach (var platform in project.Platforms)
-                {
-                    if (!platforms.Contains(platform))
-                    {
-                        platforms.Add(platform);
-                    }
-                }
-            }
-
-            foreach (string configuration in configurations)
-            {
-                foreach (string platform in platforms)
+                foreach (string platform in globalPlatforms)
                 {
                     writer.WriteLine($"		{configuration}|{platform} = {configuration}|{platform}");
                 }
@@ -168,6 +146,7 @@ namespace SlnGen.Build.Tasks.Internal
                 {
                     writer.WriteLine($@"		{nestedProject.Key} = {nestedProject.Value}");
                 }
+
                 writer.WriteLine("	EndGlobalSection");
             }
 
