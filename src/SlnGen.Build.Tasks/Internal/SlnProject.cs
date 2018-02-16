@@ -27,13 +27,15 @@ namespace SlnGen.Build.Tasks.Internal
             {".wixproj", "930C7802-8A8C-48F9-8165-68863BCCD9DD"},
         };
 
-        public SlnProject([NotNull] string fullPath, [NotNull] string name, [NotNull] string projectGuid, [NotNull] string projectTypeGuid, bool isMainProject)
+        public SlnProject([NotNull] string fullPath, [NotNull] string name, [NotNull] string projectGuid, [NotNull] string projectTypeGuid, [NotNull] IEnumerable<string> configurations, [NotNull] IEnumerable<string> platforms, bool isMainProject)
         {
             FullPath = fullPath ?? throw new ArgumentNullException(nameof(fullPath));
             Name = name ?? throw new ArgumentNullException(nameof(name));
             ProjectGuid = projectGuid ?? throw new ArgumentNullException(nameof(projectGuid));
             ProjectTypeGuid = projectTypeGuid ?? throw new ArgumentNullException(nameof(projectTypeGuid));
             IsMainProject = isMainProject;
+            Configurations = configurations;
+            Platforms = platforms;
         }
 
         public string FullPath { get; }
@@ -45,6 +47,10 @@ namespace SlnGen.Build.Tasks.Internal
         public string ProjectGuid { get; }
 
         public string ProjectTypeGuid { get; }
+
+        public IEnumerable<string> Configurations { get; }
+
+        public IEnumerable<string> Platforms { get; }
 
         [NotNull]
         public static SlnProject FromProject([NotNull] Project project, [NotNull] IReadOnlyDictionary<string, string> customProjectTypeGuids, bool isMainProject = false)
@@ -72,9 +78,12 @@ namespace SlnGen.Build.Tasks.Internal
                 projectTypeGuid = DefaultProjectTypeGuid;
             }
 
+            IEnumerable<string> configurations = project.GetConditionedPropertyValuesOrDefault("Configuration", "Debug");
+            IEnumerable<string> platforms = project.GetConditionedPropertyValuesOrDefault("Platform", "x64");
+
             string projectGuid = isLegacyProjectSystem ? project.GetPropertyValueOrDefault(ProjectGuidPropertyName, Guid.NewGuid().ToSolutionString()) : Guid.NewGuid().ToSolutionString();
 
-            return new SlnProject(project.FullPath, name, projectGuid, projectTypeGuid, isMainProject);
+            return new SlnProject(project.FullPath, name, projectGuid, projectTypeGuid, configurations, platforms, isMainProject);
         }
     }
 }

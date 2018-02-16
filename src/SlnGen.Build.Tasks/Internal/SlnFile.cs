@@ -13,19 +13,9 @@ namespace SlnGen.Build.Tasks.Internal
         private const string Header = "Microsoft Visual Studio Solution File, Format Version {0}";
 
         /// <summary>
-        /// The configurations
-        /// </summary>
-        private readonly string[] _configurations;
-
-        /// <summary>
         /// The file format version
         /// </summary>
         private readonly string _fileFormatVersion;
-
-        /// <summary>
-        /// The platforms
-        /// </summary>
-        private readonly string[] _platforms;
 
         /// <summary>
         /// Gets the projects.
@@ -41,23 +31,20 @@ namespace SlnGen.Build.Tasks.Internal
         /// Initializes a new instance of the <see cref="SlnFile" /> class.
         /// </summary>
         /// <param name="projects">The project collection.</param>
-        /// <param name="configurations">The configurations.</param>
-        /// <param name="platforms">The platforms.</param>
         /// <param name="fileFormatVersion">The file format version.</param>
-        public SlnFile(IEnumerable<SlnProject> projects, string[] configurations, string[] platforms, string fileFormatVersion)
+        public SlnFile(IEnumerable<SlnProject> projects, string fileFormatVersion)
         {
             _projects = projects.ToList();
-            _configurations = configurations;
-            _platforms = platforms;
             _fileFormatVersion = fileFormatVersion;
         }
+
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SlnFile" /> class.
         /// </summary>
         /// <param name="projects">The projects.</param>
         public SlnFile(IEnumerable<SlnProject> projects)
-            : this(projects, new[] {"Debug", "Release"}, new[] {"Any CPU"}, "12.00")
+            : this(projects, "12.00")
         {
         }
 
@@ -104,6 +91,7 @@ namespace SlnGen.Build.Tasks.Internal
                 {
                     writer.WriteLine($"		{solutionItem} = {solutionItem}");
                 }
+
                 writer.WriteLine("	EndProjectSection");
                 writer.WriteLine("EndProject");
             }
@@ -122,27 +110,33 @@ namespace SlnGen.Build.Tasks.Internal
             writer.WriteLine("Global");
 
             writer.WriteLine("	GlobalSection(SolutionConfigurationPlatforms) = preSolution");
-            foreach (string configuration in _configurations)
+
+            IEnumerable<string> globalConfigurations = new HashSet<string>(_projects.SelectMany(p => p.Configurations)).Distinct();
+            IEnumerable<string> globalPlatforms = new HashSet<string>(_projects.SelectMany(p => p.Platforms)).Distinct();
+            
+            foreach (string configuration in globalConfigurations)
             {
-                foreach (string platform in _platforms)
+                foreach (string platform in globalPlatforms)
                 {
                     writer.WriteLine($"		{configuration}|{platform} = {configuration}|{platform}");
                 }
             }
+
             writer.WriteLine(" EndGlobalSection");
 
             writer.WriteLine("	GlobalSection(ProjectConfigurationPlatforms) = preSolution");
             foreach (SlnProject project in _projects)
             {
-                foreach (string configuration in _configurations)
+                foreach (string configuration in project.Configurations)
                 {
-                    foreach (string platform in _platforms)
+                    foreach (string platform in project.Platforms)
                     {
                         writer.WriteLine($@"		{project.ProjectGuid}.{configuration}|{platform}.ActiveCfg = {configuration}|{platform}");
                         writer.WriteLine($@"		{project.ProjectGuid}.{configuration}|{platform}.Build.0 = {configuration}|{platform}");
                     }
                 }
             }
+
             writer.WriteLine(" EndGlobalSection");
 
             if (_projects.Count > 1)
@@ -152,6 +146,7 @@ namespace SlnGen.Build.Tasks.Internal
                 {
                     writer.WriteLine($@"		{nestedProject.Key} = {nestedProject.Value}");
                 }
+
                 writer.WriteLine("	EndGlobalSection");
             }
 

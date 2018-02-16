@@ -10,6 +10,8 @@ using System.Text;
 
 namespace SlnGen.Build.Tasks
 {
+    using System.Collections.Generic;
+
     internal static class ExtensionMethods
     {
         #region Types used for getting to internal properties of the MSBuild API
@@ -74,6 +76,23 @@ namespace SlnGen.Build.Tasks
 
             // MSBuild always returns String.Empty if the property has no value
             return value == String.Empty ? defaultValue : value;
+        }
+
+        /// <summary>
+        /// Gets the value of the given conditioned property in this project.
+        /// </summary>
+        /// <param name="project">The <see cref="Project"/> to get the property value from.</param>
+        /// <param name="name">The name of the property to get the value of.</param>
+        /// <param name="defaultValue">A default values comma separated to return in the case when the property has no value.</param>
+        /// <returns>The values of the property if one exists, otherwise the default value specified.</returns>
+        public static IEnumerable<string> GetConditionedPropertyValuesOrDefault(this Project project, string name, string defaultValue)
+        {
+            if (!project.ConditionedProperties.ContainsKey(name))
+            {
+                return defaultValue.Split(',');
+            }
+
+            return project.ConditionedProperties[name];
         }
 
         /// <summary>
