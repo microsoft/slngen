@@ -3,7 +3,7 @@ SETLOCAL
 
 SET MSBUILD_PROJECT=%~dp0src\SlnGen.Build.Tasks.UnitTests\SlnGen.Build.Tasks.UnitTests.csproj
 
-SET MSBUILD_ARGS=/NoLogo /Target:Restore /Verbosity:Minimal /Target:SlnGen
+SET MSBUILD_ARGS=/NoLogo /Restore /Verbosity:Minimal /Target:SlnGen
 :args
 
 IF "%~1"=="" GOTO main
