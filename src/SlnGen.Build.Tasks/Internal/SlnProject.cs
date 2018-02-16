@@ -78,8 +78,8 @@ namespace SlnGen.Build.Tasks.Internal
                 projectTypeGuid = DefaultProjectTypeGuid;
             }
 
-            IEnumerable<string> configurations = project.GetConditionPropertyValuesOrDefault("Configuration", "Debug");
-            IEnumerable<string> platforms = project.GetConditionPropertyValuesOrDefault("Platform", "x64");
+            IEnumerable<string> configurations = project.GetConditionedPropertyValuesOrDefault("Configuration", "Debug");
+            IEnumerable<string> platforms = project.GetConditionedPropertyValuesOrDefault("Platform", "x64");
 
             string projectGuid = isLegacyProjectSystem ? project.GetPropertyValueOrDefault(ProjectGuidPropertyName, Guid.NewGuid().ToSolutionString()) : Guid.NewGuid().ToSolutionString();
 

@@ -85,7 +85,7 @@ namespace SlnGen.Build.Tasks
         /// <param name="name">The name of the property to get the value of.</param>
         /// <param name="defaultValue">A default values comma separated to return in the case when the property has no value.</param>
         /// <returns>The values of the property if one exists, otherwise the default value specified.</returns>
-        public static IEnumerable<string> GetConditionPropertyValuesOrDefault(this Project project, string name, string defaultValue)
+        public static IEnumerable<string> GetConditionedPropertyValuesOrDefault(this Project project, string name, string defaultValue)
         {
             if (!project.ConditionedProperties.ContainsKey(name))
             {
