@@ -7,6 +7,8 @@ using System.Collections.Generic;
 
 namespace SlnGen.Build.Tasks.UnitTests
 {
+    using System.IO;
+
     [TestFixture]
     public class SlnProjectTests : TestBase
     {
@@ -79,7 +81,7 @@ namespace SlnGen.Build.Tasks.UnitTests
         [Test]
         public void ConfigurationsAndPlatforms()
         {
-            Project project = new Project(TestProjectPath);
+            Project project = new Project(Path.Combine(TestContext.CurrentContext.TestDirectory, TestProjectPath));
 
             SlnProject slnProject = SlnProject.FromProject(project, new Dictionary<string, string>(), true);
 
@@ -94,7 +96,7 @@ namespace SlnGen.Build.Tasks.UnitTests
         public void ConfigurationsAndPlatformsWithGlobalProperties()
         {
             Project project = new Project(
-                TestProjectPath, 
+                Path.Combine(TestContext.CurrentContext.TestDirectory, TestProjectPath), 
                 new Dictionary<string, string>
                 {
                     ["Configuration"] = "Mix",
