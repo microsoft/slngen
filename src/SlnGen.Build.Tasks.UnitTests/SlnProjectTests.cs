@@ -10,6 +10,8 @@ namespace SlnGen.Build.Tasks.UnitTests
     [TestFixture]
     public class SlnProjectTests : TestBase
     {
+        private const string TestProjectPath = @"TestFiles\SampleProject.csproj";
+
         [Test]
         public void GetProjectGuidLegacyProjectSystem()
         {
@@ -72,6 +74,41 @@ namespace SlnGen.Build.Tasks.UnitTests
         public void UseFileName()
         {
             CreateAndValidateProject(expectedGuid: "DE681393-7151-459D-862C-918CCD2CB371");
+        }
+
+        [Test]
+        public void ConfigurationsAndPlatforms()
+        {
+            Project project = new Project(TestProjectPath);
+
+            SlnProject slnProject = SlnProject.FromProject(project, new Dictionary<string, string>(), true);
+
+            IEnumerable<string> expectedConfigurations = new[] { "Debug", "Release" };
+            IEnumerable<string> expectedPlatforms = new[] { "amd64", "x64", "AnyCPU" };
+
+            CollectionAssert.AreEquivalent(expectedConfigurations, slnProject.Configurations);
+            CollectionAssert.AreEquivalent(expectedPlatforms, slnProject.Platforms);
+        }
+
+        [Test]
+        public void ConfigurationsAndPlatformsWithGlobalProperties()
+        {
+            Project project = new Project(
+                TestProjectPath, 
+                new Dictionary<string, string>
+                {
+                    ["Configuration"] = "Mix",
+                    ["Platform"] = "x86"
+                }, 
+                "12.0");
+
+            SlnProject slnProject = SlnProject.FromProject(project, new Dictionary<string, string>(), true);
+
+            IEnumerable<string> expectedConfigurations = new[] { "Mix", "Debug", "Release" };
+            IEnumerable<string> expectedPlatforms = new[] { "amd64", "AnyCPU", "x86" };
+
+            CollectionAssert.AreEquivalent(expectedConfigurations, slnProject.Configurations);
+            CollectionAssert.AreEquivalent(expectedPlatforms, slnProject.Platforms);
         }
 
         private SlnProject CreateAndValidateProject(bool isMainProject = false, string expectedGuid = null, string expectedName = null, string extension = ".csproj", IDictionary<string, string> globalProperties = null)

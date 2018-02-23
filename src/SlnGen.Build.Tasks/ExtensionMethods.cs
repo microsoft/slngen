@@ -10,6 +10,8 @@ using System.Text;
 
 namespace SlnGen.Build.Tasks
 {
+    using System.CodeDom;
+    using System.Collections;
     using System.Collections.Generic;
 
     internal static class ExtensionMethods
@@ -96,8 +98,46 @@ namespace SlnGen.Build.Tasks
         }
 
         /// <summary>
+        /// Gets the value of the property value in addition to the conditioned property in this project.
+        /// </summary>
+        /// <param name="project">The <see cref="Project"/> to get the property value from.</param>
+        /// <param name="name">The name of the property to get the value of.</param>
+        /// <param name="defaultValue">A default values comma separated to return in the case when the property has no value.</param>
+        /// <returns>The values of the property if one exists, otherwise the default value specified.</returns>
+        public static IEnumerable<string> GetPossiblePropertyValuesOrDefault(this Project project, string name, string defaultValue)
+        {
+            var propertyValue = project.GetPropertyValue(name);
+            IEnumerable<string> conditionPropertyValues = project.GetConditionedPropertyValuesOrDefault(name, string.Empty).ToList();
+            List<string> values = new List<string>();
+
+            // add the actual properties first
+            if (!string.IsNullOrEmpty(propertyValue))
+            {
+                values.Add(propertyValue);
+            }
+
+            // filter those that were already in the Properties
+            foreach (var conditionPropertyValue in conditionPropertyValues)
+            {
+                if (!values.Contains(conditionPropertyValue))
+                {
+                    values.Add(conditionPropertyValue);
+                }
+            }
+
+            if (values.Any())
+            {
+                return values;
+            }
+
+            return defaultValue.Split(',');
+        }
+
+        /// <summary>
         /// Returns the absolute path for the specified path string in the correct case according to the file system.
         /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns>Full path in correct case.</returns>
         public static string ToFullPathInCorrectCase(this string str)
         {
             string fullPath = Path.GetFullPath(str);
@@ -117,7 +157,10 @@ namespace SlnGen.Build.Tasks
         /// <summary>
         /// Gets the current Guid as a string for use in a Visual Studio solution file.
         /// </summary>
-        /// <returns>The current GUID in as a string with braces and in upper case.</returns>
+        /// <param name="guid">The unique identifier.</param>
+        /// <returns>
+        /// The current GUID in as a string with braces and in upper case.
+        /// </returns>
         public static string ToSolutionString(this Guid guid)
         {
             return guid.ToString("B").ToUpperInvariant();
