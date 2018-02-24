@@ -81,7 +81,10 @@ namespace SlnGen.Build.Tasks.UnitTests
         [Test]
         public void ConfigurationsAndPlatforms()
         {
-            Project project = new Project(Path.Combine(TestContext.CurrentContext.TestDirectory, TestProjectPath));
+            Project project = new Project(
+                Path.Combine(TestContext.CurrentContext.TestDirectory, TestProjectPath),
+                new Dictionary<string, string>(),
+                "12.0");
 
             SlnProject slnProject = SlnProject.FromProject(project, new Dictionary<string, string>(), true);
 
