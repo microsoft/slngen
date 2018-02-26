@@ -102,7 +102,7 @@ namespace SlnGen.Build.Tasks.UnitTests
         [Test]
         public void ConfigurationsAndPlatformsWithGlobalProperties()
         {
-            var globalProperties = new Dictionary<string, string>
+            Dictionary<string, string> globalProperties = new Dictionary<string, string>
             {
                 ["Configuration"] = "Mix",
                 ["Platform"] = "x86"
@@ -182,8 +182,16 @@ namespace SlnGen.Build.Tasks.UnitTests
         {
             private const string TemplateProjectPath = @"TestFiles\SampleProject.csproj";
 
+            private readonly Dictionary<string, string> _savedEnvironmentVariables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
             private TestProject(string fullPath, IDictionary<string, string> globalProperties)
             {
+                SetEnvironmentVariables(new Dictionary<string, string>
+                {
+                    { "Configuration", null },
+                    { "Platform", null },
+                });
+
                 Project = new Project(
                     fullPath ?? throw new ArgumentNullException(nameof(fullPath)),
                     globalProperties,
@@ -200,6 +208,16 @@ namespace SlnGen.Build.Tasks.UnitTests
                 return new TestProject(fullPath, globalProperties);
             }
 
+            private void SetEnvironmentVariables(Dictionary<string, string> variables)
+            {
+                foreach (KeyValuePair<string, string> variable in variables)
+                {
+                    _savedEnvironmentVariables[variable.Key] = variable.Value;
+
+                    Environment.SetEnvironmentVariable(variable.Key, variable.Value);
+                }
+            }
+
             public Project Project { get; }
 
             public void Dispose()
@@ -207,6 +225,11 @@ namespace SlnGen.Build.Tasks.UnitTests
                 if (File.Exists(Project.FullPath))
                 {
                     File.Delete(Project.FullPath);
+                }
+
+                foreach (KeyValuePair<string, string> variable in _savedEnvironmentVariables)
+                {
+                    Environment.SetEnvironmentVariable(variable.Key, variable.Value);
                 }
             }
         }
