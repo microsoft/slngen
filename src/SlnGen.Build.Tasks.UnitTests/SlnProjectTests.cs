@@ -13,8 +13,6 @@ namespace SlnGen.Build.Tasks.UnitTests
     [TestFixture]
     public class SlnProjectTests : TestBase
     {
-        private const string TestProjectPath = @"TestFiles\SampleProject.csproj";
-
         [Test]
         public void GetProjectGuidLegacyProjectSystem()
         {
@@ -82,54 +80,52 @@ namespace SlnGen.Build.Tasks.UnitTests
         [Test]
         public void ConfigurationsAndPlatforms()
         {
-            Project project = new Project(
-                Path.Combine(TestContext.CurrentContext.TestDirectory, TestProjectPath),
-                new Dictionary<string, string>(),
-                null);
-
-            SlnProject slnProject = SlnProject.FromProject(project, new Dictionary<string, string>(), true);
-
-            slnProject.Configurations.OrderBy(i => i).ShouldBe(new[]
+            using (TestProject testProject = TestProject.Create())
             {
-                "Debug",
-                "Release"
-            });
+                SlnProject slnProject = SlnProject.FromProject(testProject.Project, new Dictionary<string, string>(), true);
 
-            slnProject.Platforms.OrderBy(i => i).ShouldBe(new[]
-            {
-                "amd64",
-                "AnyCPU",
-                "x64"
-            });
+                slnProject.Configurations.OrderBy(i => i).ShouldBe(new[]
+                {
+                    "Debug",
+                    "Release"
+                });
+
+                slnProject.Platforms.OrderBy(i => i).ShouldBe(new[]
+                {
+                    "amd64",
+                    "AnyCPU",
+                    "x64"
+                });
+            }
         }
 
         [Test]
         public void ConfigurationsAndPlatformsWithGlobalProperties()
         {
-            Project project = new Project(
-                Path.Combine(TestContext.CurrentContext.TestDirectory, TestProjectPath), 
-                new Dictionary<string, string>
+            var globalProperties = new Dictionary<string, string>
+            {
+                ["Configuration"] = "Mix",
+                ["Platform"] = "x86"
+            };
+
+            using (TestProject testProject = TestProject.Create(globalProperties))
+            {
+                SlnProject slnProject = SlnProject.FromProject(testProject.Project, new Dictionary<string, string>(), true);
+
+                slnProject.Configurations.OrderBy(i => i).ShouldBe(new[]
                 {
-                    ["Configuration"] = "Mix",
-                    ["Platform"] = "x86"
-                }, 
-                null);
+                    "Debug",
+                    "Mix",
+                    "Release"
+                });
 
-            SlnProject slnProject = SlnProject.FromProject(project, new Dictionary<string, string>(), true);
-
-            slnProject.Configurations.OrderBy(i => i).ShouldBe(new[]
-            {
-                "Debug",
-                "Mix",
-                "Release"
-            });
-
-            slnProject.Platforms.OrderBy(i => i).ShouldBe(new[]
-            {
-                "amd64",
-                "AnyCPU",
-                "x86",
-            });
+                slnProject.Platforms.OrderBy(i => i).ShouldBe(new[]
+                {
+                    "amd64",
+                    "AnyCPU",
+                    "x86",
+                });
+            }
         }
 
         private SlnProject CreateAndValidateProject(bool isMainProject = false, string expectedGuid = null, string expectedName = null, string extension = ".csproj", IDictionary<string, string> globalProperties = null)
@@ -180,6 +176,39 @@ namespace SlnGen.Build.Tasks.UnitTests
             }
 
             return MockProject.Create(fullPath, globalProperties);
+        }
+
+        private sealed class TestProject : IDisposable
+        {
+            private const string TemplateProjectPath = @"TestFiles\SampleProject.csproj";
+
+            private TestProject(string fullPath, IDictionary<string, string> globalProperties)
+            {
+                Project = new Project(
+                    fullPath ?? throw new ArgumentNullException(nameof(fullPath)),
+                    globalProperties,
+                    toolsVersion: null);
+            }
+
+            public static TestProject Create(IDictionary<string, string> globalProperties = null)
+            {
+                string fullPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.proj");
+
+                // Copy the template project to a temporary location
+                File.Copy(Path.Combine(TestContext.CurrentContext.TestDirectory, TemplateProjectPath), fullPath);
+
+                return new TestProject(fullPath, globalProperties);
+            }
+
+            public Project Project { get; }
+
+            public void Dispose()
+            {
+                if (File.Exists(Project.FullPath))
+                {
+                    File.Delete(Project.FullPath);
+                }
+            }
         }
     }
 }
