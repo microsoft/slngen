@@ -106,9 +106,9 @@ namespace SlnGen.Build.Tasks
         /// <returns>The values of the property if one exists, otherwise the default value specified.</returns>
         public static IEnumerable<string> GetPossiblePropertyValuesOrDefault(this Project project, string name, string defaultValue)
         {
-            var propertyValue = project.GetPropertyValue(name);
-            IEnumerable<string> conditionPropertyValues = project.GetConditionedPropertyValuesOrDefault(name, string.Empty).ToList();
-            List<string> values = new List<string>();
+            HashSet<string> values = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            string propertyValue = project.GetPropertyValue(name);
 
             // add the actual properties first
             if (!string.IsNullOrEmpty(propertyValue))
@@ -117,20 +117,12 @@ namespace SlnGen.Build.Tasks
             }
 
             // filter those that were already in the Properties
-            foreach (var conditionPropertyValue in conditionPropertyValues)
+            foreach (var conditionPropertyValue in project.GetConditionedPropertyValuesOrDefault(name, string.Empty))
             {
-                if (!values.Contains(conditionPropertyValue))
-                {
-                    values.Add(conditionPropertyValue);
-                }
+                values.Add(conditionPropertyValue);
             }
 
-            if (values.Any())
-            {
-                return values;
-            }
-
-            return defaultValue.Split(',');
+            return values.Any() ? values : (defaultValue?.Split(',') ?? Enumerable.Empty<string>());
         }
 
         /// <summary>

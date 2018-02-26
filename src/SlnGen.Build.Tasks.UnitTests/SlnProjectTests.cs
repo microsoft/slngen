@@ -4,6 +4,7 @@ using Shouldly;
 using SlnGen.Build.Tasks.Internal;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SlnGen.Build.Tasks.UnitTests
 {
@@ -84,15 +85,22 @@ namespace SlnGen.Build.Tasks.UnitTests
             Project project = new Project(
                 Path.Combine(TestContext.CurrentContext.TestDirectory, TestProjectPath),
                 new Dictionary<string, string>(),
-                "12.0");
+                null);
 
             SlnProject slnProject = SlnProject.FromProject(project, new Dictionary<string, string>(), true);
 
-            IEnumerable<string> expectedConfigurations = new[] { "Debug", "Release" };
-            IEnumerable<string> expectedPlatforms = new[] { "amd64", "x64", "AnyCPU" };
+            slnProject.Configurations.OrderBy(i => i).ShouldBe(new[]
+            {
+                "Debug",
+                "Release"
+            });
 
-            CollectionAssert.AreEquivalent(expectedConfigurations, slnProject.Configurations);
-            CollectionAssert.AreEquivalent(expectedPlatforms, slnProject.Platforms);
+            slnProject.Platforms.OrderBy(i => i).ShouldBe(new[]
+            {
+                "amd64",
+                "AnyCPU",
+                "x64"
+            });
         }
 
         [Test]
@@ -105,15 +113,23 @@ namespace SlnGen.Build.Tasks.UnitTests
                     ["Configuration"] = "Mix",
                     ["Platform"] = "x86"
                 }, 
-                "12.0");
+                null);
 
             SlnProject slnProject = SlnProject.FromProject(project, new Dictionary<string, string>(), true);
 
-            IEnumerable<string> expectedConfigurations = new[] { "Mix", "Debug", "Release" };
-            IEnumerable<string> expectedPlatforms = new[] { "amd64", "AnyCPU", "x86" };
+            slnProject.Configurations.OrderBy(i => i).ShouldBe(new[]
+            {
+                "Debug",
+                "Mix",
+                "Release"
+            });
 
-            CollectionAssert.AreEquivalent(expectedConfigurations, slnProject.Configurations);
-            CollectionAssert.AreEquivalent(expectedPlatforms, slnProject.Platforms);
+            slnProject.Platforms.OrderBy(i => i).ShouldBe(new[]
+            {
+                "amd64",
+                "AnyCPU",
+                "x86",
+            });
         }
 
         private SlnProject CreateAndValidateProject(bool isMainProject = false, string expectedGuid = null, string expectedName = null, string extension = ".csproj", IDictionary<string, string> globalProperties = null)
