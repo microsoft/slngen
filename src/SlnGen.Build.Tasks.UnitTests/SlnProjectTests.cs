@@ -4,9 +4,12 @@ using Shouldly;
 using SlnGen.Build.Tasks.Internal;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SlnGen.Build.Tasks.UnitTests
 {
+    using System.IO;
+
     [TestFixture]
     public class SlnProjectTests : TestBase
     {
@@ -74,6 +77,57 @@ namespace SlnGen.Build.Tasks.UnitTests
             CreateAndValidateProject(expectedGuid: "DE681393-7151-459D-862C-918CCD2CB371");
         }
 
+        [Test]
+        public void ConfigurationsAndPlatforms()
+        {
+            using (TestProject testProject = TestProject.Create())
+            {
+                SlnProject slnProject = SlnProject.FromProject(testProject.Project, new Dictionary<string, string>(), true);
+
+                slnProject.Configurations.OrderBy(i => i).ShouldBe(new[]
+                {
+                    "Debug",
+                    "Release"
+                });
+
+                slnProject.Platforms.OrderBy(i => i).ShouldBe(new[]
+                {
+                    "amd64",
+                    "AnyCPU",
+                    "x64"
+                });
+            }
+        }
+
+        [Test]
+        public void ConfigurationsAndPlatformsWithGlobalProperties()
+        {
+            Dictionary<string, string> globalProperties = new Dictionary<string, string>
+            {
+                ["Configuration"] = "Mix",
+                ["Platform"] = "x86"
+            };
+
+            using (TestProject testProject = TestProject.Create(globalProperties))
+            {
+                SlnProject slnProject = SlnProject.FromProject(testProject.Project, new Dictionary<string, string>(), true);
+
+                slnProject.Configurations.OrderBy(i => i).ShouldBe(new[]
+                {
+                    "Debug",
+                    "Mix",
+                    "Release"
+                });
+
+                slnProject.Platforms.OrderBy(i => i).ShouldBe(new[]
+                {
+                    "amd64",
+                    "AnyCPU",
+                    "x86",
+                });
+            }
+        }
+
         private SlnProject CreateAndValidateProject(bool isMainProject = false, string expectedGuid = null, string expectedName = null, string extension = ".csproj", IDictionary<string, string> globalProperties = null)
         {
             Project expectedProject = CreateProject(expectedGuid, expectedName, extension, globalProperties);
@@ -122,6 +176,62 @@ namespace SlnGen.Build.Tasks.UnitTests
             }
 
             return MockProject.Create(fullPath, globalProperties);
+        }
+
+        private sealed class TestProject : IDisposable
+        {
+            private const string TemplateProjectPath = @"TestFiles\SampleProject.csproj";
+
+            private readonly Dictionary<string, string> _savedEnvironmentVariables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            private TestProject(string fullPath, IDictionary<string, string> globalProperties)
+            {
+                SetEnvironmentVariables(new Dictionary<string, string>
+                {
+                    { "Configuration", null },
+                    { "Platform", null },
+                });
+
+                Project = new Project(
+                    fullPath ?? throw new ArgumentNullException(nameof(fullPath)),
+                    globalProperties,
+                    toolsVersion: null);
+            }
+
+            public static TestProject Create(IDictionary<string, string> globalProperties = null)
+            {
+                string fullPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.proj");
+
+                // Copy the template project to a temporary location
+                File.Copy(Path.Combine(TestContext.CurrentContext.TestDirectory, TemplateProjectPath), fullPath);
+
+                return new TestProject(fullPath, globalProperties);
+            }
+
+            private void SetEnvironmentVariables(Dictionary<string, string> variables)
+            {
+                foreach (KeyValuePair<string, string> variable in variables)
+                {
+                    _savedEnvironmentVariables[variable.Key] = variable.Value;
+
+                    Environment.SetEnvironmentVariable(variable.Key, variable.Value);
+                }
+            }
+
+            public Project Project { get; }
+
+            public void Dispose()
+            {
+                if (File.Exists(Project.FullPath))
+                {
+                    File.Delete(Project.FullPath);
+                }
+
+                foreach (KeyValuePair<string, string> variable in _savedEnvironmentVariables)
+                {
+                    Environment.SetEnvironmentVariable(variable.Key, variable.Value);
+                }
+            }
         }
     }
 }
