@@ -27,11 +27,11 @@ namespace SlnGen.Build.Tasks.Internal
             {".wixproj", "930C7802-8A8C-48F9-8165-68863BCCD9DD"},
         };
 
-        public SlnProject([NotNull] string fullPath, [NotNull] string name, [NotNull] string projectGuid, [NotNull] string projectTypeGuid, [NotNull] IEnumerable<string> configurations, [NotNull] IEnumerable<string> platforms, bool isMainProject)
+        public SlnProject([NotNull] string fullPath, [NotNull] string name, [NotNull] Guid projectGuid, [NotNull] string projectTypeGuid, [NotNull] IEnumerable<string> configurations, [NotNull] IEnumerable<string> platforms, bool isMainProject)
         {
             FullPath = fullPath ?? throw new ArgumentNullException(nameof(fullPath));
             Name = name ?? throw new ArgumentNullException(nameof(name));
-            ProjectGuid = projectGuid ?? throw new ArgumentNullException(nameof(projectGuid));
+            ProjectGuid = projectGuid;
             ProjectTypeGuid = projectTypeGuid ?? throw new ArgumentNullException(nameof(projectTypeGuid));
             IsMainProject = isMainProject;
             Configurations = configurations;
@@ -44,7 +44,7 @@ namespace SlnGen.Build.Tasks.Internal
 
         public string Name { get; }
 
-        public string ProjectGuid { get; }
+        public Guid ProjectGuid { get; }
 
         public string ProjectTypeGuid { get; }
 
@@ -81,10 +81,15 @@ namespace SlnGen.Build.Tasks.Internal
             IEnumerable<string> configurations = project.GetPossiblePropertyValuesOrDefault("Configuration", "Debug");
             IEnumerable<string> platforms = project.GetPossiblePropertyValuesOrDefault("Platform", "AnyCPU");
 
-            string projectGuid = isLegacyProjectSystem ? project.GetPropertyValueOrDefault(ProjectGuidPropertyName, Guid.NewGuid().ToSolutionString()) : Guid.NewGuid().ToSolutionString();
-            projectGuid = $"{{{projectGuid.ToUpper().Replace(" ","").Trim('{','}')}}}";
-
-            return new SlnProject(project.FullPath, name, projectGuid, projectTypeGuid, configurations, platforms, isMainProject);
+            if (!Guid.TryParse(
+                isLegacyProjectSystem
+                    ? project.GetPropertyValueOrDefault(ProjectGuidPropertyName, Guid.NewGuid().ToString())
+                    : Guid.NewGuid().ToString(), out Guid projectGuid))
+            {
+                throw new FormatException($"property ProjectGuid has an invalid format in {project.FullPath}");
+            }
+            return new SlnProject(project.FullPath, name, projectGuid, projectTypeGuid, configurations, platforms,
+                isMainProject);
         }
     }
 }

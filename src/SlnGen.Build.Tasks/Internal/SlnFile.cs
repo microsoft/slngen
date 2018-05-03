@@ -79,7 +79,7 @@ namespace SlnGen.Build.Tasks.Internal
 
             foreach (SlnProject project in _projects)
             {
-                writer.WriteLine($@"Project(""{project.ProjectTypeGuid}"") = ""{project.Name}"", ""{project.FullPath}"", ""{project.ProjectGuid}""");
+                writer.WriteLine($@"Project(""{project.ProjectTypeGuid}"") = ""{project.Name}"", ""{project.FullPath}"", ""{project.ProjectGuid.ToSolutionString()}""");
                 writer.WriteLine("EndProject");
             }
 
@@ -136,8 +136,8 @@ namespace SlnGen.Build.Tasks.Internal
                     {
                         if (!string.IsNullOrWhiteSpace(configuration) && !string.IsNullOrWhiteSpace(platform))
                         {
-                            writer.WriteLine($@"		{project.ProjectGuid}.{configuration}|{platform}.ActiveCfg = {configuration}|{platform}");
-                            writer.WriteLine($@"		{project.ProjectGuid}.{configuration}|{platform}.Build.0 = {configuration}|{platform}");
+                            writer.WriteLine($@"		{project.ProjectGuid.ToSolutionString()}.{configuration}|{platform}.ActiveCfg = {configuration}|{platform}");
+                            writer.WriteLine($@"		{project.ProjectGuid.ToSolutionString()}.{configuration}|{platform}.Build.0 = {configuration}|{platform}");
                         }
                     }
                 }
