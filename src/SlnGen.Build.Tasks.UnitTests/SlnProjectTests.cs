@@ -16,7 +16,7 @@ namespace SlnGen.Build.Tasks.UnitTests
         [Test]
         public void GetProjectGuidLegacyProjectSystem()
         {
-            CreateAndValidateProject(expectedGuid: "C69AC4B3-A0E1-40FC-94AB-C0F2E1F8D779");
+            CreateAndValidateProject(expectedGuid: "{C69AC4B3-A0E1-40FC-94AB-C0F2E1F8D779}");
         }
 
         [Test]
@@ -68,13 +68,13 @@ namespace SlnGen.Build.Tasks.UnitTests
         [Test]
         public void UseAssemblyNameProperty()
         {
-            CreateAndValidateProject(expectedGuid: "3EA7B89C-F85F-49F4-B99D-1BC184C08186", expectedName: "Project.Name");
+            CreateAndValidateProject(expectedGuid: "{3EA7B89C-F85F-49F4-B99D-1BC184C08186}", expectedName: "Project.Name");
         }
 
         [Test]
         public void UseFileName()
         {
-            CreateAndValidateProject(expectedGuid: "DE681393-7151-459D-862C-918CCD2CB371");
+            CreateAndValidateProject(expectedGuid: "{DE681393-7151-459D-862C-918CCD2CB371}");
         }
 
         [Test]
