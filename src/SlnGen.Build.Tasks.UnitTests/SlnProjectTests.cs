@@ -29,7 +29,7 @@ namespace SlnGen.Build.Tasks.UnitTests
 
             actualProject.ProjectGuid.ShouldNotBeNull();
 
-            Guid.TryParse(actualProject.ProjectGuid, out _).ShouldBeTrue();
+            Guid.TryParse(actualProject.ProjectGuid.ToSolutionString(), out _).ShouldBeTrue();
         }
 
         [TestCase(true)]
@@ -148,7 +148,7 @@ namespace SlnGen.Build.Tasks.UnitTests
 
             if (expectedGuid != null)
             {
-                actualProject.ProjectGuid.ShouldBe(expectedGuid);
+                actualProject.ProjectGuid.ToSolutionString().ShouldBe(expectedGuid);
             }
 
             actualProject.IsMainProject.ShouldBe(isMainProject);

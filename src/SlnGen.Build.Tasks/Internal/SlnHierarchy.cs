@@ -80,7 +80,7 @@ namespace SlnGen.Build.Tasks.Internal
         {
             // TODO: Collapse folders with single sub folder.  So if foo had just a subfolder bar, collapse it to foo\bar in Visual Studio
             string parent = Directory.GetParent(project.FullPath).FullName;
-            string currentGuid = project.ProjectGuid;
+            string currentGuid = project.ProjectGuid.ToSolutionString();
 
             while (true)
             {
