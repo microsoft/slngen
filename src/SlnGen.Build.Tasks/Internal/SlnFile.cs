@@ -112,13 +112,16 @@ namespace SlnGen.Build.Tasks.Internal
             writer.WriteLine("	GlobalSection(SolutionConfigurationPlatforms) = preSolution");
 
             IEnumerable<string> globalConfigurations = new HashSet<string>(_projects.SelectMany(p => p.Configurations)).Distinct();
-            IEnumerable<string> globalPlatforms = new HashSet<string>(_projects.SelectMany(p => p.Platforms)).Distinct();
+            IEnumerable<string> globalPlatforms = new HashSet<string>(_projects.SelectMany(p => p.Platforms)).Distinct().ToList();
             
             foreach (string configuration in globalConfigurations)
             {
                 foreach (string platform in globalPlatforms)
                 {
-                    writer.WriteLine($"		{configuration}|{platform} = {configuration}|{platform}");
+                    if (!string.IsNullOrWhiteSpace(configuration) && !string.IsNullOrWhiteSpace(platform))
+                    {
+                        writer.WriteLine($"		{configuration}|{platform} = {configuration}|{platform}");
+                    }
                 }
             }
 
@@ -131,8 +134,11 @@ namespace SlnGen.Build.Tasks.Internal
                 {
                     foreach (string platform in project.Platforms)
                     {
-                        writer.WriteLine($@"		{project.ProjectGuid}.{configuration}|{platform}.ActiveCfg = {configuration}|{platform}");
-                        writer.WriteLine($@"		{project.ProjectGuid}.{configuration}|{platform}.Build.0 = {configuration}|{platform}");
+                        if (!string.IsNullOrWhiteSpace(configuration) && !string.IsNullOrWhiteSpace(platform))
+                        {
+                            writer.WriteLine($@"		{project.ProjectGuid}.{configuration}|{platform}.ActiveCfg = {configuration}|{platform}");
+                            writer.WriteLine($@"		{project.ProjectGuid}.{configuration}|{platform}.Build.0 = {configuration}|{platform}");
+                        }
                     }
                 }
             }

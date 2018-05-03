@@ -82,6 +82,7 @@ namespace SlnGen.Build.Tasks.Internal
             IEnumerable<string> platforms = project.GetPossiblePropertyValuesOrDefault("Platform", "AnyCPU");
 
             string projectGuid = isLegacyProjectSystem ? project.GetPropertyValueOrDefault(ProjectGuidPropertyName, Guid.NewGuid().ToSolutionString()) : Guid.NewGuid().ToSolutionString();
+            projectGuid = $"{{{projectGuid.ToUpper().Replace(" ","").Trim('{','}')}}}";
 
             return new SlnProject(project.FullPath, name, projectGuid, projectTypeGuid, configurations, platforms, isMainProject);
         }
