@@ -2,6 +2,7 @@
 //
 // Licensed under the MIT license.
 
+using Microsoft.Build.Locator;
 using System;
 using System.IO;
 
@@ -9,7 +10,14 @@ namespace SlnGen.Build.Tasks.UnitTests
 {
     public abstract class TestBase
     {
+        public static readonly VisualStudioInstance CurrentVisualStudioInstance = MSBuildLocator.RegisterDefaults();
+
         private readonly string _testRootPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+
+        protected TestBase()
+        {
+            MSBuildPath = CurrentVisualStudioInstance.MSBuildPath;
+        }
 
         public string TestRootPath
         {
@@ -19,6 +27,8 @@ namespace SlnGen.Build.Tasks.UnitTests
                 return _testRootPath;
             }
         }
+
+        protected string MSBuildPath { get; }
 
         public void Dispose()
         {

@@ -3,18 +3,17 @@
 // Licensed under the MIT license.
 
 using Microsoft.Build.Framework;
-using NUnit.Framework;
 using Shouldly;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Xunit;
 
 namespace SlnGen.Build.Tasks.UnitTests
 {
-    [TestFixture]
     public sealed class SlnGenTests : TestBase
     {
-        [Test]
+        [Fact]
         public void ParseCustomProjectTypeGuidsDeduplicatesList()
         {
             const string expectedProjectTypeGuid = "{C139C737-2894-46A0-B1EB-DDD052FD8DCB}";
@@ -34,7 +33,7 @@ namespace SlnGen.Build.Tasks.UnitTests
             ValidateParseCustomProjectTypeGuids(customProjectTypeGuids, ".foo", expectedProjectTypeGuid);
         }
 
-        [Test]
+        [Fact]
         public void ParseCustomProjectTypeGuidsFormatsFileExtensionAndGuid()
         {
             ValidateParseCustomProjectTypeGuids(
@@ -44,7 +43,7 @@ namespace SlnGen.Build.Tasks.UnitTests
                 "{9D933978-2D2A-4FB2-B72D-8746D88E73B7}");
         }
 
-        [Test]
+        [Fact]
         public void ParseCustomProjectTypeGuidsIgnoresNonFileExtensions()
         {
             const string expectedProjectTypeGuid = "{C139C737-2894-46A0-B1EB-DDD052FD8DCB}";
@@ -64,7 +63,7 @@ namespace SlnGen.Build.Tasks.UnitTests
             ValidateParseCustomProjectTypeGuids(customProjectTypeGuids, ".foo", expectedProjectTypeGuid);
         }
 
-        [Test]
+        [Fact]
         public void SolutionItems()
         {
             Dictionary<string, string> solutionItems = new Dictionary<string, string>

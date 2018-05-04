@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 namespace SlnGen.Build.Tasks.UnitTests
 {
-    public class MockBuildEngine : IBuildEngine5
+    internal class MockBuildEngine : IBuildEngine5
     {
         private readonly List<BuildEventArgs> _events = new List<BuildEventArgs>();
 

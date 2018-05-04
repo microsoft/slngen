@@ -3,42 +3,31 @@
 // Licensed under the MIT license.
 
 using Microsoft.Build.Evaluation;
-using NUnit.Framework;
 using Shouldly;
 using SlnGen.Build.Tasks.Internal;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
+using Xunit;
 
 namespace SlnGen.Build.Tasks.UnitTests
 {
-    [TestFixture]
     public class SlnProjectTests : TestBase
     {
-        [Test]
+        [Fact]
         public void ConfigurationsAndPlatforms()
         {
             using (TestProject testProject = TestProject.Create())
             {
                 SlnProject slnProject = SlnProject.FromProject(testProject.Project, new Dictionary<string, string>(), true);
 
-                slnProject.Configurations.OrderBy(i => i).ShouldBe(new[]
-                {
-                    "Debug",
-                    "Release"
-                });
+                slnProject.Configurations.ShouldBe(new[] { "Debug", "Release" }, ignoreOrder: true);
 
-                slnProject.Platforms.OrderBy(i => i).ShouldBe(new[]
-                {
-                    "amd64",
-                    "AnyCPU",
-                    "x64"
-                });
+                slnProject.Platforms.ShouldBe(new[] { "amd64", "AnyCPU", "x64" }, ignoreOrder: true);
             }
         }
 
-        [Test]
+        [Fact]
         public void ConfigurationsAndPlatformsWithGlobalProperties()
         {
             Dictionary<string, string> globalProperties = new Dictionary<string, string>
@@ -51,29 +40,19 @@ namespace SlnGen.Build.Tasks.UnitTests
             {
                 SlnProject slnProject = SlnProject.FromProject(testProject.Project, new Dictionary<string, string>(), true);
 
-                slnProject.Configurations.OrderBy(i => i).ShouldBe(new[]
-                {
-                    "Debug",
-                    "Mix",
-                    "Release"
-                });
+                slnProject.Configurations.ShouldBe(new[] { "Debug", "Mix", "Release" }, ignoreOrder: true);
 
-                slnProject.Platforms.OrderBy(i => i).ShouldBe(new[]
-                {
-                    "amd64",
-                    "AnyCPU",
-                    "x86",
-                });
+                slnProject.Platforms.ShouldBe(new[] { "amd64", "AnyCPU", "x86", }, ignoreOrder: true);
             }
         }
 
-        [Test]
+        [Fact]
         public void GetProjectGuidLegacyProjectSystem()
         {
             CreateAndValidateProject(expectedGuid: "{C69AC4B3-A0E1-40FC-94AB-C0F2E1F8D779}");
         }
 
-        [Test]
+        [Fact]
         public void GetProjectGuidSdkProject()
         {
             SlnProject actualProject = CreateAndValidateProject(globalProperties: new Dictionary<string, string>
@@ -86,14 +65,15 @@ namespace SlnGen.Build.Tasks.UnitTests
             Guid.TryParse(actualProject.ProjectGuid.ToSolutionString(), out _).ShouldBeTrue();
         }
 
-        [TestCase(true)]
-        [TestCase(false)]
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
         public void IsMainProject(bool isMainProject)
         {
             CreateAndValidateProject(isMainProject: isMainProject);
         }
 
-        [Test]
+        [Fact]
         public void ShouldIncludeInSolutionExclusion()
         {
             Dictionary<string, string> globalProperties = new Dictionary<string, string>
@@ -106,7 +86,7 @@ namespace SlnGen.Build.Tasks.UnitTests
             SlnGen.ShouldIncludeInSolution(project).ShouldBeFalse();
         }
 
-        [Test]
+        [Fact]
         public void ShouldIncludeInSolutionTraversalProject()
         {
             Dictionary<string, string> globalProperties = new Dictionary<string, string>
@@ -119,13 +99,13 @@ namespace SlnGen.Build.Tasks.UnitTests
             SlnGen.ShouldIncludeInSolution(project).ShouldBeFalse();
         }
 
-        [Test]
+        [Fact]
         public void UseAssemblyNameProperty()
         {
             CreateAndValidateProject(expectedGuid: "{3EA7B89C-F85F-49F4-B99D-1BC184C08186}", expectedName: "Project.Name");
         }
 
-        [Test]
+        [Fact]
         public void UseFileName()
         {
             CreateAndValidateProject(expectedGuid: "{DE681393-7151-459D-862C-918CCD2CB371}");
@@ -208,7 +188,7 @@ namespace SlnGen.Build.Tasks.UnitTests
                 string fullPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.proj");
 
                 // Copy the template project to a temporary location
-                File.Copy(Path.Combine(TestContext.CurrentContext.TestDirectory, TemplateProjectPath), fullPath);
+                File.Copy(Path.Combine(Environment.CurrentDirectory, TemplateProjectPath), fullPath);
 
                 return new TestProject(fullPath, globalProperties);
             }
