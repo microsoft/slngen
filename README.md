@@ -26,7 +26,7 @@ Or add it your [Directory.Build.props](https://docs.microsoft.com/en-us/visualst
 Generate and open a Visual Studio solution with MSBuild:
 
 ```
-> MSBuild /t:SlnGen
+> MSBuild /Restore /t:SlnGen
 ```
 
 You can also create a [DOSKEY](https://en.wikipedia.org/wiki/DOSKEY) alias as a shortcut
