@@ -4,6 +4,4 @@
 
 using System.Reflection;
 
-[assembly: AssemblyTitle("SlnGen.Build.Tasks.UnitTests")]
-[assembly: AssemblyProduct("SlnGen.Build.Tasks.UnitTests")]
 [assembly: AssemblyCopyright("Copyright ©  2017")]

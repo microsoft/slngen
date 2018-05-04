@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 namespace SlnGen.Build.Tasks.UnitTests
 {
-    public class MockTaskItem : Dictionary<string, string>, ITaskItem
+    internal class MockTaskItem : Dictionary<string, string>, ITaskItem
     {
         public MockTaskItem()
             : base(StringComparer.OrdinalIgnoreCase)

@@ -10,7 +10,7 @@ using System.IO;
 
 namespace SlnGen.Build.Tasks.UnitTests
 {
-    public static class MockProject
+    internal static class MockProject
     {
         public const string MockToolsVersion = "1.0";
 

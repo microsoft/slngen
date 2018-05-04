@@ -2,23 +2,22 @@
 //
 // Licensed under the MIT license.
 
-using NUnit.Framework;
 using Shouldly;
 using System;
 using System.IO;
+using Xunit;
 
 namespace SlnGen.Build.Tasks.UnitTests
 {
-    [TestFixture]
     public class ToFullPathInCorrectCaseTests
     {
-        [Test]
+        [Fact]
         public void IncorrectCaseInDirectory()
         {
             ValidatePath(Path.GetTempFileName());
         }
 
-        [Test]
+        [Fact]
         public void IncorrectCaseInFile()
         {
             string expectedPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid().ToString("N").ToUpperInvariant()}.txt");

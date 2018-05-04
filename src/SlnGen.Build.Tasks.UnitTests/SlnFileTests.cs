@@ -3,20 +3,20 @@
 // Licensed under the MIT license.
 
 using Microsoft.Build.Construction;
-using NUnit.Framework;
 using Shouldly;
 using SlnGen.Build.Tasks.Internal;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using Xunit;
 using MSBuildSolutionFile = Microsoft.Build.Construction.SolutionFile;
 
 namespace SlnGen.Build.Tasks.UnitTests
 {
-    [TestFixture]
     public class SlnFileTests : TestBase
     {
         // TODO: Test hierarchy
-        [Test]
+        [Fact]
         public void LotsOfProjects()
         {
             const int projectCount = 1000;
@@ -39,7 +39,7 @@ namespace SlnGen.Build.Tasks.UnitTests
             ValidateProjectInSolution(projects);
         }
 
-        [Test]
+        [Fact]
         public void MultipleProjects()
         {
             SlnProject projectA = new SlnProject(GetTempFileName(), "ProjectA", Guid.Parse("C95D800E-F016-4167-8E1B-1D3FF94CE2E2"), "88152E7E-47E3-45C8-B5D3-DDB15B2F0435", new[] { "Debug" }, new[] { "x64" }, isMainProject: true);
@@ -48,7 +48,7 @@ namespace SlnGen.Build.Tasks.UnitTests
             ValidateProjectInSolution(projectA, projectB);
         }
 
-        [Test]
+        [Fact]
         public void SingleProject()
         {
             SlnProject projectA = new SlnProject(GetTempFileName(), "ProjectA", Guid.Parse("C95D800E-F016-4167-8E1B-1D3FF94CE2E2"), "88152E7E-47E3-45C8-B5D3-DDB15B2F0435", new[] { "Debug" }, new[] { "x64" }, isMainProject: true);
@@ -76,9 +76,9 @@ namespace SlnGen.Build.Tasks.UnitTests
                 projectInSolution.ProjectGuid.ShouldBe(slnProject.ProjectGuid.ToSolutionString());
                 projectInSolution.ProjectName.ShouldBe(slnProject.Name);
 
-                var configurationPlatforms = from configuration in slnProject.Configurations from platform in slnProject.Platforms select $"{configuration}|{platform}";
+                IEnumerable<string> configurationPlatforms = from configuration in slnProject.Configurations from platform in slnProject.Platforms select $"{configuration}|{platform}";
 
-                CollectionAssert.AreEquivalent(projectInSolution.ProjectConfigurations.Keys, configurationPlatforms);
+                configurationPlatforms.ShouldBe(projectInSolution.ProjectConfigurations.Keys, ignoreOrder: true);
 
                 customValidator?.Invoke(slnProject, projectInSolution);
             }
