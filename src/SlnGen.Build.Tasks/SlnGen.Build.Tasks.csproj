@@ -17,7 +17,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="10.2.1" PrivateAssets="All" />
-    <PackageReference Include="Nerdbank.GitVersioning" Version="2.1.7"/>
+    <PackageReference Include="Nerdbank.GitVersioning" Version="2.1.7" />
   </ItemGroup>
   <ItemGroup>
     <None Update="SlnGen.nuspec">
@@ -31,7 +31,7 @@
   </Target>
   <Target Name="DefineNuspecProperties" BeforeTargets="GenerateNuSpec" AfterTargets="GetNuGetPackageVersion">
     <PropertyGroup>
-	  <NuspecProperties>$(NuSpecProperties);version=$(NuGetPackageVersion)</NuspecProperties>
+    <NuspecProperties>$(NuSpecProperties);version=$(NuGetPackageVersion)</NuspecProperties>
     </PropertyGroup>
   </Target>
 </Project>
