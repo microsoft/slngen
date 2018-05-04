@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Jeff Kluge. All rights reserved.
+//
+// Licensed under the MIT license.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -54,7 +58,7 @@ namespace SlnGen.Build.Tasks.Internal
 
             List<string> separatedPath = paths
                 .First(str => str.Length == paths.Max(st2 => st2.Length))
-                .Split(new[] {Path.DirectorySeparatorChar}, StringSplitOptions.RemoveEmptyEntries)
+                .Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries)
                 .ToList();
 
             foreach (string pathSegment in separatedPath.AsEnumerable())

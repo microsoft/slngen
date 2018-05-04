@@ -1,8 +1,13 @@
+// Copyright (c) Jeff Kluge. All rights reserved.
+//
+// Licensed under the MIT license.
+
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using SlnGen.Build.Tasks.Internal;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -10,14 +15,8 @@ using System.Text;
 
 namespace SlnGen.Build.Tasks
 {
-    using System.CodeDom;
-    using System.Collections;
-    using System.Collections.Generic;
-
     internal static class ExtensionMethods
     {
-        #region Types used for getting to internal properties of the MSBuild API
-
         /// <summary>
         /// Stores the <see cref="Assembly"/> containing the type <see cref="BuildManager"/>.
         /// </summary>
@@ -43,11 +42,10 @@ namespace SlnGen.Build.Tasks
         /// </summary>
         private static readonly Lazy<Type> BuildRequestEntryTypeLazy = new Lazy<Type>(() => BuildManagerAssemblyLazy.Value.GetType("Microsoft.Build.BackEnd.BuildRequestEntry", throwOnError: false));
 
-        #endregion Types used for getting to internal properties of the MSBuild API
-
         /// <summary>
         /// Converts the specified path to its long form.
         /// </summary>
+        /// <param name="directoryInfo">The <see cref="DirectoryInfo"/> object to get a long path name for.</param>
         /// <returns>The specified path in its long form and correct case according to the file system.</returns>
         public static string GetLongPathName(this DirectoryInfo directoryInfo)
         {

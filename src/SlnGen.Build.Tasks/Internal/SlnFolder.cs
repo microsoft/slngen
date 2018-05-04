@@ -1,4 +1,8 @@
-﻿using System.IO;
+﻿// Copyright (c) Jeff Kluge. All rights reserved.
+//
+// Licensed under the MIT license.
+
+using System.IO;
 
 namespace SlnGen.Build.Tasks.Internal
 {

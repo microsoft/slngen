@@ -1,4 +1,8 @@
-﻿using NUnit.Framework;
+﻿// Copyright (c) Jeff Kluge. All rights reserved.
+//
+// Licensed under the MIT license.
+
+using NUnit.Framework;
 using Shouldly;
 using System;
 using System.IO;

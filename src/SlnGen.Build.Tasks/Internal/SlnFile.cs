@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Jeff Kluge. All rights reserved.
+//
+// Licensed under the MIT license.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -38,7 +42,6 @@ namespace SlnGen.Build.Tasks.Internal
             _fileFormatVersion = fileFormatVersion;
         }
 
-
         /// <summary>
         /// Initializes a new instance of the <see cref="SlnFile" /> class.
         /// </summary>
@@ -56,6 +59,7 @@ namespace SlnGen.Build.Tasks.Internal
         /// <summary>
         /// Adds the specified solution items.
         /// </summary>
+        /// <param name="items">An <see cref="IEnumerable{String}"/> containing items to add to the solution.</param>
         public void AddSolutionItems(IEnumerable<string> items)
         {
             _solutionItems.AddRange(items);
@@ -113,7 +117,7 @@ namespace SlnGen.Build.Tasks.Internal
 
             IEnumerable<string> globalConfigurations = new HashSet<string>(_projects.SelectMany(p => p.Configurations)).Distinct();
             IEnumerable<string> globalPlatforms = new HashSet<string>(_projects.SelectMany(p => p.Platforms)).Distinct().ToList();
-            
+
             foreach (string configuration in globalConfigurations)
             {
                 foreach (string platform in globalPlatforms)
