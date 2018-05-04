@@ -1,4 +1,5 @@
 ﻿using Microsoft.Build.Evaluation;
+using Microsoft.Build.Exceptions;
 using Microsoft.Build.Framework;
 using System;
 using System.Collections.Generic;
@@ -161,9 +162,35 @@ namespace SlnGen.Build.Tasks.Internal
             {
                 project = new Project(fullPath, null, toolsVersion, projectCollection, projectLoadSettings);
             }
+            catch (InvalidProjectFileException e)
+            {
+                _buildEngine.LogErrorEvent(new BuildErrorEventArgs(
+                    subcategory: null,
+                    code: e.ErrorCode,
+                    file: e.ProjectFile,
+                    lineNumber: e.LineNumber,
+                    columnNumber: e.ColumnNumber,
+                    endLineNumber: e.EndLineNumber,
+                    endColumnNumber: e.EndColumnNumber,
+                    message: e.Message,
+                    helpKeyword: e.HelpKeyword,
+                    senderName: null));
+
+                return false;
+            }
             catch (Exception e)
             {
-                _buildEngine.LogErrorEvent(new BuildErrorEventArgs(subcategory: null, code: null, file: null, lineNumber: 0, columnNumber: 0, endLineNumber: 0, endColumnNumber: 0, message: $"Error loading project '{path}'.  {e.Message}", helpKeyword: null, senderName: null));
+                _buildEngine.LogErrorEvent(new BuildErrorEventArgs(
+                    subcategory: null,
+                    code: null,
+                    file: null,
+                    lineNumber: 0,
+                    columnNumber: 0,
+                    endLineNumber: 0,
+                    endColumnNumber: 0,
+                    message: $"Error loading project '{path}'.  {e.Message}",
+                    helpKeyword: null,
+                    senderName: null));
 
                 return false;
             }
