@@ -3,6 +3,7 @@
 // Licensed under the MIT license.
 
 using Microsoft.Build.Evaluation;
+using Microsoft.Build.Utilities.ProjectCreation;
 using Shouldly;
 using SlnGen.Build.Tasks.Internal;
 using System;
@@ -48,7 +49,7 @@ namespace SlnGen.Build.Tasks.UnitTests
 
                 slnProject.Configurations.ShouldBe(new[] { "Debug", "Mix", "Release" }, ignoreOrder: true);
 
-                slnProject.Platforms.ShouldBe(new[] { "amd64", "AnyCPU", "x86", }, ignoreOrder: true);
+                slnProject.Platforms.ShouldBe(new[] { "amd64", "AnyCPU", "x86", "x64" }, ignoreOrder: true);
             }
         }
 
@@ -169,34 +170,31 @@ namespace SlnGen.Build.Tasks.UnitTests
 
         private sealed class TestProject : IDisposable
         {
-            private const string TemplateProjectPath = @"TestFiles\SampleProject.csproj";
-
             private readonly Dictionary<string, string> _savedEnvironmentVariables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            private TestProject(string fullPath, IDictionary<string, string> globalProperties)
+            private TestProject()
             {
                 SetEnvironmentVariables(new Dictionary<string, string>
                 {
                     { "Configuration", null },
                     { "Platform", null },
                 });
-
-                Project = new Project(
-                    fullPath ?? throw new ArgumentNullException(nameof(fullPath)),
-                    globalProperties,
-                    toolsVersion: null);
             }
 
-            public Project Project { get; }
+            public Project Project { get; private set; }
 
             public static TestProject Create(IDictionary<string, string> globalProperties = null)
             {
-                string fullPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.proj");
-
-                // Copy the template project to a temporary location
-                File.Copy(Path.Combine(Environment.CurrentDirectory, TemplateProjectPath), fullPath);
-
-                return new TestProject(fullPath, globalProperties);
+                return new TestProject()
+                {
+                    Project = ProjectCreator.Templates.LegacyCsproj(
+                        path: Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.proj"),
+                        projectCollection: new ProjectCollection(globalProperties),
+                        defaultPlatform: "x64",
+                        projectCreator: projectCreator => projectCreator
+                            .PropertyGroup(" '$(Configuration)|$(Platform)' == 'Release|amd64' ")
+                            .PropertyGroup(" '$(Configuration)|$(Platform)' == 'Debug|x64' "))
+                };
             }
 
             public void Dispose()

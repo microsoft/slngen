@@ -5,8 +5,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build" Version="15.6.85" ExcludeAssets="Runtime" />
-    <PackageReference Include="Microsoft.Build.Framework" Version="15.6.85" ExcludeAssets="Runtime" />
+    <PackageReference Include="MSBuild.ProjectCreation" Version="1.0.8" />
+    <PackageReference Include="Microsoft.Build" Version="15.6.82" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="15.6.82" ExcludeAssets="Runtime" />
     <PackageReference Include="Microsoft.Build.Locator" Version="1.0.13" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />
     <PackageReference Include="Shouldly" Version="3.0.0" />
@@ -14,11 +15,5 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
 
     <ProjectReference Include="..\SlnGen.Build.Tasks\SlnGen.Build.Tasks.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="TestFiles\SampleProject.csproj">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 </Project>
