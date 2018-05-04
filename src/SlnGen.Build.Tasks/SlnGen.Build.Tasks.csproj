@@ -21,7 +21,6 @@
     <None Update="SlnGen.nuspec">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="version.json" />
   </ItemGroup>
   
 
