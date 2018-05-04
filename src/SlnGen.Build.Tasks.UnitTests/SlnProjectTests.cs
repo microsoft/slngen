@@ -17,7 +17,13 @@ namespace SlnGen.Build.Tasks.UnitTests
         [Fact]
         public void ConfigurationsAndPlatforms()
         {
-            using (TestProject testProject = TestProject.Create())
+            Dictionary<string, string> globalProperties = new Dictionary<string, string>
+            {
+                ["Platform"] = "x64",
+                ["Configuration"] = String.Empty
+            };
+
+            using (TestProject testProject = TestProject.Create(globalProperties))
             {
                 SlnProject slnProject = SlnProject.FromProject(testProject.Project, new Dictionary<string, string>(), true);
 
@@ -202,7 +208,7 @@ namespace SlnGen.Build.Tasks.UnitTests
 
                 foreach (KeyValuePair<string, string> variable in _savedEnvironmentVariables)
                 {
-                    Environment.SetEnvironmentVariable(variable.Key, variable.Value);
+                    Environment.SetEnvironmentVariable(variable.Key, variable.Value, EnvironmentVariableTarget.Process);
                 }
             }
 
@@ -212,7 +218,7 @@ namespace SlnGen.Build.Tasks.UnitTests
                 {
                     _savedEnvironmentVariables[variable.Key] = variable.Value;
 
-                    Environment.SetEnvironmentVariable(variable.Key, variable.Value);
+                    Environment.SetEnvironmentVariable(variable.Key, variable.Value, EnvironmentVariableTarget.Process);
                 }
             }
         }
