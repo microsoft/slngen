@@ -3,32 +3,34 @@
     <TargetFramework>net45</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
+  
   <ItemGroup>
     <Reference Include="Microsoft.Build" />
     <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="System" />
     <Reference Include="System.Xml" />
+
+    <PackageReference Include="JetBrains.Annotations" Version="10.2.1" PrivateAssets="All" />
+    <PackageReference Include="Nerdbank.GitVersioning" Version="2.1.7" />
   </ItemGroup>
+
   <ItemGroup>
     <None Include="SlnGen.targets">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="version.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" Version="10.2.1" PrivateAssets="All" />
-    <PackageReference Include="Nerdbank.GitVersioning" Version="2.1.7" />
-  </ItemGroup>
-  <ItemGroup>
     <None Update="SlnGen.nuspec">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="version.json" />
   </ItemGroup>
+  
+
   <Target Name="DefineNuspecFile" BeforeTargets="PrepareForBuild;BeforeBuild">
     <PropertyGroup>
       <NuspecFile>$(OutputPath)SlnGen.nuspec</NuspecFile>
     </PropertyGroup>
   </Target>
+  
   <Target Name="DefineNuspecProperties" BeforeTargets="GenerateNuSpec" AfterTargets="GetNuGetPackageVersion">
     <PropertyGroup>
     <NuspecProperties>$(NuSpecProperties);version=$(NuGetPackageVersion)</NuspecProperties>
