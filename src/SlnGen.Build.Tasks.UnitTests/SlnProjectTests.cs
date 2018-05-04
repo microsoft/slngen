@@ -1,82 +1,21 @@
-﻿using Microsoft.Build.Evaluation;
+﻿// Copyright (c) Jeff Kluge. All rights reserved.
+//
+// Licensed under the MIT license.
+
+using Microsoft.Build.Evaluation;
 using NUnit.Framework;
 using Shouldly;
 using SlnGen.Build.Tasks.Internal;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace SlnGen.Build.Tasks.UnitTests
 {
-    using System.IO;
-
     [TestFixture]
     public class SlnProjectTests : TestBase
     {
-        [Test]
-        public void GetProjectGuidLegacyProjectSystem()
-        {
-            CreateAndValidateProject(expectedGuid: "{C69AC4B3-A0E1-40FC-94AB-C0F2E1F8D779}");
-        }
-
-        [Test]
-        public void GetProjectGuidSdkProject()
-        {
-            SlnProject actualProject = CreateAndValidateProject(globalProperties: new Dictionary<string, string>
-            {
-                {SlnProject.UsingMicrosoftNetSdkPropertyName, "true"}
-            });
-
-            actualProject.ProjectGuid.ShouldNotBeNull();
-
-            Guid.TryParse(actualProject.ProjectGuid.ToSolutionString(), out _).ShouldBeTrue();
-        }
-
-        [TestCase(true)]
-        [TestCase(false)]
-        public void IsMainProject(bool isMainProject)
-        {
-            CreateAndValidateProject(isMainProject: isMainProject);
-        }
-
-        [Test]
-        public void ShouldIncludeInSolutionExclusion()
-        {
-            Dictionary<string, string> globalProperties = new Dictionary<string, string>
-            {
-                {"IncludeInSolutionFile", "false"}
-            };
-
-            Project project = CreateProject("foo", ".csproj", globalProperties: globalProperties);
-
-            SlnGen.ShouldIncludeInSolution(project).ShouldBeFalse();
-        }
-
-        [Test]
-        public void ShouldIncludeInSolutionTraversalProject()
-        {
-            Dictionary<string, string> globalProperties = new Dictionary<string, string>
-            {
-                {"IsTraversal", "true"}
-            };
-
-            Project project = CreateProject("dirs", ".proj", globalProperties: globalProperties);
-
-            SlnGen.ShouldIncludeInSolution(project).ShouldBeFalse();
-        }
-
-        [Test]
-        public void UseAssemblyNameProperty()
-        {
-            CreateAndValidateProject(expectedGuid: "{3EA7B89C-F85F-49F4-B99D-1BC184C08186}", expectedName: "Project.Name");
-        }
-
-        [Test]
-        public void UseFileName()
-        {
-            CreateAndValidateProject(expectedGuid: "{DE681393-7151-459D-862C-918CCD2CB371}");
-        }
-
         [Test]
         public void ConfigurationsAndPlatforms()
         {
@@ -126,6 +65,70 @@ namespace SlnGen.Build.Tasks.UnitTests
                     "x86",
                 });
             }
+        }
+
+        [Test]
+        public void GetProjectGuidLegacyProjectSystem()
+        {
+            CreateAndValidateProject(expectedGuid: "{C69AC4B3-A0E1-40FC-94AB-C0F2E1F8D779}");
+        }
+
+        [Test]
+        public void GetProjectGuidSdkProject()
+        {
+            SlnProject actualProject = CreateAndValidateProject(globalProperties: new Dictionary<string, string>
+            {
+                { SlnProject.UsingMicrosoftNetSdkPropertyName, "true" }
+            });
+
+            actualProject.ProjectGuid.ShouldNotBeNull();
+
+            Guid.TryParse(actualProject.ProjectGuid.ToSolutionString(), out _).ShouldBeTrue();
+        }
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public void IsMainProject(bool isMainProject)
+        {
+            CreateAndValidateProject(isMainProject: isMainProject);
+        }
+
+        [Test]
+        public void ShouldIncludeInSolutionExclusion()
+        {
+            Dictionary<string, string> globalProperties = new Dictionary<string, string>
+            {
+                { "IncludeInSolutionFile", "false" }
+            };
+
+            Project project = CreateProject("foo", ".csproj", globalProperties: globalProperties);
+
+            SlnGen.ShouldIncludeInSolution(project).ShouldBeFalse();
+        }
+
+        [Test]
+        public void ShouldIncludeInSolutionTraversalProject()
+        {
+            Dictionary<string, string> globalProperties = new Dictionary<string, string>
+            {
+                { "IsTraversal", "true" }
+            };
+
+            Project project = CreateProject("dirs", ".proj", globalProperties: globalProperties);
+
+            SlnGen.ShouldIncludeInSolution(project).ShouldBeFalse();
+        }
+
+        [Test]
+        public void UseAssemblyNameProperty()
+        {
+            CreateAndValidateProject(expectedGuid: "{3EA7B89C-F85F-49F4-B99D-1BC184C08186}", expectedName: "Project.Name");
+        }
+
+        [Test]
+        public void UseFileName()
+        {
+            CreateAndValidateProject(expectedGuid: "{DE681393-7151-459D-862C-918CCD2CB371}");
         }
 
         private SlnProject CreateAndValidateProject(bool isMainProject = false, string expectedGuid = null, string expectedName = null, string extension = ".csproj", IDictionary<string, string> globalProperties = null)
@@ -198,6 +201,8 @@ namespace SlnGen.Build.Tasks.UnitTests
                     toolsVersion: null);
             }
 
+            public Project Project { get; }
+
             public static TestProject Create(IDictionary<string, string> globalProperties = null)
             {
                 string fullPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.proj");
@@ -208,18 +213,6 @@ namespace SlnGen.Build.Tasks.UnitTests
                 return new TestProject(fullPath, globalProperties);
             }
 
-            private void SetEnvironmentVariables(Dictionary<string, string> variables)
-            {
-                foreach (KeyValuePair<string, string> variable in variables)
-                {
-                    _savedEnvironmentVariables[variable.Key] = variable.Value;
-
-                    Environment.SetEnvironmentVariable(variable.Key, variable.Value);
-                }
-            }
-
-            public Project Project { get; }
-
             public void Dispose()
             {
                 if (File.Exists(Project.FullPath))
@@ -229,6 +222,16 @@ namespace SlnGen.Build.Tasks.UnitTests
 
                 foreach (KeyValuePair<string, string> variable in _savedEnvironmentVariables)
                 {
+                    Environment.SetEnvironmentVariable(variable.Key, variable.Value);
+                }
+            }
+
+            private void SetEnvironmentVariables(Dictionary<string, string> variables)
+            {
+                foreach (KeyValuePair<string, string> variable in variables)
+                {
+                    _savedEnvironmentVariables[variable.Key] = variable.Value;
+
                     Environment.SetEnvironmentVariable(variable.Key, variable.Value);
                 }
             }

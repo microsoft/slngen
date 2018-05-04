@@ -1,4 +1,8 @@
-﻿using Microsoft.Build.Construction;
+﻿// Copyright (c) Jeff Kluge. All rights reserved.
+//
+// Licensed under the MIT license.
+
+using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using System;
 using System.Collections.Generic;

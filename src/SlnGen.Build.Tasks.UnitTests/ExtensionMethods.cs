@@ -1,6 +1,10 @@
+// Copyright (c) Jeff Kluge. All rights reserved.
+//
+// Licensed under the MIT license.
+
+using SlnGen.Build.Tasks.Internal;
 using System.IO;
 using System.Text;
-using SlnGen.Build.Tasks.Internal;
 
 namespace SlnGen.Build.Tasks.UnitTests
 {

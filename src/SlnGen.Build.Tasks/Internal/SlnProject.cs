@@ -1,4 +1,8 @@
-﻿using JetBrains.Annotations;
+﻿// Copyright (c) Jeff Kluge. All rights reserved.
+//
+// Licensed under the MIT license.
+
+using JetBrains.Annotations;
 using Microsoft.Build.Evaluation;
 using System;
 using System.Collections.Generic;
@@ -15,19 +19,19 @@ namespace SlnGen.Build.Tasks.Internal
 
         public static readonly IReadOnlyDictionary<string, string> KnownProjectTypeGuids = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            {".ccproj", "151D2E53-A2C4-4D7D-83FE-D05416EBD58E"},
-            {".csproj", DefaultProjectTypeGuid},
-            {".fsproj", "F2A71F9B-5D33-465A-A702-920D77279786" },
-            {".nativeProj", "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942"},
-            {".nuproj", "FF286327-C783-4F7A-AB73-9BCBAD0D4460"},
-            {".vbproj", "F184B08F-C81C-45F6-A57F-5ABD9991F28F"},
-            {".vcproj", "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942"},
-            {".vcxproj", "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942"},
-            {".vjsproj", "E6FDF86B-F3D1-11D4-8576-0002A516ECE8"},
-            {".wixproj", "930C7802-8A8C-48F9-8165-68863BCCD9DD"},
+            { ".ccproj", "151D2E53-A2C4-4D7D-83FE-D05416EBD58E" },
+            { ".csproj", DefaultProjectTypeGuid },
+            { ".fsproj", "F2A71F9B-5D33-465A-A702-920D77279786" },
+            { ".nativeProj", "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942" },
+            { ".nuproj", "FF286327-C783-4F7A-AB73-9BCBAD0D4460" },
+            { ".vbproj", "F184B08F-C81C-45F6-A57F-5ABD9991F28F" },
+            { ".vcproj", "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942" },
+            { ".vcxproj", "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942" },
+            { ".vjsproj", "E6FDF86B-F3D1-11D4-8576-0002A516ECE8" },
+            { ".wixproj", "930C7802-8A8C-48F9-8165-68863BCCD9DD" },
         };
 
-        public SlnProject([NotNull] string fullPath, [NotNull] string name, [NotNull] Guid projectGuid, [NotNull] string projectTypeGuid, [NotNull] IEnumerable<string> configurations, [NotNull] IEnumerable<string> platforms, bool isMainProject)
+        public SlnProject([NotNull] string fullPath, [NotNull] string name, Guid projectGuid, [NotNull] string projectTypeGuid, [NotNull] IEnumerable<string> configurations, [NotNull] IEnumerable<string> platforms, bool isMainProject)
         {
             FullPath = fullPath ?? throw new ArgumentNullException(nameof(fullPath));
             Name = name ?? throw new ArgumentNullException(nameof(name));
@@ -73,7 +77,7 @@ namespace SlnGen.Build.Tasks.Internal
             string extension = Path.GetExtension(project.FullPath);
 
             // Get the item from the custom project type GUIDs first which can override ours
-            if (String.IsNullOrWhiteSpace(extension) || !customProjectTypeGuids.TryGetValue(extension, out string projectTypeGuid) && !KnownProjectTypeGuids.TryGetValue(extension, out projectTypeGuid))
+            if (String.IsNullOrWhiteSpace(extension) || (!customProjectTypeGuids.TryGetValue(extension, out string projectTypeGuid) && !KnownProjectTypeGuids.TryGetValue(extension, out projectTypeGuid)))
             {
                 projectTypeGuid = DefaultProjectTypeGuid;
             }
@@ -88,8 +92,8 @@ namespace SlnGen.Build.Tasks.Internal
             {
                 throw new FormatException($"property ProjectGuid has an invalid format in {project.FullPath}");
             }
-            return new SlnProject(project.FullPath, name, projectGuid, projectTypeGuid, configurations, platforms,
-                isMainProject);
+
+            return new SlnProject(project.FullPath, name, projectGuid, projectTypeGuid, configurations, platforms, isMainProject);
         }
     }
 }

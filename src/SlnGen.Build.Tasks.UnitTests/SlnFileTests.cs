@@ -1,16 +1,17 @@
-﻿using Microsoft.Build.Construction;
+﻿// Copyright (c) Jeff Kluge. All rights reserved.
+//
+// Licensed under the MIT license.
+
+using Microsoft.Build.Construction;
 using NUnit.Framework;
 using Shouldly;
 using SlnGen.Build.Tasks.Internal;
 using System;
+using System.Linq;
 using MSBuildSolutionFile = Microsoft.Build.Construction.SolutionFile;
 
 namespace SlnGen.Build.Tasks.UnitTests
 {
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Linq;
-
     [TestFixture]
     public class SlnFileTests : TestBase
     {

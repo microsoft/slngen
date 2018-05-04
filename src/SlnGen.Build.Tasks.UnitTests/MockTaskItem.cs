@@ -1,4 +1,8 @@
-﻿using Microsoft.Build.Framework;
+﻿// Copyright (c) Jeff Kluge. All rights reserved.
+//
+// Licensed under the MIT license.
+
+using Microsoft.Build.Framework;
 using System;
 using System.Collections;
 using System.Collections.Generic;

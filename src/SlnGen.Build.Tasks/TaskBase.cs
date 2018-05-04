@@ -1,4 +1,8 @@
-﻿using Microsoft.Build.Framework;
+﻿// Copyright (c) Jeff Kluge. All rights reserved.
+//
+// Licensed under the MIT license.
+
+using Microsoft.Build.Framework;
 using System;
 
 namespace SlnGen.Build.Tasks
@@ -28,8 +32,8 @@ namespace SlnGen.Build.Tasks
                 subcategory: null,
                 code: code,
                 file: includeLocation ? BuildEngine?.ProjectFileOfTaskNode : null,
-                lineNumber: includeLocation ? (int) BuildEngine?.LineNumberOfTaskNode : 0,
-                columnNumber: includeLocation ? (int) BuildEngine?.ColumnNumberOfTaskNode : 0,
+                lineNumber: includeLocation ? (int)BuildEngine?.LineNumberOfTaskNode : 0,
+                columnNumber: includeLocation ? (int)BuildEngine?.ColumnNumberOfTaskNode : 0,
                 endLineNumber: 0,
                 endColumnNumber: 0,
                 message: message,
@@ -97,8 +101,8 @@ namespace SlnGen.Build.Tasks
                 subcategory: null,
                 code: code,
                 file: includeLocation ? BuildEngine?.ProjectFileOfTaskNode : null,
-                lineNumber: includeLocation ? (int) BuildEngine?.LineNumberOfTaskNode : 0,
-                columnNumber: includeLocation ? (int) BuildEngine?.ColumnNumberOfTaskNode : 0,
+                lineNumber: includeLocation ? (int)BuildEngine?.LineNumberOfTaskNode : 0,
+                columnNumber: includeLocation ? (int)BuildEngine?.ColumnNumberOfTaskNode : 0,
                 endLineNumber: 0,
                 endColumnNumber: 0,
                 message: message,

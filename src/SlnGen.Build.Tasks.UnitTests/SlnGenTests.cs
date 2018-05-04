@@ -1,4 +1,8 @@
-﻿using Microsoft.Build.Framework;
+﻿// Copyright (c) Jeff Kluge. All rights reserved.
+//
+// Licensed under the MIT license.
+
+using Microsoft.Build.Framework;
 using NUnit.Framework;
 using Shouldly;
 using System.Collections.Generic;
@@ -19,11 +23,11 @@ namespace SlnGen.Build.Tasks.UnitTests
             {
                 new MockTaskItem(" .foo ")
                 {
-                    {SlnGen.CustomProjectTypeGuidMetadataName, "1AB09E1B-77F6-4982-B020-374DB9DF2BD2"}
+                    { SlnGen.CustomProjectTypeGuidMetadataName, "1AB09E1B-77F6-4982-B020-374DB9DF2BD2" }
                 },
                 new MockTaskItem(".foo")
                 {
-                    {SlnGen.CustomProjectTypeGuidMetadataName, expectedProjectTypeGuid}
+                    { SlnGen.CustomProjectTypeGuidMetadataName, expectedProjectTypeGuid }
                 },
             };
 
@@ -34,8 +38,10 @@ namespace SlnGen.Build.Tasks.UnitTests
         public void ParseCustomProjectTypeGuidsFormatsFileExtensionAndGuid()
         {
             ValidateParseCustomProjectTypeGuids(
-                " .FoO  ", "  9d9339782d2a4fb2b72d8746d88e73b7 ",
-                ".foo", "{9D933978-2D2A-4FB2-B72D-8746D88E73B7}");
+                " .FoO  ",
+                "  9d9339782d2a4fb2b72d8746d88e73b7 ",
+                ".foo",
+                "{9D933978-2D2A-4FB2-B72D-8746D88E73B7}");
         }
 
         [Test]
@@ -47,11 +53,11 @@ namespace SlnGen.Build.Tasks.UnitTests
             {
                 new MockTaskItem("foo")
                 {
-                    {SlnGen.CustomProjectTypeGuidMetadataName, "9d933978-2d2a-4fb2-b72d-8746d88e73b7"}
+                    { SlnGen.CustomProjectTypeGuidMetadataName, "9d933978-2d2a-4fb2-b72d-8746d88e73b7" }
                 },
                 new MockTaskItem(".foo")
                 {
-                    {SlnGen.CustomProjectTypeGuidMetadataName, expectedProjectTypeGuid}
+                    { SlnGen.CustomProjectTypeGuidMetadataName, expectedProjectTypeGuid }
                 },
             };
 
@@ -63,8 +69,8 @@ namespace SlnGen.Build.Tasks.UnitTests
         {
             Dictionary<string, string> solutionItems = new Dictionary<string, string>
             {
-                {"foo", Path.GetFullPath("foo")},
-                {"bar", Path.GetFullPath("bar")}
+                { "foo", Path.GetFullPath("foo") },
+                { "bar", Path.GetFullPath("bar") }
             };
 
             IBuildEngine buildEngine = new MockBuildEngine();
@@ -74,7 +80,7 @@ namespace SlnGen.Build.Tasks.UnitTests
                 BuildEngine = buildEngine,
                 SolutionItems = solutionItems.Select(i => new MockTaskItem(i.Key)
                 {
-                    {"FullPath", i.Value}
+                    { "FullPath", i.Value }
                 }).ToArray<ITaskItem>()
             };
 
@@ -87,7 +93,7 @@ namespace SlnGen.Build.Tasks.UnitTests
             {
                 new MockTaskItem(fileExtension)
                 {
-                    {SlnGen.CustomProjectTypeGuidMetadataName, projectTypeGuid}
+                    { SlnGen.CustomProjectTypeGuidMetadataName, projectTypeGuid }
                 }
             };
 

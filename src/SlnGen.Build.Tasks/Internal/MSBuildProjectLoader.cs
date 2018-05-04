@@ -1,4 +1,8 @@
-﻿using Microsoft.Build.Evaluation;
+﻿// Copyright (c) Jeff Kluge. All rights reserved.
+//
+// Licensed under the MIT license.
+
+using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Framework;
 using System;
@@ -42,7 +46,7 @@ namespace SlnGen.Build.Tasks.Internal
         private readonly string _toolsVersion;
 
         /// <summary>
-        /// Initializes a new instance of the MSBuildProjectLoader class.
+        /// Initializes a new instance of the <see cref="MSBuildProjectLoader"/> class.
         /// </summary>
         /// <param name="globalProperties">Specifies the global properties to use when loading projects.</param>
         /// <param name="toolsVersion">Specifies the ToolsVersion to use when loading projects.</param>
@@ -57,7 +61,7 @@ namespace SlnGen.Build.Tasks.Internal
         }
 
         /// <summary>
-        /// Gets or sets a value indicating if statistics should be collected.
+        /// Gets or sets a value indicating whether statistics should be collected.
         /// </summary>
         public bool CollectStats { get; set; } = false;
 
@@ -81,7 +85,6 @@ namespace SlnGen.Build.Tasks.Internal
         public ProjectCollection LoadProjectsAndReferences(IEnumerable<string> projectPaths)
         {
             // Create a ProjectCollection for this thread
-            //
             ProjectCollection projectCollection = new ProjectCollection(_globalProperties)
             {
                 DefaultToolsVersion = _toolsVersion,

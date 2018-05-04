@@ -1,4 +1,8 @@
-﻿using JetBrains.Annotations;
+﻿// Copyright (c) Jeff Kluge. All rights reserved.
+//
+// Licensed under the MIT license.
+
+using JetBrains.Annotations;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
@@ -16,12 +20,12 @@ namespace SlnGen.Build.Tasks
         public const string CustomProjectTypeGuidMetadataName = "ProjectTypeGuid";
 
         /// <summary>
-        /// Gets or sets a value indicating if MSBuild is currently building a Visual Studio solution file.
+        /// Gets or sets a value indicating whether MSBuild is currently building a Visual Studio solution file.
         /// </summary>
         public bool BuildingSolutionFile { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating if statistics should be collected when loading projects.
+        /// Gets or sets a value indicating whether statistics should be collected when loading projects.
         /// </summary>
         public bool CollectStats { get; set; }
 
@@ -46,7 +50,7 @@ namespace SlnGen.Build.Tasks
         public string GlobalPropertiesToRemove { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating if global properties should be inherited from the currently executing project.
+        /// Gets or sets a value indicating whether global properties should be inherited from the currently executing project.
         /// </summary>
         public bool InheritGlobalProperties { get; set; }
 
@@ -62,7 +66,7 @@ namespace SlnGen.Build.Tasks
         public ITaskItem[] ProjectReferences { get; set; } = new ITaskItem[0];
 
         /// <summary>
-        /// Gets or sets a value indicating if Visual Studio should be launched after generating the solution file.
+        /// Gets or sets a value indicating whether Visual Studio should be launched after generating the solution file.
         /// </summary>
         public bool ShouldLaunchVisualStudio { get; set; }
 
@@ -83,7 +87,7 @@ namespace SlnGen.Build.Tasks
         public string ToolsVersion { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating if Visual Studio should be launched by telling the shell to open whatever program is registered to handle .sln files.
+        /// Gets or sets a value indicating whether Visual Studio should be launched by telling the shell to open whatever program is registered to handle .sln files.
         /// </summary>
         public bool UseShellExecute { get; set; }
 
@@ -95,10 +99,9 @@ namespace SlnGen.Build.Tasks
         internal static bool ShouldIncludeInSolution(Project project)
         {
             return
-                // Filter out projects that explicitly should not be included
-                !project.GetPropertyValue("IncludeInSolutionFile").Equals("false", StringComparison.OrdinalIgnoreCase)
-                && // Filter out traversal projects by looking for an IsTraversal property
-                !project.GetPropertyValue("IsTraversal").Equals("true", StringComparison.OrdinalIgnoreCase);
+                !project.GetPropertyValue("IncludeInSolutionFile").Equals("false", StringComparison.OrdinalIgnoreCase) // Filter out projects that explicitly should not be included
+                &&
+                !project.GetPropertyValue("IsTraversal").Equals("true", StringComparison.OrdinalIgnoreCase);  // Filter out traversal projects by looking for an IsTraversal property
         }
 
         /// <summary>
@@ -113,6 +116,7 @@ namespace SlnGen.Build.Tasks
         /// <summary>
         /// Gets the solution items' full paths.
         /// </summary>
+        /// <param name="fileExists">A <see cref="Func{String, Boolean}"/> to use when determining if a file exists.</param>
         /// <returns>An <see cref="IEnumerable{String}"/> of full paths to include as solution items.</returns>
         internal IEnumerable<string> GetSolutionItems(Func<string, bool> fileExists)
         {
@@ -323,7 +327,7 @@ namespace SlnGen.Build.Tasks
 
             LogMessageHigh("Loading project references...");
 
-            ProjectCollection projectCollection = projectLoader.LoadProjectsAndReferences(ProjectReferences.Select(i => i.GetMetadata("FullPath")).Concat(new[] {ProjectFullPath}));
+            ProjectCollection projectCollection = projectLoader.LoadProjectsAndReferences(ProjectReferences.Select(i => i.GetMetadata("FullPath")).Concat(new[] { ProjectFullPath }));
 
             LogMessageNormal($"Loaded {projectCollection.LoadedProjects.Count} project(s)");
 
@@ -342,7 +346,7 @@ namespace SlnGen.Build.Tasks
             foreach (KeyValuePair<string, TimeSpan> item in projectLoader.Statistics.ProjectLoadTimes.OrderByDescending(i => i.Value))
             {
                 // String.Format(CultureInfo.CurrentCulture, "{0,5}", ;
-                LogMessageLow($"  {Math.Round(item.Value.TotalMilliseconds, 0),5} ms  {item.Key}", MessageImportance.Low);
+                LogMessageLow($"  {Math.Round(item.Value.TotalMilliseconds, 0), 5} ms  {item.Key}", MessageImportance.Low);
             }
         }
 
@@ -353,14 +357,12 @@ namespace SlnGen.Build.Tasks
                 return Enumerable.Empty<string>();
             }
 
-            char[] itemSeparators = {';'};
+            char[] itemSeparators = { ';' };
 
             // Split by ';'
             return items.Split(itemSeparators, StringSplitOptions.RemoveEmptyEntries)
-                // Trim each entry
-                .Select(i => i.Trim())
-                // Ignore empty entries after trimming
-                .Where(i => !String.IsNullOrWhiteSpace(i));
+                .Select(i => i.Trim()) // Trim each entry
+                .Where(i => !String.IsNullOrWhiteSpace(i)); // Ignore empty entries after trimming
         }
 
         private IEnumerable<KeyValuePair<string, string>> ParseProperties(string properties)
@@ -374,14 +376,10 @@ namespace SlnGen.Build.Tasks
 
             // Split by ';'
             return ParseList(properties)
-                // Split by '='
-                .Select(i => i.Split(propertySeparators, 2, StringSplitOptions.RemoveEmptyEntries))
-                // Ignore entries that don't have two items
-                .Where(i => i.Length == 2)
-                // Create a KeyValuePair with trimmed Key and Value
-                .Select(i => new KeyValuePair<string, string>(i.First().Trim(), i.Last().Trim()))
-                // Ignore items with an empty key or value
-                .Where(i => !String.IsNullOrWhiteSpace(i.Key) && !String.IsNullOrWhiteSpace(i.Value));
+                .Select(i => i.Split(propertySeparators, 2, StringSplitOptions.RemoveEmptyEntries)) // Split by '='
+                .Where(i => i.Length == 2) // Ignore entries that don't have two items
+                .Select(i => new KeyValuePair<string, string>(i.First().Trim(), i.Last().Trim())) // Create a KeyValuePair with trimmed Key and Value
+                .Where(i => !String.IsNullOrWhiteSpace(i.Key) && !String.IsNullOrWhiteSpace(i.Value)); // Ignore items with an empty key or value
         }
     }
 }

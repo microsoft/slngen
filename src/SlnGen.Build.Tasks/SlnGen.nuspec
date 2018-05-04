@@ -6,9 +6,7 @@
     <authors>jeffkl;amrh</authors>
     <owners>jeffkl;amrh</owners>
     <description>MSBuild-based Visual Studio solution file generator</description>
-     <releaseNotes>
-      Initial release
-    </releaseNotes>
+    <releaseNotes/>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <tags>msbuild;visualstudio;solution</tags>
     <licenseUrl>https://github.com/jeffkl/SlnGen/blob/master/LICENSE</licenseUrl>
