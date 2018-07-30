@@ -21,12 +21,12 @@ namespace SlnGen.Build.Tasks.UnitTests
             Dictionary<string, string> globalProperties = new Dictionary<string, string>
             {
                 ["Platform"] = "x64",
-                ["Configuration"] = String.Empty
+                ["Configuration"] = string.Empty
             };
 
             using (TestProject testProject = TestProject.Create(globalProperties))
             {
-                SlnProject slnProject = SlnProject.FromProject(testProject.Project, new Dictionary<string, string>(), true);
+                SlnProject slnProject = SlnProject.FromProject(testProject.Project, new Dictionary<string, Guid>(), true);
 
                 slnProject.Configurations.ShouldBe(new[] { "Debug", "Release" }, ignoreOrder: true);
 
@@ -45,7 +45,7 @@ namespace SlnGen.Build.Tasks.UnitTests
 
             using (TestProject testProject = TestProject.Create(globalProperties))
             {
-                SlnProject slnProject = SlnProject.FromProject(testProject.Project, new Dictionary<string, string>(), true);
+                SlnProject slnProject = SlnProject.FromProject(testProject.Project, new Dictionary<string, Guid>(), true);
 
                 slnProject.Configurations.ShouldBe(new[] { "Debug", "Mix", "Release" }, ignoreOrder: true);
 
@@ -56,7 +56,9 @@ namespace SlnGen.Build.Tasks.UnitTests
         [Fact]
         public void GetProjectGuidLegacyProjectSystem()
         {
-            CreateAndValidateProject(expectedGuid: "{C69AC4B3-A0E1-40FC-94AB-C0F2E1F8D779}");
+            SlnProject actualProject = CreateAndValidateProject(expectedGuid: "{C69AC4B3-A0E1-40FC-94AB-C0F2E1F8D779}");
+
+            actualProject.ProjectTypeGuid.ShouldBe(SlnProject.DefaultLegacyProjectTypeGuid);
         }
 
         [Fact]
@@ -64,12 +66,71 @@ namespace SlnGen.Build.Tasks.UnitTests
         {
             SlnProject actualProject = CreateAndValidateProject(globalProperties: new Dictionary<string, string>
             {
-                { SlnProject.UsingMicrosoftNetSdkPropertyName, "true" }
+                [SlnProject.UsingMicrosoftNetSdkPropertyName] = "true"
             });
 
             actualProject.ProjectGuid.ShouldNotBeNull();
 
             Guid.TryParse(actualProject.ProjectGuid.ToSolutionString(), out _).ShouldBeTrue();
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(".csproj")]
+        [InlineData(".vbproj")]
+        [InlineData(".fsproj")]
+        [InlineData(".wixproj")]
+        public void GetProjectTypeGuidLegacyProject(string extension)
+        {
+            SlnProject actualProject = CreateAndValidateProject(extension: extension);
+
+            switch (extension)
+            {
+                case "":
+                    actualProject.ProjectTypeGuid.ShouldBe(SlnProject.DefaultLegacyProjectTypeGuid);
+                    break;
+                case ".csproj":
+                    actualProject.ProjectTypeGuid.ShouldBe(new Guid("FAE04EC0-301F-11D3-BF4B-00C04F79EFBC"));
+                    break;
+                case ".vbproj":
+                    actualProject.ProjectTypeGuid.ShouldBe(new Guid("F184B08F-C81C-45F6-A57F-5ABD9991F28F"));
+                    break;
+                default:
+                    actualProject.ProjectTypeGuid.ShouldBe(SlnProject.KnownProjectTypeGuids[extension]);
+                    break;
+            }
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(".csproj")]
+        [InlineData(".vbproj")]
+        [InlineData(".fsproj")]
+        [InlineData(".wixproj")]
+        public void GetProjectTypeGuidSdkProject(string extension)
+        {
+            Dictionary<string, string> globalProperties = new Dictionary<string, string>
+            {
+                [SlnProject.UsingMicrosoftNetSdkPropertyName] = "true"
+            };
+
+            SlnProject actualProject = CreateAndValidateProject(globalProperties: globalProperties, extension: extension);
+
+            switch (extension)
+            {
+                case "":
+                    actualProject.ProjectTypeGuid.ShouldBe(SlnProject.DefaultNetSdkProjectTypeGuid);
+                    break;
+                case ".csproj":
+                    actualProject.ProjectTypeGuid.ShouldBe(new Guid("9A19103F-16F7-4668-BE54-9A1E7A4F7556"));
+                    break;
+                case ".vbproj":
+                    actualProject.ProjectTypeGuid.ShouldBe(new Guid("778DAE3C-4631-46EA-AA77-85C1314464D9"));
+                    break;
+                default:
+                    actualProject.ProjectTypeGuid.ShouldBe(SlnProject.KnownProjectTypeGuids[extension]);
+                    break;
+            }
         }
 
         [Theory]
@@ -122,18 +183,13 @@ namespace SlnGen.Build.Tasks.UnitTests
         {
             Project expectedProject = CreateProject(expectedGuid, expectedName, extension, globalProperties);
 
-            SlnProject actualProject = SlnProject.FromProject(expectedProject, new Dictionary<string, string>(), isMainProject);
+            SlnProject actualProject = SlnProject.FromProject(expectedProject, new Dictionary<string, Guid>(), isMainProject);
 
             actualProject.FullPath.ShouldBe(expectedProject.FullPath);
 
-            if (!String.IsNullOrWhiteSpace(expectedName))
+            if (!string.IsNullOrWhiteSpace(expectedName))
             {
                 actualProject.Name.ShouldBe(expectedName);
-            }
-
-            if (!String.IsNullOrWhiteSpace(extension))
-            {
-                actualProject.ProjectTypeGuid.ShouldBe(SlnProject.KnownProjectTypeGuids.ContainsKey(extension) ? SlnProject.KnownProjectTypeGuids[extension] : SlnProject.DefaultProjectTypeGuid);
             }
 
             if (expectedGuid != null)
@@ -155,12 +211,12 @@ namespace SlnGen.Build.Tasks.UnitTests
                 globalProperties = new Dictionary<string, string>();
             }
 
-            if (!String.IsNullOrWhiteSpace(projectGuid))
+            if (!string.IsNullOrWhiteSpace(projectGuid))
             {
                 globalProperties[SlnProject.ProjectGuidPropertyName] = projectGuid;
             }
 
-            if (!String.IsNullOrWhiteSpace(name))
+            if (!string.IsNullOrWhiteSpace(name))
             {
                 globalProperties[SlnProject.AssemblyNamePropertyName] = name;
             }

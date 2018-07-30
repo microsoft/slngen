@@ -83,13 +83,13 @@ namespace SlnGen.Build.Tasks.Internal
 
             foreach (SlnProject project in _projects)
             {
-                writer.WriteLine($@"Project(""{project.ProjectTypeGuid}"") = ""{project.Name}"", ""{project.FullPath}"", ""{project.ProjectGuid.ToSolutionString()}""");
+                writer.WriteLine($@"Project(""{project.ProjectTypeGuid.ToSolutionString()}"") = ""{project.Name}"", ""{project.FullPath}"", ""{project.ProjectGuid.ToSolutionString()}""");
                 writer.WriteLine("EndProject");
             }
 
             if (SolutionItems.Count > 0)
             {
-                writer.WriteLine($@"Project(""{SlnFolder.ProjectTypeGuid}"") = ""Solution Items"", ""Solution Items"", ""{Guid.NewGuid().ToSolutionString()}"" ");
+                writer.WriteLine($@"Project(""{SlnFolder.FolderProjectTypeGuid.ToSolutionString()}"") = ""Solution Items"", ""Solution Items"", ""{Guid.NewGuid().ToSolutionString()}"" ");
                 writer.WriteLine("	ProjectSection(SolutionItems) = preProject");
                 foreach (string solutionItem in SolutionItems)
                 {
@@ -106,7 +106,7 @@ namespace SlnGen.Build.Tasks.Internal
             {
                 foreach (SlnFolder folder in hierarchy.Folders)
                 {
-                    writer.WriteLine($@"Project(""{folder.TypeGuid}"") = ""{folder.Name}"", ""{folder.FullPath}"", ""{folder.Guid}""");
+                    writer.WriteLine($@"Project(""{folder.ProjectTypeGuid.ToSolutionString()}"") = ""{folder.Name}"", ""{folder.FullPath}"", ""{folder.FolderGuid.ToSolutionString()}""");
                     writer.WriteLine("EndProject");
                 }
             }
@@ -152,9 +152,9 @@ namespace SlnGen.Build.Tasks.Internal
             if (_projects.Count > 1)
             {
                 writer.WriteLine(@"	GlobalSection(NestedProjects) = preSolution");
-                foreach (KeyValuePair<string, string> nestedProject in hierarchy.Hierarchy)
+                foreach (KeyValuePair<Guid, Guid> nestedProject in hierarchy.Hierarchy)
                 {
-                    writer.WriteLine($@"		{nestedProject.Key} = {nestedProject.Value}");
+                    writer.WriteLine($@"		{nestedProject.Key.ToSolutionString()} = {nestedProject.Value.ToSolutionString()}");
                 }
 
                 writer.WriteLine("	EndGlobalSection");

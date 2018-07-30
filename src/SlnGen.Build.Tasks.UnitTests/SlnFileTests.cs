@@ -33,7 +33,7 @@ namespace SlnGen.Build.Tasks.UnitTests
                 // pick random and shuffled configurations and platforms
                 var projectConfigurations = configurations.OrderBy(a => Guid.NewGuid()).Take(randomGenerator.Next(1, configurations.Length)).ToList();
                 var projectPlatforms = platforms.OrderBy(a => Guid.NewGuid()).Take(randomGenerator.Next(1, platforms.Length)).ToList();
-                projects[i] = new SlnProject(GetTempFileName(), $"Project{i:D6}", Guid.NewGuid(), Guid.NewGuid().ToSolutionString(), projectConfigurations, projectPlatforms, isMainProject: i == 0);
+                projects[i] = new SlnProject(GetTempFileName(), $"Project{i:D6}", Guid.NewGuid(), Guid.NewGuid(), projectConfigurations, projectPlatforms, isMainProject: i == 0);
             }
 
             ValidateProjectInSolution(projects);
@@ -42,8 +42,8 @@ namespace SlnGen.Build.Tasks.UnitTests
         [Fact]
         public void MultipleProjects()
         {
-            SlnProject projectA = new SlnProject(GetTempFileName(), "ProjectA", Guid.Parse("C95D800E-F016-4167-8E1B-1D3FF94CE2E2"), "88152E7E-47E3-45C8-B5D3-DDB15B2F0435", new[] { "Debug" }, new[] { "x64" }, isMainProject: true);
-            SlnProject projectB = new SlnProject(GetTempFileName(), "ProjectB", Guid.Parse("EAD108BE-AC70-41E6-A8C3-450C545FDC0E"), "F38341C3-343F-421A-AE68-94CD9ADCD32F", new[] { "Debug" }, new[] { "x64" }, isMainProject: false);
+            SlnProject projectA = new SlnProject(GetTempFileName(), "ProjectA", new Guid("C95D800E-F016-4167-8E1B-1D3FF94CE2E2"), new Guid("88152E7E-47E3-45C8-B5D3-DDB15B2F0435"), new[] { "Debug" }, new[] { "x64" }, isMainProject: true);
+            SlnProject projectB = new SlnProject(GetTempFileName(), "ProjectB", new Guid("EAD108BE-AC70-41E6-A8C3-450C545FDC0E"), new Guid("F38341C3-343F-421A-AE68-94CD9ADCD32F"), new[] { "Debug" }, new[] { "x64" }, isMainProject: false);
 
             ValidateProjectInSolution(projectA, projectB);
         }
@@ -51,7 +51,7 @@ namespace SlnGen.Build.Tasks.UnitTests
         [Fact]
         public void SingleProject()
         {
-            SlnProject projectA = new SlnProject(GetTempFileName(), "ProjectA", Guid.Parse("C95D800E-F016-4167-8E1B-1D3FF94CE2E2"), "88152E7E-47E3-45C8-B5D3-DDB15B2F0435", new[] { "Debug" }, new[] { "x64" }, isMainProject: true);
+            SlnProject projectA = new SlnProject(GetTempFileName(), "ProjectA", new Guid("C95D800E-F016-4167-8E1B-1D3FF94CE2E2"), new Guid("88152E7E-47E3-45C8-B5D3-DDB15B2F0435"), new[] { "Debug" }, new[] { "x64" }, isMainProject: true);
 
             ValidateProjectInSolution(projectA);
         }
