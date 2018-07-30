@@ -2,22 +2,15 @@
 //
 // Licensed under the MIT license.
 
-using Microsoft.Build.Locator;
+using Microsoft.Build.Utilities.ProjectCreation;
 using System;
 using System.IO;
 
 namespace SlnGen.Build.Tasks.UnitTests
 {
-    public abstract class TestBase
+    public abstract class TestBase : MSBuildTestBase
     {
-        public static readonly VisualStudioInstance CurrentVisualStudioInstance = MSBuildLocator.RegisterDefaults();
-
         private readonly string _testRootPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-
-        protected TestBase()
-        {
-            MSBuildPath = CurrentVisualStudioInstance.MSBuildPath;
-        }
 
         public string TestRootPath
         {

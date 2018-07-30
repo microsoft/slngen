@@ -23,6 +23,11 @@ namespace SlnGen.Build.Tasks.Internal
         /// </summary>
         private const string ProjectReferenceItemName = "ProjectReference";
 
+        /// <summary>
+        /// The name of the environment variable that configures MSBuild to ignore eager wildcard evaluations (like \**)
+        /// </summary>
+        private const string MSBuildSkipEagerWildcardEvaluationsEnvironmentVariableName = "MSBUILDSKIPEAGERWILDCARDEVALUATIONREGEXES";
+
         private readonly IBuildEngine _buildEngine;
 
         /// <summary>
@@ -84,16 +89,30 @@ namespace SlnGen.Build.Tasks.Internal
         /// <returns>A <see cref="ProjectCollection"/> object containing the loaded projects.</returns>
         public ProjectCollection LoadProjectsAndReferences(IEnumerable<string> projectPaths)
         {
-            // Create a ProjectCollection for this thread
-            ProjectCollection projectCollection = new ProjectCollection(_globalProperties)
+            // Store the current value of the environment variable that disables eager wildcard evaluations
+            string currentSkipEagerWildcardEvaluationsValue = Environment.GetEnvironmentVariable(MSBuildSkipEagerWildcardEvaluationsEnvironmentVariableName);
+
+            try
             {
-                DefaultToolsVersion = _toolsVersion,
-                DisableMarkDirty = true, // Not sure but hoping this improves load performance
-            };
+                // Indicate to MSBuild that any item that has two wildcards should be evaluated lazily
+                Environment.SetEnvironmentVariable(MSBuildSkipEagerWildcardEvaluationsEnvironmentVariableName, @"\*{2}");
 
-            Parallel.ForEach(projectPaths, projectPath => { LoadProject(projectPath, projectCollection, _projectLoadSettings); });
+                // Create a ProjectCollection for this thread
+                ProjectCollection projectCollection = new ProjectCollection(_globalProperties)
+                {
+                    DefaultToolsVersion = _toolsVersion,
+                    DisableMarkDirty = true, // Not sure but hoping this improves load performance
+                };
 
-            return projectCollection;
+                Parallel.ForEach(projectPaths, projectPath => { LoadProject(projectPath, projectCollection, _projectLoadSettings); });
+
+                return projectCollection;
+            }
+            finally
+            {
+                // Restore the environment variable value
+                Environment.SetEnvironmentVariable(MSBuildSkipEagerWildcardEvaluationsEnvironmentVariableName, currentSkipEagerWildcardEvaluationsValue);
+            }
         }
 
         /// <summary>
@@ -186,12 +205,12 @@ namespace SlnGen.Build.Tasks.Internal
                 _buildEngine.LogErrorEvent(new BuildErrorEventArgs(
                     subcategory: null,
                     code: null,
-                    file: null,
+                    file: path,
                     lineNumber: 0,
                     columnNumber: 0,
                     endLineNumber: 0,
                     endColumnNumber: 0,
-                    message: $"Error loading project '{path}'.  {e.Message}",
+                    message: e.ToString(),
                     helpKeyword: null,
                     senderName: null));
 
