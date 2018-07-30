@@ -16,8 +16,8 @@ namespace SlnGen.Build.Tasks.Internal
     internal sealed class SlnHierarchy
     {
         private readonly List<SlnFolder> _folders = new List<SlnFolder>();
-        private readonly Dictionary<string, string> _hierarchy = new Dictionary<string, string>();
-        private readonly Dictionary<string, string> _itemId = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<Guid, Guid> _hierarchy = new Dictionary<Guid, Guid>();
+        private readonly Dictionary<string, Guid> _itemId = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
 
         private SlnHierarchy()
         {
@@ -25,7 +25,7 @@ namespace SlnGen.Build.Tasks.Internal
 
         public IReadOnlyCollection<SlnFolder> Folders => _folders;
 
-        public IReadOnlyDictionary<string, string> Hierarchy => _hierarchy;
+        public IReadOnlyDictionary<Guid, Guid> Hierarchy => _hierarchy;
 
         public static SlnHierarchy FromProjects(IReadOnlyList<SlnProject> projects)
         {
@@ -84,14 +84,14 @@ namespace SlnGen.Build.Tasks.Internal
         {
             // TODO: Collapse folders with single sub folder.  So if foo had just a subfolder bar, collapse it to foo\bar in Visual Studio
             string parent = Directory.GetParent(project.FullPath).FullName;
-            string currentGuid = project.ProjectGuid.ToSolutionString();
+            Guid currentGuid = project.ProjectGuid;
 
             while (true)
             {
-                bool visited = _itemId.TryGetValue(parent, out string parentGuid);
+                bool visited = _itemId.TryGetValue(parent, out Guid parentGuid);
                 if (!visited)
                 {
-                    parentGuid = Guid.NewGuid().ToSolutionString();
+                    parentGuid = Guid.NewGuid();
                     _itemId.Add(parent, parentGuid);
                     _folders.Add(new SlnFolder(parent, parentGuid));
                 }

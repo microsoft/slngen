@@ -134,9 +134,9 @@ namespace SlnGen.Build.Tasks
         }
 
         [NotNull]
-        internal Dictionary<string, string> ParseCustomProjectTypeGuids()
+        internal Dictionary<string, Guid> ParseCustomProjectTypeGuids()
         {
-            Dictionary<string, string> projectTypeGuids = new Dictionary<string, string>();
+            Dictionary<string, Guid> projectTypeGuids = new Dictionary<string, Guid>();
 
             foreach (ITaskItem taskItem in CustomProjectTypeGuids)
             {
@@ -153,7 +153,7 @@ namespace SlnGen.Build.Tasks
                 if (!String.IsNullOrWhiteSpace(projectTypeGuidString) && Guid.TryParse(projectTypeGuidString, out Guid projectTypeGuid))
                 {
                     // Trim and ToLower the file extension
-                    projectTypeGuids[taskItem.ItemSpec.Trim().ToLowerInvariant()] = projectTypeGuid.ToSolutionString();
+                    projectTypeGuids[taskItem.ItemSpec.Trim().ToLowerInvariant()] = projectTypeGuid;
                 }
             }
 
@@ -200,14 +200,14 @@ namespace SlnGen.Build.Tasks
                 SolutionFileFullPath = Path.ChangeExtension(ProjectFullPath, ".sln");
             }
 
-            Dictionary<string, string> customProjectTypeGuids = ParseCustomProjectTypeGuids();
+            Dictionary<string, Guid> customProjectTypeGuids = ParseCustomProjectTypeGuids();
 
             LogMessageHigh($"Generating Visual Studio solution \"{SolutionFileFullPath}\" ...");
 
             if (customProjectTypeGuids.Count > 0)
             {
                 LogMessageLow("Custom Project Type GUIDs:");
-                foreach (KeyValuePair<string, string> item in customProjectTypeGuids)
+                foreach (KeyValuePair<string, Guid> item in customProjectTypeGuids)
                 {
                     LogMessageLow("  {0} = {1}", item.Key, item.Value);
                 }
