@@ -134,7 +134,7 @@ namespace SlnGen.Build.Tasks
 
             if (!File.Exists(fullPath))
             {
-                throw new FileNotFoundException($"Could not find part of the path \"{fullPath}\"");
+                return str;
             }
 
             string filename = Path.GetFileName(fullPath);
