@@ -9,6 +9,7 @@
     <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="System" />
     <Reference Include="System.Xml" />
+    <PackageReference Include="JetBrains.Annotations" />
   </ItemGroup>
 
   <ItemGroup>
