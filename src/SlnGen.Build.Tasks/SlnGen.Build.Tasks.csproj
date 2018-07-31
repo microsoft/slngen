@@ -28,4 +28,14 @@
     <None Update="build\SlnGen.targets" Pack="true" PackagePath="\" />
     <None Update="buildCrossTargeting\SlnGen.targets" Pack="true" PackagePath="\" />
   </ItemGroup>
+  
+  <Target Name="_UpdatePackageId" BeforeTargets="$(PackDependsOn)" >
+    <!-- 
+      Workaround for https://github.com/NuGet/Home/issues/6754 
+      Only needed because SlnGen the project depends on SlnGen the package
+    -->
+    <PropertyGroup>
+      <PackageId>SlnGen</PackageId>
+    </PropertyGroup>
+  </Target>
 </Project>
