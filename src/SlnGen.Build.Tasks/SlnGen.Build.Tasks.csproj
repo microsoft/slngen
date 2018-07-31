@@ -2,6 +2,18 @@
   <PropertyGroup>
     <TargetFramework>net45</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <BuildOutputTargetFolder>build\</BuildOutputTargetFolder>
+  </PropertyGroup>
+  
+  <PropertyGroup Label="Package properties">
+    <IncludeSymbols>true</IncludeSymbols>
+    <Description>MSBuild-based Visual Studio solution file generator</Description>
+    <Authors>jeffkl;amrh</Authors>
+    <Copyright>Copyright ©  2017.  All rights reserved.</Copyright>
+    <PackageLicenseUrl>https://github.com/jeffkl/SlnGen/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/jeffkl/SlnGen</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/jeffkl/SlnGen.git</RepositoryUrl>
+    <PackageTags>msbuild;visualstudio;solution</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
@@ -9,27 +21,11 @@
     <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="System" />
     <Reference Include="System.Xml" />
-    <PackageReference Include="JetBrains.Annotations" />
+    <PackageReference Include="JetBrains.Annotations" PrivateAssets="All" />
   </ItemGroup>
-
+  
   <ItemGroup>
-    <None Update="SlnGen.nuspec">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="SlnGen.targets">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <None Update="build\SlnGen.targets" Pack="true" PackagePath="\" />
+    <None Update="buildCrossTargeting\SlnGen.targets" Pack="true" PackagePath="\" />
   </ItemGroup>
-
-  <Target Name="DefineNuspecFile" BeforeTargets="PrepareForBuild;BeforeBuild">
-    <PropertyGroup>
-      <NuspecFile>$(OutputPath)SlnGen.nuspec</NuspecFile>
-    </PropertyGroup>
-  </Target>
-
-  <Target Name="DefineNuspecProperties" BeforeTargets="GenerateNuSpec" AfterTargets="GetNuGetPackageVersion">
-    <PropertyGroup>
-    <NuspecProperties>$(NuSpecProperties);version=$(NuGetPackageVersion)</NuspecProperties>
-    </PropertyGroup>
-  </Target>
 </Project>
