@@ -4,7 +4,7 @@
   <Import Project="$(CustomBeforeSlnGenTargets)" Condition="'$(CustomBeforeSlnGenTargets)' != '' and Exists('$(CustomBeforeSlnGenTargets)')"/>
   
   <PropertyGroup>
-    <SlnGenAssemblyFile Condition=" '$(SlnGenAssemblyFile)' == '' ">$(MSBuildThisFileDirectory)SlnGen.Build.Tasks.dll</SlnGenAssemblyFile>
+    <SlnGenAssemblyFile Condition=" '$(SlnGenAssemblyFile)' == '' ">$(MSBuildThisFileDirectory)net45\SlnGen.Build.Tasks.dll</SlnGenAssemblyFile>
     
     <SlnGenGlobalProperties Condition=" '$(SlnGenGlobalProperties)' != '' ">DesignTimeBuild=true;BuildingProject=false;$(SlnGenGlobalProperties)</SlnGenGlobalProperties>
     <SlnGenGlobalProperties Condition=" '$(SlnGenGlobalProperties)' == '' ">DesignTimeBuild=true;BuildingProject=false</SlnGenGlobalProperties>

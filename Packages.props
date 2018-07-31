@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <PackageReference Update="JetBrains.Annotations" Version="2018.2.1" />
+    <PackageReference Update="MSBuild.ProjectCreation" Version="1.2.5" />
+    <PackageReference Update="Microsoft.Build" Version="15.7.179" ExcludeAssets="Runtime" />
+    <PackageReference Update="Microsoft.Build.Framework" Version="15.7.179" ExcludeAssets="Runtime" />
+    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="15.8.0" />
+    <PackageReference Update="Shouldly" Version="3.0.0" />
+    <PackageReference Update="xunit" Version="2.4.0" />
+    <PackageReference Update="xunit.runner.visualstudio" Version="2.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="2.1.65" />
+    <GlobalPackageReference Include="SlnGen" Version="2.0.29-beta" />
+    <GlobalPackageReference Include="StyleCop.Analyzers" Version="1.0.2" />
+  </ItemGroup>
+</Project>
