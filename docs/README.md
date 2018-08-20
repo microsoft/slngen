@@ -37,7 +37,7 @@ Read more below to learn how to configure the behavior of SlnGen to fit your nee
 
 | Property                 | Description                                                                                                | Values             | Default |
 |--------------------------|------------------------------------------------------------------------------------------------------------|--------------------|---------|
-| SlnGenLaunchVisualStudio | Indicates whether or not Visual Studio should be launched to open the solution file after it is generated. | `true` or `false` | `false` |
+| SlnGenLaunchVisualStudio | Indicates whether or not Visual Studio should be launched to open the solution file after it is generated. | `true` or `false` | `true` |
 | SlnGenSolutionFileFullPath | Specifies the full path to the Visual Studio solution file to generate.  By default, the path is the same as the project. | | ProjectPath.sln|
 | SlnGenUseShellExecute | Indicates whether or not the Visual Studio solution file should be opened by the registered file extension handler.  You can disable this setting to use whatever `devenv.exe` is on your `PATH` or you can specify a full path to `devenve.exe` with the `SlnGenDevEnvFullPath` property. | `true` or `false` | `true` |
 | SlnGenDevEnvFullPath | Specifies a full path to Visual Studio's `devenv.exe` to use when opening the solution file.  By default, SlnGen will launch the program associated with the `.sln` file extension.  However, in some cases you may want to specify a custom path to Visual Studio. | | |
