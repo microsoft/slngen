@@ -92,6 +92,11 @@ namespace SlnGen.Build.Tasks
         public bool UseShellExecute { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether folders should be created.
+        /// </summary>
+        public bool Folders { get; set; }
+
+        /// <summary>
         /// Checks whether a project should be included in the solution or not.
         /// </summary>
         /// <param name="project">The project.</param>
@@ -213,11 +218,15 @@ namespace SlnGen.Build.Tasks
                 }
             }
 
-            SlnFile solution = new SlnFile(projects.Where(ShouldIncludeInSolution).Select(p => SlnProject.FromProject(p, customProjectTypeGuids, p.FullPath == ProjectFullPath)));
+            SlnFile solution = new SlnFile();
+
+            solution.AddProjects(
+                projects.Where(ShouldIncludeInSolution)
+                        .Select(p => SlnProject.FromProject(p, customProjectTypeGuids, p.FullPath == ProjectFullPath)));
 
             solution.AddSolutionItems(GetSolutionItems());
 
-            solution.Save(SolutionFileFullPath);
+            solution.Save(SolutionFileFullPath, Folders);
         }
 
         private IDictionary<string, string> GetGlobalProperties()
