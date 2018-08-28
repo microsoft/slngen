@@ -42,6 +42,7 @@ Read more below to learn how to configure the behavior of SlnGen to fit your nee
 | SlnGenUseShellExecute | Indicates whether or not the Visual Studio solution file should be opened by the registered file extension handler.  You can disable this setting to use whatever `devenv.exe` is on your `PATH` or you can specify a full path to `devenve.exe` with the `SlnGenDevEnvFullPath` property. | `true` or `false` | `true` |
 | SlnGenDevEnvFullPath | Specifies a full path to Visual Studio's `devenv.exe` to use when opening the solution file.  By default, SlnGen will launch the program associated with the `.sln` file extension.  However, in some cases you may want to specify a custom path to Visual Studio. | | |
 | SlnGenCollectStats | If your projects are loading slowly, SlnGen can log a performance summary to help you understand why.  You must specify an MSBuild logger verbosity of at least `Detailed` to see the summary in a log. | `true` or `false` | `false` |
+| SlnGenFolders | Indicates whether or not solution folders should be created. | `true` or `false` | `true` |
 
 
 Command-line argument

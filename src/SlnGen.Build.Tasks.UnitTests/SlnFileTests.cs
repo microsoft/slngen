@@ -56,13 +56,27 @@ namespace SlnGen.Build.Tasks.UnitTests
             ValidateProjectInSolution(projectA);
         }
 
-        private void ValidateProjectInSolution(Action<SlnProject, ProjectInSolution> customValidator, SlnProject[] projects)
+        [Fact]
+        public void NoFolders()
+        {
+            SlnProject[] projects = new SlnProject[]
+            {
+                new SlnProject(GetTempFileName(), "ProjectA", new Guid("C95D800E-F016-4167-8E1B-1D3FF94CE2E2"), new Guid("88152E7E-47E3-45C8-B5D3-DDB15B2F0435"), new[] { "Debug" }, new[] { "x64" }, isMainProject: true),
+                new SlnProject(GetTempFileName(), "ProjectB", new Guid("EAD108BE-AC70-41E6-A8C3-450C545FDC0E"), new Guid("F38341C3-343F-421A-AE68-94CD9ADCD32F"), new[] { "Debug" }, new[] { "x64" }, isMainProject: false),
+                new SlnProject(GetTempFileName(), "ProjectC", new Guid("00C5B0C0-E19C-48C5-818D-E8CD4FA2A915"), new Guid("F38341C3-343F-421A-AE68-94CD9ADCD32F"), new[] { "Debug" }, new[] { "x64" }, isMainProject: false)
+            };
+
+            ValidateProjectInSolution((s, p) => p.ParentProjectGuid.ShouldBe(null), projects, false);
+        }
+
+        private void ValidateProjectInSolution(Action<SlnProject, ProjectInSolution> customValidator, SlnProject[] projects, bool folders)
         {
             string solutionFilePath = GetTempFileName();
 
-            SlnFile slnFile = new SlnFile(projects);
+            SlnFile slnFile = new SlnFile();
 
-            slnFile.Save(solutionFilePath);
+            slnFile.AddProjects(projects);
+            slnFile.Save(solutionFilePath, folders);
 
             MSBuildSolutionFile solutionFile = MSBuildSolutionFile.Parse(solutionFilePath);
 
@@ -86,7 +100,7 @@ namespace SlnGen.Build.Tasks.UnitTests
 
         private void ValidateProjectInSolution(params SlnProject[] projects)
         {
-            ValidateProjectInSolution(null, projects);
+            ValidateProjectInSolution(null, projects, false);
         }
     }
 }

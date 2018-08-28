@@ -24,6 +24,7 @@
       CollectStats="$([MSBuild]::ValueOrDefault('$(SlnGenCollectStats)', 'false'))"
       CustomProjectTypeGuids="@(SlnGenCustomProjectTypeGuid)"
       DevEnvFullPath="$(SlnGenDevEnvFullPath)"
+      Folders="$([MSBuild]::ValueOrDefault('$(SlnGenFolders)', 'true'))"
       GlobalProperties="$(SlnGenGlobalProperties)"
       GlobalPropertiesToRemove="$(SlnGenGlobalPropertiesToRemove)"
       InheritGlobalProperties="$([MSBuild]::ValueOrDefault('$(SlnGenInheritGlobalProperties)', 'true'))"

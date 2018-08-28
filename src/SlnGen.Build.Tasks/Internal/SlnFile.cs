@@ -24,7 +24,7 @@ namespace SlnGen.Build.Tasks.Internal
         /// <summary>
         /// Gets the projects.
         /// </summary>
-        private readonly IReadOnlyList<SlnProject> _projects;
+        private readonly List<SlnProject> _projects = new List<SlnProject>();
 
         /// <summary>
         /// A list of absolute paths to include as Solution Items.
@@ -36,9 +36,8 @@ namespace SlnGen.Build.Tasks.Internal
         /// </summary>
         /// <param name="projects">The project collection.</param>
         /// <param name="fileFormatVersion">The file format version.</param>
-        public SlnFile(IEnumerable<SlnProject> projects, string fileFormatVersion)
+        public SlnFile(string fileFormatVersion)
         {
-            _projects = projects.ToList();
             _fileFormatVersion = fileFormatVersion;
         }
 
@@ -46,8 +45,8 @@ namespace SlnGen.Build.Tasks.Internal
         /// Initializes a new instance of the <see cref="SlnFile" /> class.
         /// </summary>
         /// <param name="projects">The projects.</param>
-        public SlnFile(IEnumerable<SlnProject> projects)
-            : this(projects, "12.00")
+        public SlnFile()
+            : this("12.00")
         {
         }
 
@@ -55,6 +54,15 @@ namespace SlnGen.Build.Tasks.Internal
         /// Gets a list of solution items.
         /// </summary>
         public IReadOnlyCollection<string> SolutionItems => _solutionItems;
+
+        /// <summary>
+        /// Adds the specified projects.
+        /// </summary>
+        /// <param name="projects">An <see cref="IEnumerable{SlnProject}"/> containing projects to add to the solution.</param>
+        public void AddProjects(IEnumerable<SlnProject> projects)
+        {
+            _projects.AddRange(projects);
+        }
 
         /// <summary>
         /// Adds the specified solution items.
@@ -69,15 +77,16 @@ namespace SlnGen.Build.Tasks.Internal
         /// Saves the Visual Studio solution to a file.
         /// </summary>
         /// <param name="path">The full path to the file to write to.</param>
-        public void Save(string path)
+        /// <param name="folders">Specifies if folders should be created.</param>
+        public void Save(string path, bool folders)
         {
             using (StreamWriter writer = File.CreateText(path))
             {
-                Save(writer);
+                Save(writer, folders);
             }
         }
 
-        public void Save(TextWriter writer)
+        public void Save(TextWriter writer, bool folders)
         {
             writer.WriteLine(Header, _fileFormatVersion);
 
@@ -100,14 +109,19 @@ namespace SlnGen.Build.Tasks.Internal
                 writer.WriteLine("EndProject");
             }
 
-            SlnHierarchy hierarchy = SlnHierarchy.FromProjects(_projects);
+            SlnHierarchy hierarchy = null;
 
-            if (hierarchy.Folders.Count > 0)
+            if (folders)
             {
-                foreach (SlnFolder folder in hierarchy.Folders)
+                hierarchy = SlnHierarchy.FromProjects(_projects);
+
+                if (hierarchy.Folders.Count > 0)
                 {
-                    writer.WriteLine($@"Project(""{folder.ProjectTypeGuid.ToSolutionString()}"") = ""{folder.Name}"", ""{folder.FullPath}"", ""{folder.FolderGuid.ToSolutionString()}""");
-                    writer.WriteLine("EndProject");
+                    foreach (SlnFolder folder in hierarchy.Folders)
+                    {
+                        writer.WriteLine($@"Project(""{folder.ProjectTypeGuid.ToSolutionString()}"") = ""{folder.Name}"", ""{folder.FullPath}"", ""{folder.FolderGuid.ToSolutionString()}""");
+                        writer.WriteLine("EndProject");
+                    }
                 }
             }
 
@@ -149,7 +163,8 @@ namespace SlnGen.Build.Tasks.Internal
 
             writer.WriteLine(" EndGlobalSection");
 
-            if (_projects.Count > 1)
+            if (folders
+                && _projects.Count > 1)
             {
                 writer.WriteLine(@"	GlobalSection(NestedProjects) = preSolution");
                 foreach (KeyValuePair<Guid, Guid> nestedProject in hierarchy.Hierarchy)
