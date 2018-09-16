@@ -17,6 +17,7 @@ namespace SlnGen.Build.Tasks.Internal
     {
         private readonly List<SlnFolder> _folders = new List<SlnFolder>();
         private readonly Dictionary<Guid, Guid> _hierarchy = new Dictionary<Guid, Guid>();
+        private readonly Dictionary<SlnItem, Guid> _itemHierarchy = new Dictionary<SlnItem, Guid>();
         private readonly Dictionary<string, Guid> _itemId = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
 
         private SlnHierarchy()
@@ -27,15 +28,18 @@ namespace SlnGen.Build.Tasks.Internal
 
         public IReadOnlyDictionary<Guid, Guid> Hierarchy => _hierarchy;
 
-        public static SlnHierarchy FromProjects(IReadOnlyList<SlnProject> projects)
+        public IReadOnlyDictionary<SlnItem, Guid> ItemHierarchy => _itemHierarchy;
+
+        public static SlnHierarchy FromProjectsAndItems(IReadOnlyList<SlnProject> projects, IReadOnlyList<SlnItem> items)
         {
             SlnHierarchy hierarchy = new SlnHierarchy();
 
-            List<string> projectDirectoryPaths = projects.Where(i => !i.IsMainProject).Select(i => Directory.GetParent(i.FullPath).FullName).ToList();
+            List<string> paths = projects.Where(i => !i.IsMainProject).Select(i => Directory.GetParent(i.FullPath).FullName).ToList();
+            paths.AddRange(items.Select(i => i.FullPath));
 
-            if (projectDirectoryPaths.Count > 1)
+            if (paths.Count > 1)
             {
-                string commonPrefix = GetCommonDirectoryPath(projectDirectoryPaths);
+                string commonPrefix = GetCommonDirectoryPath(paths);
 
                 foreach (SlnProject project in projects)
                 {
@@ -45,6 +49,11 @@ namespace SlnGen.Build.Tasks.Internal
                     }
 
                     hierarchy.BuildHierarchyBottomUp(project, commonPrefix.TrimEnd(Path.DirectorySeparatorChar));
+                }
+
+                foreach (SlnItem item in items)
+                {
+                    hierarchy.BuildHierarchyBottomUp(item, commonPrefix.TrimEnd(Path.DirectorySeparatorChar));
                 }
             }
 
@@ -98,13 +107,59 @@ namespace SlnGen.Build.Tasks.Internal
 
                 _hierarchy[currentGuid] = parentGuid;
 
-                if (visited || parent.Equals(root, StringComparison.OrdinalIgnoreCase))
+                if (visited)
                 {
                     return;
                 }
 
                 currentGuid = parentGuid;
                 parent = Directory.GetParent(parent).FullName;
+
+                if (parent.Equals(root, StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+            }
+        }
+
+        private void BuildHierarchyBottomUp(SlnItem item, string root)
+        {
+            var parent = Path.Combine(root, item.TargetFolder.TrimEnd(Path.DirectorySeparatorChar));
+            var currentGuid = Guid.Empty;
+
+            while (true)
+            {
+                bool visited = _itemId.TryGetValue(parent, out Guid parentGuid);
+                if (!visited)
+                {
+                    parentGuid = Guid.NewGuid();
+                    _itemId.Add(parent, parentGuid);
+                    _folders.Add(new SlnFolder(parent, parentGuid));
+                }
+
+                if (currentGuid == Guid.Empty)
+                {
+                    // item hierarchy
+                    _itemHierarchy[item] = parentGuid;
+                }
+                else
+                {
+                    // folder hierarchy
+                    _hierarchy[currentGuid] = parentGuid;
+                }
+
+                if (visited)
+                {
+                    return;
+                }
+
+                currentGuid = parentGuid;
+                parent = Path.GetDirectoryName(parent);
+
+                if (parent.Equals(root, StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
             }
         }
     }

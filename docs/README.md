@@ -12,7 +12,7 @@ SlnGen is an MSBuild target so you will need to add a `<PackageReference />` to 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <PackageReference Include="SlnGen">
-      <Version>2.0.0</Version>
+      <Version>2.1.2</Version>
     </PackageReference>
   </ItemGroup>
 </Project>
@@ -113,6 +113,26 @@ To add to this list or override an item, specify an `SlnGenCustomProjectTypeGuid
     <ProjectTypeGuid>{bb9d1d44-b292-4016-9ce0-27ea600e8e1c}</ProjectTypeGuid>
   </SlnGenCustomProjectTypeGuid>
 
+</ItemGroup>
+```
+
+## Solution Items
+
+To add solution items to the solution, specify them using the `SlnGenSolutionItem` item.
+
+| Item                        | Description                              |
+|-----------------------------|------------------------------------------|
+| SlnGenSolutionItem          | Specifies a file to add to the solution. |
+
+| Metadata    | Description                                                                       |
+|-------------|-----------------------------------------------------------------------------------|
+| Folder      | Specifies the target folder for the solution item, relative to the solution root. |
+
+```xml
+<ItemGroup>
+  <SlnGenSolutionItem Include="build\Key.snk">
+    <Folder>build</Folder>
+  </SlnGenSolutionItem>
 </ItemGroup>
 ```
 

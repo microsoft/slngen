@@ -12,7 +12,7 @@ namespace SlnGen.Build.Tasks.Internal
 {
     internal sealed class SlnProject
     {
-        public const string AssemblyNamePropertyName = "AssemblyName";
+        public const string MSBuildProjectNamePropertyName = "MSBuildProjectName";
         public const string ProjectGuidPropertyName = "ProjectGuid";
         public const string UsingMicrosoftNetSdkPropertyName = "UsingMicrosoftNETSdk";
         public static readonly Guid DefaultLegacyProjectTypeGuid = new Guid("FAE04EC0-301F-11D3-BF4B-00C04F79EFBC");
@@ -91,7 +91,7 @@ namespace SlnGen.Build.Tasks.Internal
                 throw new ArgumentNullException(nameof(customProjectTypeGuids));
             }
 
-            string name = project.GetPropertyValueOrDefault(AssemblyNamePropertyName, Path.GetFileNameWithoutExtension(project.FullPath));
+            string name = project.GetPropertyValueOrDefault(MSBuildProjectNamePropertyName, Path.GetFileNameWithoutExtension(project.FullPath));
 
             bool isUsingMicrosoftNetSdk = project.GetPropertyValue(UsingMicrosoftNetSdkPropertyName).Equals("true", StringComparison.OrdinalIgnoreCase);
 

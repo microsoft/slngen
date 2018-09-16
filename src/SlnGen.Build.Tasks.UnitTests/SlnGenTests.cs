@@ -4,6 +4,7 @@
 
 using Microsoft.Build.Framework;
 using Shouldly;
+using SlnGen.Build.Tasks.Internal;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -67,10 +68,10 @@ namespace SlnGen.Build.Tasks.UnitTests
         [Fact]
         public void SolutionItems()
         {
-            Dictionary<string, string> solutionItems = new Dictionary<string, string>
+            Dictionary<string, SlnItem> solutionItems = new Dictionary<string, SlnItem>
             {
-                { "foo", Path.GetFullPath("foo") },
-                { "bar", Path.GetFullPath("bar") }
+                { "foo", new SlnItem(Path.GetFullPath("foo"), String.Empty) },
+                { "bar", new SlnItem(Path.GetFullPath("bar"), "build") }
             };
 
             IBuildEngine buildEngine = new MockBuildEngine();
@@ -80,11 +81,12 @@ namespace SlnGen.Build.Tasks.UnitTests
                 BuildEngine = buildEngine,
                 SolutionItems = solutionItems.Select(i => new MockTaskItem(i.Key)
                 {
-                    { "FullPath", i.Value }
+                    { "FullPath", i.Value.FullPath },
+                    { "TargetFolder", i.Value.TargetFolder }
                 }).ToArray<ITaskItem>()
             };
 
-            slnGen.GetSolutionItems(path => true).ShouldBe(solutionItems.Values);
+            slnGen.GetSolutionItems(path => true).Select(i => i.TargetFolder).ShouldAllBe(f => !String.IsNullOrEmpty(f));
         }
 
         private static void ValidateParseCustomProjectTypeGuids(string fileExtension, string projectTypeGuid, string expectedFileExtension, Guid expectedProjectTypeGuid)

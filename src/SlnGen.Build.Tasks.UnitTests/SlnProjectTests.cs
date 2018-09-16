@@ -170,7 +170,7 @@ namespace SlnGen.Build.Tasks.UnitTests
         [Fact]
         public void UseAssemblyNameProperty()
         {
-            CreateAndValidateProject(expectedGuid: "{3EA7B89C-F85F-49F4-B99D-1BC184C08186}", expectedName: "Project.Name");
+            CreateAndValidateProject(expectedGuid: "{3EA7B89C-F85F-49F4-B99D-1BC184C08186}");
         }
 
         [Fact]
@@ -179,18 +179,15 @@ namespace SlnGen.Build.Tasks.UnitTests
             CreateAndValidateProject(expectedGuid: "{DE681393-7151-459D-862C-918CCD2CB371}");
         }
 
-        private SlnProject CreateAndValidateProject(bool isMainProject = false, string expectedGuid = null, string expectedName = null, string extension = ".csproj", IDictionary<string, string> globalProperties = null)
+        private SlnProject CreateAndValidateProject(bool isMainProject = false, string expectedGuid = null, string extension = ".csproj", IDictionary<string, string> globalProperties = null)
         {
-            Project expectedProject = CreateProject(expectedGuid, expectedName, extension, globalProperties);
+            Project expectedProject = CreateProject(expectedGuid, extension, globalProperties);
 
             SlnProject actualProject = SlnProject.FromProject(expectedProject, new Dictionary<string, Guid>(), isMainProject);
 
             actualProject.FullPath.ShouldBe(expectedProject.FullPath);
 
-            if (!string.IsNullOrWhiteSpace(expectedName))
-            {
-                actualProject.Name.ShouldBe(expectedName);
-            }
+            actualProject.Name.ShouldBe(expectedProject.GetPropertyValue(SlnProject.MSBuildProjectNamePropertyName));
 
             if (expectedGuid != null)
             {
@@ -202,7 +199,7 @@ namespace SlnGen.Build.Tasks.UnitTests
             return actualProject;
         }
 
-        private Project CreateProject(string projectGuid = null, string name = null, string extension = ".csproj", IDictionary<string, string> globalProperties = null)
+        private Project CreateProject(string projectGuid = null, string extension = ".csproj", IDictionary<string, string> globalProperties = null)
         {
             string fullPath = GetTempFileName(extension);
 
@@ -214,11 +211,6 @@ namespace SlnGen.Build.Tasks.UnitTests
             if (!string.IsNullOrWhiteSpace(projectGuid))
             {
                 globalProperties[SlnProject.ProjectGuidPropertyName] = projectGuid;
-            }
-
-            if (!string.IsNullOrWhiteSpace(name))
-            {
-                globalProperties[SlnProject.AssemblyNamePropertyName] = name;
             }
 
             return MockProject.Create(fullPath, globalProperties);

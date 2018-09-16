@@ -43,7 +43,12 @@ namespace SlnGen.Build.Tasks.UnitTests
 
         public string GetMetadata(string metadataName)
         {
-            return this[metadataName];
+            if (TryGetValue(metadataName, out var value))
+            {
+                return value;
+            }
+
+            return String.Empty;
         }
 
         public void RemoveMetadata(string metadataName)

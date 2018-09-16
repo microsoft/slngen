@@ -29,7 +29,7 @@ namespace SlnGen.Build.Tasks.Internal
         /// <summary>
         /// A list of absolute paths to include as Solution Items.
         /// </summary>
-        private readonly List<string> _solutionItems = new List<string>();
+        private readonly List<SlnItem> _solutionItems = new List<SlnItem>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SlnFile" /> class.
@@ -53,7 +53,7 @@ namespace SlnGen.Build.Tasks.Internal
         /// <summary>
         /// Gets a list of solution items.
         /// </summary>
-        public IReadOnlyCollection<string> SolutionItems => _solutionItems;
+        public IReadOnlyCollection<SlnItem> SolutionItems => _solutionItems;
 
         /// <summary>
         /// Adds the specified projects.
@@ -67,8 +67,8 @@ namespace SlnGen.Build.Tasks.Internal
         /// <summary>
         /// Adds the specified solution items.
         /// </summary>
-        /// <param name="items">An <see cref="IEnumerable{String}"/> containing items to add to the solution.</param>
-        public void AddSolutionItems(IEnumerable<string> items)
+        /// <param name="items">An <see cref="IEnumerable{SlnItem}"/> containing items to add to the solution.</param>
+        public void AddSolutionItems(IEnumerable<SlnItem> items)
         {
             _solutionItems.AddRange(items);
         }
@@ -96,30 +96,32 @@ namespace SlnGen.Build.Tasks.Internal
                 writer.WriteLine("EndProject");
             }
 
-            if (SolutionItems.Count > 0)
-            {
-                writer.WriteLine($@"Project(""{SlnFolder.FolderProjectTypeGuid.ToSolutionString()}"") = ""Solution Items"", ""Solution Items"", ""{Guid.NewGuid().ToSolutionString()}"" ");
-                writer.WriteLine("	ProjectSection(SolutionItems) = preProject");
-                foreach (string solutionItem in SolutionItems)
-                {
-                    writer.WriteLine($"		{solutionItem} = {solutionItem}");
-                }
-
-                writer.WriteLine("	EndProjectSection");
-                writer.WriteLine("EndProject");
-            }
-
             SlnHierarchy hierarchy = null;
 
             if (folders)
             {
-                hierarchy = SlnHierarchy.FromProjects(_projects);
+                hierarchy = SlnHierarchy.FromProjectsAndItems(_projects, _solutionItems);
 
                 if (hierarchy.Folders.Count > 0)
                 {
                     foreach (SlnFolder folder in hierarchy.Folders)
                     {
-                        writer.WriteLine($@"Project(""{folder.ProjectTypeGuid.ToSolutionString()}"") = ""{folder.Name}"", ""{folder.FullPath}"", ""{folder.FolderGuid.ToSolutionString()}""");
+                        writer.WriteLine($@"Project(""{folder.ProjectTypeGuid.ToSolutionString()}"") = ""{folder.Name}"", ""{folder.Name}"", ""{folder.FolderGuid.ToSolutionString()}""");
+
+                        var items = hierarchy.ItemHierarchy.Where(i => i.Value == folder.FolderGuid);
+
+                        if (items.Any())
+                        {
+                            writer.WriteLine("	ProjectSection(SolutionItems) = preProject");
+
+                            foreach (var item in items)
+                            {
+                                writer.WriteLine($"		{item.Key.FullPath} = {item.Key.FullPath}");
+                            }
+
+                            writer.WriteLine("	EndProjectSection");
+                        }
+
                         writer.WriteLine("EndProject");
                     }
                 }
@@ -143,7 +145,7 @@ namespace SlnGen.Build.Tasks.Internal
                 }
             }
 
-            writer.WriteLine(" EndGlobalSection");
+            writer.WriteLine("	EndGlobalSection");
 
             writer.WriteLine("	GlobalSection(ProjectConfigurationPlatforms) = preSolution");
             foreach (SlnProject project in _projects)
@@ -161,7 +163,7 @@ namespace SlnGen.Build.Tasks.Internal
                 }
             }
 
-            writer.WriteLine(" EndGlobalSection");
+            writer.WriteLine("	EndGlobalSection");
 
             if (folders
                 && _projects.Count > 1)

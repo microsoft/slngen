@@ -113,7 +113,7 @@ namespace SlnGen.Build.Tasks
         /// Gets the solution items' full paths.
         /// </summary>
         /// <returns>An <see cref="IEnumerable{String}"/> of full paths to include as solution items.</returns>
-        internal IEnumerable<string> GetSolutionItems()
+        internal IEnumerable<SlnItem> GetSolutionItems()
         {
             return GetSolutionItems(File.Exists);
         }
@@ -123,17 +123,24 @@ namespace SlnGen.Build.Tasks
         /// </summary>
         /// <param name="fileExists">A <see cref="Func{String, Boolean}"/> to use when determining if a file exists.</param>
         /// <returns>An <see cref="IEnumerable{String}"/> of full paths to include as solution items.</returns>
-        internal IEnumerable<string> GetSolutionItems(Func<string, bool> fileExists)
+        internal IEnumerable<SlnItem> GetSolutionItems(Func<string, bool> fileExists)
         {
-            foreach (string solutionItem in SolutionItems.Select(i => i.GetMetadata("FullPath")).Where(i => !String.IsNullOrWhiteSpace(i)))
+            foreach (var solutionItem in SolutionItems)
             {
-                if (!fileExists(solutionItem))
+                var fullPath = solutionItem.GetMetadata("FullPath");
+
+                if (String.IsNullOrWhiteSpace(fullPath))
                 {
-                    LogMessageLow($"The solution item \"{solutionItem}\" does not exist and will not be added to the solution.");
+                    continue;
+                }
+
+                if (!fileExists(fullPath))
+                {
+                    LogMessageLow($"The solution item \"{fullPath}\" does not exist and will not be added to the solution.");
                 }
                 else
                 {
-                    yield return solutionItem;
+                    yield return new SlnItem(fullPath, solutionItem.GetMetadata("Folder"));
                 }
             }
         }
