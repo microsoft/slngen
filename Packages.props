@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="2.1.84" />
-    <GlobalPackageReference Include="SlnGen" Version="2.0.40" />
+    <GlobalPackageReference Include="SlnGen" Version="2.1.3" />
     <GlobalPackageReference Include="StyleCop.Analyzers" Version="1.0.2" />
   </ItemGroup>
 </Project>
