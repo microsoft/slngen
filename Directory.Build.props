@@ -1,6 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <SlnGenSolutionItem Include="$(MSBuildThisFileDirectory)\Directory.Build.props" />
+    <SlnGenSolutionItem Include="$(MSBuildThisFileDirectory)\*.props" />
+    <SlnGenSolutionItem Include="$(MSBuildThisFileDirectory)\Directory.Build.rsp" />
+    <SlnGenSolutionItem Include="$(MSBuildThisFileDirectory)\*.targets" />
+    <SlnGenSolutionItem Include="$(MSBuildThisFileDirectory)\*.json" />
+    <SlnGenSolutionItem Include="$(MSBuildThisFileDirectory)\NuGet.config" />
+    <SlnGenSolutionItem Include="$(MSBuildThisFileDirectory)\*.md" />
   </ItemGroup>
 </Project>
