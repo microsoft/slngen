@@ -33,8 +33,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="build\SlnGen.targets" Pack="true" PackagePath="\" />
-    <None Update="buildCrossTargeting\SlnGen.targets" Pack="true" PackagePath="\" />
+    <None Include="build\SlnGen.targets" Pack="true" PackagePath="\build" />
+    <None Include="buildCrossTargeting\SlnGen.targets" Pack="true" PackagePath="\buildCrossTargeting" />
   </ItemGroup>
   
   <Target Name="_UpdatePackageId" BeforeTargets="$(PackDependsOn)" >
