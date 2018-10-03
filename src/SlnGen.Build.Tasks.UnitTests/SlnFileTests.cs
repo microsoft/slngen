@@ -7,6 +7,7 @@ using Shouldly;
 using SlnGen.Build.Tasks.Internal;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Xunit;
 using MSBuildSolutionFile = Microsoft.Build.Construction.SolutionFile;
@@ -67,6 +68,22 @@ namespace SlnGen.Build.Tasks.UnitTests
             };
 
             ValidateProjectInSolution((s, p) => p.ParentProjectGuid.ShouldBe(null), projects, false);
+        }
+
+        [Fact]
+        public void SaveToCustomLocationCreatesDirectory()
+        {
+            DirectoryInfo directoryInfo = new DirectoryInfo(Path.Combine(TestRootPath, "1", "2", "3"));
+
+            directoryInfo.Exists.ShouldBeFalse();
+
+            string fullPath = Path.Combine(directoryInfo.FullName, Path.GetRandomFileName());
+
+            SlnFile slnFile = new SlnFile();
+
+            slnFile.Save(fullPath, folders: false);
+
+            File.Exists(fullPath).ShouldBeTrue();
         }
 
         private void ValidateProjectInSolution(Action<SlnProject, ProjectInSolution> customValidator, SlnProject[] projects, bool folders)
