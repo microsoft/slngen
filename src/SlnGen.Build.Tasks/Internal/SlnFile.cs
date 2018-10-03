@@ -80,6 +80,13 @@ namespace SlnGen.Build.Tasks.Internal
         /// <param name="folders">Specifies if folders should be created.</param>
         public void Save(string path, bool folders)
         {
+            string directoryName = Path.GetDirectoryName(path);
+
+            if (!String.IsNullOrWhiteSpace(directoryName))
+            {
+                Directory.CreateDirectory(directoryName);
+            }
+
             using (StreamWriter writer = File.CreateText(path))
             {
                 Save(writer, folders);
