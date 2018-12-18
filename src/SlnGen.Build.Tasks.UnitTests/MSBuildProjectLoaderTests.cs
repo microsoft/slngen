@@ -16,8 +16,6 @@ namespace SlnGen.Build.Tasks.UnitTests
 {
     public class MSBuildProjectLoaderTests : TestBase
     {
-        private const string MSBuildToolsVersion = "15.0";
-
         [Fact]
         public void ArgumentNullException_BuildEngine()
         {
@@ -40,7 +38,7 @@ namespace SlnGen.Build.Tasks.UnitTests
 
             BuildEngine buildEngine = BuildEngine.Create();
 
-            MSBuildProjectLoader loader = new MSBuildProjectLoader(null, MSBuildToolsVersion, buildEngine);
+            MSBuildProjectLoader loader = new MSBuildProjectLoader(null, ProjectCollection.GlobalProjectCollection.DefaultToolsVersion, buildEngine);
 
             loader.LoadProjectsAndReferences(new[] { dirsProj.FullPath });
 
@@ -62,7 +60,7 @@ namespace SlnGen.Build.Tasks.UnitTests
 
             BuildEngine buildEngine = BuildEngine.Create();
 
-            MSBuildProjectLoader loader = new MSBuildProjectLoader(expectedGlobalProperties, MSBuildToolsVersion, buildEngine);
+            MSBuildProjectLoader loader = new MSBuildProjectLoader(expectedGlobalProperties, ProjectCollection.GlobalProjectCollection.DefaultToolsVersion, buildEngine);
 
             ProjectCollection projectCollection = loader.LoadProjectsAndReferences(new[] { projectA.FullPath });
 
@@ -85,7 +83,7 @@ namespace SlnGen.Build.Tasks.UnitTests
 
             BuildEngine buildEngine = BuildEngine.Create();
 
-            MSBuildProjectLoader loader = new MSBuildProjectLoader(null, MSBuildToolsVersion, buildEngine);
+            MSBuildProjectLoader loader = new MSBuildProjectLoader(null, ProjectCollection.GlobalProjectCollection.DefaultToolsVersion, buildEngine);
 
             loader.LoadProjectsAndReferences(new[] { dirsProj.FullPath });
 
@@ -112,7 +110,7 @@ namespace SlnGen.Build.Tasks.UnitTests
 
             BuildEngine buildEngine = BuildEngine.Create();
 
-            MSBuildProjectLoader loader = new MSBuildProjectLoader(null, MSBuildToolsVersion, buildEngine);
+            MSBuildProjectLoader loader = new MSBuildProjectLoader(null, ProjectCollection.GlobalProjectCollection.DefaultToolsVersion, buildEngine);
 
             ProjectCollection projectCollection = loader.LoadProjectsAndReferences(new[] { projectA.FullPath });
 
@@ -139,7 +137,7 @@ namespace SlnGen.Build.Tasks.UnitTests
 
             BuildEngine buildEngine = BuildEngine.Create();
 
-            MSBuildProjectLoader loader = new MSBuildProjectLoader(null, MSBuildToolsVersion, buildEngine);
+            MSBuildProjectLoader loader = new MSBuildProjectLoader(null, ProjectCollection.GlobalProjectCollection.DefaultToolsVersion, buildEngine);
 
             ProjectCollection projectCollection = loader.LoadProjectsAndReferences(new[] { dirsProj.FullPath });
 
