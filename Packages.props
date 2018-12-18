@@ -2,7 +2,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <PackageReference Update="JetBrains.Annotations" Version="2018.2.1" />
-    <PackageReference Update="MSBuild.ProjectCreation" Version="1.2.5" />
+    <PackageReference Update="MSBuild.ProjectCreation" Version="1.2.8" />
     <PackageReference Update="Microsoft.Build" Version="15.8.166" ExcludeAssets="Runtime" />
     <PackageReference Update="Microsoft.Build.Framework" Version="15.8.166" ExcludeAssets="Runtime" />
     <PackageReference Update="Microsoft.NET.Test.Sdk" Version="15.8.0" />

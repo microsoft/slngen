@@ -10,7 +10,7 @@
     <Description>MSBuild-based Visual Studio solution file generator</Description>
     <Authors>jeffkl;amrh</Authors>
     <Copyright>Copyright ©  2017.  All rights reserved.</Copyright>
-    <PackageLicenseUrl>https://github.com/jeffkl/SlnGen/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/jeffkl/SlnGen</PackageProjectUrl>
     <RepositoryUrl>https://github.com/jeffkl/SlnGen.git</RepositoryUrl>
     <PackageTags>msbuild;visualstudio;solution</PackageTags>
