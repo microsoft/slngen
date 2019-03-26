@@ -77,8 +77,8 @@ namespace SlnGen.Build.Tasks.Internal
         /// Saves the Visual Studio solution to a file.
         /// </summary>
         /// <param name="path">The full path to the file to write to.</param>
-        /// <param name="folders">Specifies if folders should be created.</param>
-        public void Save(string path, bool folders)
+        /// <param name="useFolders">Specifies if folders should be created.</param>
+        public void Save(string path, bool useFolders)
         {
             string directoryName = Path.GetDirectoryName(path);
 
@@ -89,23 +89,17 @@ namespace SlnGen.Build.Tasks.Internal
 
             using (StreamWriter writer = File.CreateText(path))
             {
-                Save(writer, folders);
+                Save(writer, useFolders);
             }
         }
 
-        public void Save(TextWriter writer, bool folders)
+        public void Save(TextWriter writer, bool useFolders)
         {
             writer.WriteLine(Header, _fileFormatVersion);
 
-            foreach (SlnProject project in _projects)
-            {
-                writer.WriteLine($@"Project(""{project.ProjectTypeGuid.ToSolutionString()}"") = ""{project.Name}"", ""{project.FullPath}"", ""{project.ProjectGuid.ToSolutionString()}""");
-                writer.WriteLine("EndProject");
-            }
-
             if (SolutionItems.Count > 0)
             {
-                writer.WriteLine($@"Project(""{SlnFolder.FolderProjectTypeGuid.ToSolutionString()}"") = ""Solution Items"", ""Solution Items"", ""{Guid.NewGuid().ToSolutionString()}"" ");
+                writer.WriteLine($@"Project(""{SlnFolder.FolderProjectTypeGuid.ToSolutionString()}"") = "".Solution Items"", ""Solution Items"", ""{Guid.NewGuid().ToSolutionString()}"" ");
                 writer.WriteLine("	ProjectSection(SolutionItems) = preProject");
                 foreach (string solutionItem in SolutionItems)
                 {
@@ -116,23 +110,43 @@ namespace SlnGen.Build.Tasks.Internal
                 writer.WriteLine("EndProject");
             }
 
+            foreach (SlnProject project in _projects)
+            {
+                writer.WriteLine($@"Project(""{project.ProjectTypeGuid.ToSolutionString()}"") = ""{project.Name}"", ""{project.FullPath}"", ""{project.ProjectGuid.ToSolutionString()}""");
+                writer.WriteLine("EndProject");
+            }
+
             SlnHierarchy hierarchy = null;
 
-            if (folders)
+            if (useFolders)
             {
-                hierarchy = SlnHierarchy.FromProjects(_projects);
+                hierarchy = new SlnHierarchy(_projects);
 
-                if (hierarchy.Folders.Count > 0)
+                foreach (SlnFolder folder in hierarchy.Folders)
                 {
-                    foreach (SlnFolder folder in hierarchy.Folders)
-                    {
-                        writer.WriteLine($@"Project(""{folder.ProjectTypeGuid.ToSolutionString()}"") = ""{folder.Name}"", ""{folder.FullPath}"", ""{folder.FolderGuid.ToSolutionString()}""");
-                        writer.WriteLine("EndProject");
-                    }
+                    writer.WriteLine($@"Project(""{folder.ProjectTypeGuid.ToSolutionString()}"") = ""{folder.Name}"", ""{folder.FullPath}"", ""{folder.FolderGuid.ToSolutionString()}""");
+                    writer.WriteLine("EndProject");
                 }
             }
 
             writer.WriteLine("Global");
+
+            if (useFolders && _projects.Count > 1)
+            {
+                writer.WriteLine(@"	GlobalSection(NestedProjects) = preSolution");
+
+                foreach (SlnFolder folder in hierarchy.Folders.Where(i => i.Parent != null))
+                {
+                    foreach (SlnProject project in folder.Projects)
+                    {
+                        writer.WriteLine($@"		{project.ProjectGuid.ToSolutionString()} = {folder.FolderGuid.ToSolutionString()}");
+                    }
+
+                    writer.WriteLine($@"		{folder.FolderGuid.ToSolutionString()} = {folder.Parent.FolderGuid.ToSolutionString()}");
+                }
+
+                writer.WriteLine("	EndGlobalSection");
+            }
 
             writer.WriteLine("	GlobalSection(SolutionConfigurationPlatforms) = preSolution");
 
@@ -150,7 +164,7 @@ namespace SlnGen.Build.Tasks.Internal
                 }
             }
 
-            writer.WriteLine(" EndGlobalSection");
+            writer.WriteLine("	EndGlobalSection");
 
             writer.WriteLine("	GlobalSection(ProjectConfigurationPlatforms) = preSolution");
             foreach (SlnProject project in _projects)
@@ -168,19 +182,7 @@ namespace SlnGen.Build.Tasks.Internal
                 }
             }
 
-            writer.WriteLine(" EndGlobalSection");
-
-            if (folders
-                && _projects.Count > 1)
-            {
-                writer.WriteLine(@"	GlobalSection(NestedProjects) = preSolution");
-                foreach (KeyValuePair<Guid, Guid> nestedProject in hierarchy.Hierarchy)
-                {
-                    writer.WriteLine($@"		{nestedProject.Key.ToSolutionString()} = {nestedProject.Value.ToSolutionString()}");
-                }
-
-                writer.WriteLine("	EndGlobalSection");
-            }
+            writer.WriteLine("	EndGlobalSection");
 
             writer.WriteLine("EndGlobal");
         }
