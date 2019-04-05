@@ -14,6 +14,7 @@
     <PackageProjectUrl>https://github.com/jeffkl/SlnGen</PackageProjectUrl>
     <RepositoryUrl>https://github.com/jeffkl/SlnGen.git</RepositoryUrl>
     <PackageTags>msbuild;visualstudio;solution</PackageTags>
+    <DevelopmentDependency>true</DevelopmentDependency>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
@@ -45,5 +46,12 @@
     <PropertyGroup>
       <PackageId>SlnGen</PackageId>
     </PropertyGroup>
+  </Target>
+
+  <Target Name="RemoveFrameworkAssemblyReferences"
+          BeforeTargets="GenerateNuspec">
+    <ItemGroup>
+      <_FrameworkAssemblyReferences Remove="@(_FrameworkAssemblyReferences)" />
+    </ItemGroup>
   </Target>
 </Project>
