@@ -115,7 +115,7 @@ namespace SlnGen.Build.Tasks
             }
 
             // filter those that were already in the Properties
-            foreach (var conditionPropertyValue in project.GetConditionedPropertyValuesOrDefault(name, string.Empty))
+            foreach (string conditionPropertyValue in project.GetConditionedPropertyValuesOrDefault(name, string.Empty))
             {
                 values.Add(conditionPropertyValue);
             }

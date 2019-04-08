@@ -10,13 +10,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Xunit;
-using MSBuildSolutionFile = Microsoft.Build.Construction.SolutionFile;
 
 namespace SlnGen.Build.Tasks.UnitTests
 {
     public class SlnFileTests : TestBase
     {
-        // TODO: Test hierarchy
         [Fact]
         public void LotsOfProjects()
         {
@@ -24,16 +22,16 @@ namespace SlnGen.Build.Tasks.UnitTests
 
             SlnProject[] projects = new SlnProject[projectCount];
 
-            var configurations = new[] { "Debug", "Release" };
-            var platforms = new[] { "x64", "x86", "Any CPU", "amd64" };
+            string[] configurations = { "Debug", "Release" };
+            string[] platforms = { "x64", "x86", "Any CPU", "amd64" };
 
-            var randomGenerator = new Random(Guid.NewGuid().GetHashCode());
+            Random randomGenerator = new Random(Guid.NewGuid().GetHashCode());
 
             for (int i = 0; i < projectCount; i++)
             {
                 // pick random and shuffled configurations and platforms
-                var projectConfigurations = configurations.OrderBy(a => Guid.NewGuid()).Take(randomGenerator.Next(1, configurations.Length)).ToList();
-                var projectPlatforms = platforms.OrderBy(a => Guid.NewGuid()).Take(randomGenerator.Next(1, platforms.Length)).ToList();
+                List<string> projectConfigurations = configurations.OrderBy(a => Guid.NewGuid()).Take(randomGenerator.Next(1, configurations.Length)).ToList();
+                List<string> projectPlatforms = platforms.OrderBy(a => Guid.NewGuid()).Take(randomGenerator.Next(1, platforms.Length)).ToList();
                 projects[i] = new SlnProject(GetTempFileName(), $"Project{i:D6}", Guid.NewGuid(), Guid.NewGuid(), projectConfigurations, projectPlatforms, isMainProject: i == 0);
             }
 
@@ -50,17 +48,9 @@ namespace SlnGen.Build.Tasks.UnitTests
         }
 
         [Fact]
-        public void SingleProject()
-        {
-            SlnProject projectA = new SlnProject(GetTempFileName(), "ProjectA", new Guid("C95D800E-F016-4167-8E1B-1D3FF94CE2E2"), new Guid("88152E7E-47E3-45C8-B5D3-DDB15B2F0435"), new[] { "Debug" }, new[] { "x64" }, isMainProject: true);
-
-            ValidateProjectInSolution(projectA);
-        }
-
-        [Fact]
         public void NoFolders()
         {
-            SlnProject[] projects = new SlnProject[]
+            SlnProject[] projects =
             {
                 new SlnProject(GetTempFileName(), "ProjectA", new Guid("C95D800E-F016-4167-8E1B-1D3FF94CE2E2"), new Guid("88152E7E-47E3-45C8-B5D3-DDB15B2F0435"), new[] { "Debug" }, new[] { "x64" }, isMainProject: true),
                 new SlnProject(GetTempFileName(), "ProjectB", new Guid("EAD108BE-AC70-41E6-A8C3-450C545FDC0E"), new Guid("F38341C3-343F-421A-AE68-94CD9ADCD32F"), new[] { "Debug" }, new[] { "x64" }, isMainProject: false),
@@ -81,9 +71,17 @@ namespace SlnGen.Build.Tasks.UnitTests
 
             SlnFile slnFile = new SlnFile();
 
-            slnFile.Save(fullPath, folders: false);
+            slnFile.Save(fullPath, useFolders: false);
 
             File.Exists(fullPath).ShouldBeTrue();
+        }
+
+        [Fact]
+        public void SingleProject()
+        {
+            SlnProject projectA = new SlnProject(GetTempFileName(), "ProjectA", new Guid("C95D800E-F016-4167-8E1B-1D3FF94CE2E2"), new Guid("88152E7E-47E3-45C8-B5D3-DDB15B2F0435"), new[] { "Debug" }, new[] { "x64" }, isMainProject: true);
+
+            ValidateProjectInSolution(projectA);
         }
 
         private void ValidateProjectInSolution(Action<SlnProject, ProjectInSolution> customValidator, SlnProject[] projects, bool folders)
@@ -95,7 +93,7 @@ namespace SlnGen.Build.Tasks.UnitTests
             slnFile.AddProjects(projects);
             slnFile.Save(solutionFilePath, folders);
 
-            MSBuildSolutionFile solutionFile = MSBuildSolutionFile.Parse(solutionFilePath);
+            SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
 
             foreach (SlnProject slnProject in projects)
             {

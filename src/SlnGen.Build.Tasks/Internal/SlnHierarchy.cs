@@ -15,44 +15,47 @@ namespace SlnGen.Build.Tasks.Internal
     /// <remarks>This assumes all projects are on the same drive.</remarks>
     internal sealed class SlnHierarchy
     {
-        private readonly List<SlnFolder> _folders = new List<SlnFolder>();
-        private readonly Dictionary<Guid, Guid> _hierarchy = new Dictionary<Guid, Guid>();
-        private readonly Dictionary<string, Guid> _itemId = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
+        /// <summary>
+        /// Stores a mapping of full paths to <see cref="SlnFolder" /> objects.
+        /// </summary>
+        private readonly Dictionary<string, SlnFolder> _pathToSlnFolderMap = new Dictionary<string, SlnFolder>(StringComparer.OrdinalIgnoreCase);
 
-        private SlnHierarchy()
+        /// <summary>
+        /// Stores the root folder based on a common rooted path for all projects.
+        /// </summary>
+        private readonly SlnFolder _rootFolder;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SlnHierarchy" /> class.
+        /// </summary>
+        /// <param name="projects">The set of projects that should be placed in the hierarchy.</param>
+        /// <param name="collapseFolders">An optional value indicating whether or not folders containing a single item should be collapsed into their parent folder.</param>
+        public SlnHierarchy(IReadOnlyList<SlnProject> projects, bool collapseFolders = false)
         {
-        }
+            _rootFolder = GetRootFolder(projects);
 
-        public IReadOnlyCollection<SlnFolder> Folders => _folders;
-
-        public IReadOnlyDictionary<Guid, Guid> Hierarchy => _hierarchy;
-
-        public static SlnHierarchy FromProjects(IReadOnlyList<SlnProject> projects)
-        {
-            SlnHierarchy hierarchy = new SlnHierarchy();
-
-            List<string> projectDirectoryPaths = projects.Where(i => !i.IsMainProject).Select(i => Directory.GetParent(i.FullPath).FullName).ToList();
-
-            if (projectDirectoryPaths.Count > 1)
+            foreach (SlnProject project in projects.Where(i => !i.IsMainProject))
             {
-                string commonPrefix = GetCommonDirectoryPath(projectDirectoryPaths);
-
-                foreach (SlnProject project in projects)
-                {
-                    if (project.IsMainProject)
-                    {
-                        continue;
-                    }
-
-                    hierarchy.BuildHierarchyBottomUp(project, commonPrefix.TrimEnd(Path.DirectorySeparatorChar));
-                }
+                CreateHierarchy(project);
             }
 
-            return hierarchy;
+            if (collapseFolders)
+            {
+                CollapseFolders(_rootFolder.Folders);
+            }
         }
 
-        public static string GetCommonDirectoryPath(IReadOnlyList<string> paths)
+        public IEnumerable<SlnFolder> Folders => EnumerateFolders(_rootFolder);
+
+        private static SlnFolder GetRootFolder(IEnumerable<SlnProject> projects)
         {
+            List<string> paths = projects.Where(i => !i.IsMainProject).Select(i => Directory.GetParent(i.FullPath).FullName).ToList();
+
+            if (!paths.Any())
+            {
+                throw new InvalidOperationException();
+            }
+
             // TODO: Unit tests, optimize
             string commonPath = String.Empty;
 
@@ -61,15 +64,16 @@ namespace SlnGen.Build.Tasks.Internal
                 .Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries)
                 .ToList();
 
+            string nextPath = null;
             foreach (string pathSegment in separatedPath.AsEnumerable())
             {
                 if (commonPath.Length == 0 && paths.All(str => str.StartsWith(pathSegment)))
                 {
                     commonPath = pathSegment;
                 }
-                else if (paths.All(str => str.StartsWith(commonPath + Path.DirectorySeparatorChar + pathSegment)))
+                else if (paths.All(str => str.StartsWith(nextPath = $"{commonPath}{Path.DirectorySeparatorChar}{pathSegment}{Path.DirectorySeparatorChar}")))
                 {
-                    commonPath += Path.DirectorySeparatorChar + pathSegment;
+                    commonPath = nextPath;
                 }
                 else
                 {
@@ -77,35 +81,84 @@ namespace SlnGen.Build.Tasks.Internal
                 }
             }
 
-            return commonPath;
+            return new SlnFolder(commonPath.TrimEnd(Path.DirectorySeparatorChar));
         }
 
-        private void BuildHierarchyBottomUp(SlnProject project, string root)
+        private void CollapseFolders(IReadOnlyCollection<SlnFolder> folders)
         {
-            // TODO: Collapse folders with single sub folder.  So if foo had just a subfolder bar, collapse it to foo\bar in Visual Studio
-            string parent = Directory.GetParent(project.FullPath).FullName;
-            Guid currentGuid = project.ProjectGuid;
-
-            while (true)
+            foreach (SlnFolder folder in folders)
             {
-                bool visited = _itemId.TryGetValue(parent, out Guid parentGuid);
-                if (!visited)
-                {
-                    parentGuid = Guid.NewGuid();
-                    _itemId.Add(parent, parentGuid);
-                    _folders.Add(new SlnFolder(parent, parentGuid));
-                }
-
-                _hierarchy[currentGuid] = parentGuid;
-
-                if (visited || parent.Equals(root, StringComparison.OrdinalIgnoreCase))
-                {
-                    return;
-                }
-
-                currentGuid = parentGuid;
-                parent = Directory.GetParent(parent).FullName;
+                CollapseFolders(folder.Folders);
             }
+
+            foreach (SlnFolder folderWithSingleChild in folders.Where(i => i.Folders.Count == 1))
+            {
+                SlnFolder child = folderWithSingleChild.Folders.First();
+
+                folderWithSingleChild.Name = $"{folderWithSingleChild.Name}-{child.Name}";
+                folderWithSingleChild.Projects.AddRange(child.Projects);
+                folderWithSingleChild.Folders.Clear();
+            }
+        }
+
+        private void CreateHierarchy(SlnProject project)
+        {
+            FileInfo fileInfo = new FileInfo(project.FullPath);
+
+            DirectoryInfo directoryInfo = fileInfo.Directory;
+
+            if (_pathToSlnFolderMap.TryGetValue(directoryInfo.FullName, out SlnFolder childFolder))
+            {
+                childFolder.Projects.Add(project);
+
+                return;
+            }
+
+            childFolder = new SlnFolder(directoryInfo.FullName);
+
+            childFolder.Projects.Add(project);
+
+            _pathToSlnFolderMap.Add(directoryInfo.FullName, childFolder);
+
+            directoryInfo = directoryInfo.Parent;
+
+            while (!string.Equals(directoryInfo.FullName, _rootFolder.FullPath, StringComparison.OrdinalIgnoreCase))
+            {
+                if (!_pathToSlnFolderMap.TryGetValue(directoryInfo.FullName, out SlnFolder folder1))
+                {
+                    folder1 = new SlnFolder(directoryInfo.FullName);
+                    _pathToSlnFolderMap.Add(directoryInfo.FullName, folder1);
+                }
+
+                childFolder.Parent = folder1;
+
+                if (!folder1.Folders.Contains(childFolder))
+                {
+                    folder1.Folders.Add(childFolder);
+                }
+
+                directoryInfo = directoryInfo.Parent;
+
+                childFolder = folder1;
+            }
+
+            if (!_rootFolder.Folders.Contains(childFolder))
+            {
+                _rootFolder.Folders.Add(childFolder);
+            }
+        }
+
+        private IEnumerable<SlnFolder> EnumerateFolders(SlnFolder folder)
+        {
+            foreach (SlnFolder child in folder.Folders)
+            {
+                foreach (SlnFolder enumerateFolder in EnumerateFolders(child))
+                {
+                    yield return enumerateFolder;
+                }
+            }
+
+            yield return folder;
         }
     }
 }
