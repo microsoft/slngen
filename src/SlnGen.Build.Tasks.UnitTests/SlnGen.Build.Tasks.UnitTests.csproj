@@ -12,7 +12,18 @@
     <PackageReference Include="Shouldly" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
 
+  <ItemGroup>
     <ProjectReference Include="..\SlnGen.Build.Tasks\SlnGen.Build.Tasks.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\SlnGen.Build.Tasks\build\*"
+             CopyToOutputDirectory="PreserveNewest"
+             Link="build\%(Filename)%(Extension)" />
+    <Content Include="..\SlnGen.Build.Tasks\buildCrossTargeting\*"
+             CopyToOutputDirectory="PreserveNewest"
+             Link="buildCrossTargeting\%(Filename)%(Extension)" />
   </ItemGroup>
 </Project>

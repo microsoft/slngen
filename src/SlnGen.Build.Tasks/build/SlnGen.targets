@@ -1,18 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-
-  <Import Project="$(CustomBeforeSlnGenTargets)" Condition="'$(CustomBeforeSlnGenTargets)' != '' and Exists('$(CustomBeforeSlnGenTargets)')"/>
-
-  <PropertyGroup Condition=" '$(SlnGenAssemblyFile)' == '' ">
-    <SlnGenAssemblyFile Condition=" '$(MSBuildRuntimeType)' == '' ">$(MSBuildThisFileDirectory)net45\SlnGen.Build.Tasks.dll</SlnGenAssemblyFile>
-    <SlnGenAssemblyFile Condition=" '$(MSBuildRuntimeType)' == 'Full' ">$(MSBuildThisFileDirectory)net46\SlnGen.Build.Tasks.dll</SlnGenAssemblyFile>
-    <SlnGenAssemblyFile Condition=" '$(MSBuildRuntimeType)' == 'Core' ">$(MSBuildThisFileDirectory)netstandard2.0\SlnGen.Build.Tasks.dll</SlnGenAssemblyFile>
-  </PropertyGroup>
-  
-  <PropertyGroup>
-    <SlnGenGlobalProperties Condition=" '$(SlnGenGlobalProperties)' != '' ">DesignTimeBuild=true;BuildingProject=false;$(SlnGenGlobalProperties)</SlnGenGlobalProperties>
-    <SlnGenGlobalProperties Condition=" '$(SlnGenGlobalProperties)' == '' ">DesignTimeBuild=true;BuildingProject=false</SlnGenGlobalProperties>
-  </PropertyGroup>
+  <Import Project="Before.SlnGen.targets" />
 
   <Target Name="SlnGen"
           Condition=" '$(BuildingSolutionFile)' != 'true' Or '$(SolutionDir)' == '$(MSBuildProjectDirectory)\' "
@@ -42,8 +30,6 @@
 
   </Target>
 
-  <UsingTask TaskName="SlnGen" AssemblyFile="$(SlnGenAssemblyFile)" />
-
-  <Import Project="$(CustomAfterSlnGenTargets)" Condition="'$(CustomAfterSlnGenTargets)' != '' and Exists('$(CustomAfterSlnGenTargets)')"/>
+  <Import Project="After.SlnGen.targets" />
 
 </Project>
