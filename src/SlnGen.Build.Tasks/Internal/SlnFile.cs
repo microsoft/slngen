@@ -177,6 +177,10 @@ namespace SlnGen.Build.Tasks.Internal
                         {
                             writer.WriteLine($@"		{project.ProjectGuid.ToSolutionString()}.{configuration}|{platform}.ActiveCfg = {configuration}|{platform}");
                             writer.WriteLine($@"		{project.ProjectGuid.ToSolutionString()}.{configuration}|{platform}.Build.0 = {configuration}|{platform}");
+                            if (project.IsDeployable)
+                            {
+                                writer.WriteLine($@"		{project.ProjectGuid.ToSolutionString()}.{configuration}|{platform}.Deploy.0 = {configuration}|{platform}");
+                            }
                         }
                     }
                 }

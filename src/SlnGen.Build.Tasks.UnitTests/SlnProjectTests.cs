@@ -89,12 +89,15 @@ namespace SlnGen.Build.Tasks.UnitTests
                 case "":
                     actualProject.ProjectTypeGuid.ShouldBe(SlnProject.DefaultLegacyProjectTypeGuid);
                     break;
+
                 case ".csproj":
                     actualProject.ProjectTypeGuid.ShouldBe(new Guid("FAE04EC0-301F-11D3-BF4B-00C04F79EFBC"));
                     break;
+
                 case ".vbproj":
                     actualProject.ProjectTypeGuid.ShouldBe(new Guid("F184B08F-C81C-45F6-A57F-5ABD9991F28F"));
                     break;
+
                 default:
                     actualProject.ProjectTypeGuid.ShouldBe(SlnProject.KnownProjectTypeGuids[extension]);
                     break;
@@ -121,16 +124,32 @@ namespace SlnGen.Build.Tasks.UnitTests
                 case "":
                     actualProject.ProjectTypeGuid.ShouldBe(SlnProject.DefaultNetSdkProjectTypeGuid);
                     break;
+
                 case ".csproj":
                     actualProject.ProjectTypeGuid.ShouldBe(new Guid("9A19103F-16F7-4668-BE54-9A1E7A4F7556"));
                     break;
+
                 case ".vbproj":
                     actualProject.ProjectTypeGuid.ShouldBe(new Guid("778DAE3C-4631-46EA-AA77-85C1314464D9"));
                     break;
+
                 default:
                     actualProject.ProjectTypeGuid.ShouldBe(SlnProject.KnownProjectTypeGuids[extension]);
                     break;
             }
+        }
+
+        [Theory]
+        [InlineData("true", ".csproj", true)]
+        [InlineData("false", ".csproj", false)]
+        [InlineData(null, ".csproj", false)]
+        [InlineData(null, ".sfproj", true)]
+        [InlineData("false", ".sfproj", false)]
+        public void IsDeployable(string isDeployable, string projectExtension, bool expected)
+        {
+            SlnProject project = CreateAndValidateProject(extension: projectExtension, isDeployable: isDeployable);
+
+            project.IsDeployable.ShouldBe(expected);
         }
 
         [Theory]
@@ -179,8 +198,18 @@ namespace SlnGen.Build.Tasks.UnitTests
             CreateAndValidateProject(expectedGuid: "{DE681393-7151-459D-862C-918CCD2CB371}");
         }
 
-        private SlnProject CreateAndValidateProject(bool isMainProject = false, string expectedGuid = null, string expectedName = null, string extension = ".csproj", IDictionary<string, string> globalProperties = null)
+        private SlnProject CreateAndValidateProject(bool isMainProject = false, string expectedGuid = null, string expectedName = null, string extension = ".csproj", IDictionary<string, string> globalProperties = null, string isDeployable = null)
         {
+            if (!string.IsNullOrWhiteSpace(isDeployable))
+            {
+                if (globalProperties == null)
+                {
+                    globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                }
+
+                globalProperties["SlnGenIsDeployable"] = isDeployable;
+            }
+
             Project expectedProject = CreateProject(expectedGuid, expectedName, extension, globalProperties);
 
             SlnProject actualProject = SlnProject.FromProject(expectedProject, new Dictionary<string, Guid>(), isMainProject);
