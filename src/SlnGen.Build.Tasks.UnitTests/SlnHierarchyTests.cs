@@ -22,10 +22,10 @@ namespace SlnGen.Build.Tasks.UnitTests
 
             List<SlnProject> projects = new List<SlnProject>
             {
-                new SlnProject(@"D:\foo\bar\baz\baz.csproj", "baz", Guid.NewGuid(), SlnProject.DefaultLegacyProjectTypeGuid, configurations, platforms, false),
-                new SlnProject(@"D:\foo\bar\baz1\baz1.csproj", "baz1", Guid.NewGuid(), SlnProject.DefaultLegacyProjectTypeGuid, configurations, platforms, false),
-                new SlnProject(@"D:\foo\bar\baz2\baz2.csproj", "baz2", Guid.NewGuid(), SlnProject.DefaultLegacyProjectTypeGuid, configurations, platforms, false),
-                new SlnProject(@"D:\foo\bar1\bar1.csproj", "bar1", Guid.NewGuid(), SlnProject.DefaultLegacyProjectTypeGuid, configurations, platforms, false)
+                new SlnProject(@"D:\foo\bar\baz\baz.csproj", "baz", Guid.NewGuid(), SlnProject.DefaultLegacyProjectTypeGuid, configurations, platforms, false, isDeployable: false),
+                new SlnProject(@"D:\foo\bar\baz1\baz1.csproj", "baz1", Guid.NewGuid(), SlnProject.DefaultLegacyProjectTypeGuid, configurations, platforms, false, isDeployable: false),
+                new SlnProject(@"D:\foo\bar\baz2\baz2.csproj", "baz2", Guid.NewGuid(), SlnProject.DefaultLegacyProjectTypeGuid, configurations, platforms, false, isDeployable: false),
+                new SlnProject(@"D:\foo\bar1\bar1.csproj", "bar1", Guid.NewGuid(), SlnProject.DefaultLegacyProjectTypeGuid, configurations, platforms, false, isDeployable: false)
             };
 
             SlnHierarchy hierarchy = new SlnHierarchy(projects);

@@ -53,12 +53,13 @@ namespace SlnGen.Build.Tasks.Internal
             [".wixproj"] = new Guid("930C7802-8A8C-48F9-8165-68863BCCD9DD")
         };
 
-        public SlnProject([NotNull] string fullPath, [NotNull] string name, Guid projectGuid, Guid projectTypeGuid, [NotNull] IEnumerable<string> configurations, [NotNull] IEnumerable<string> platforms, bool isMainProject)
+        public SlnProject([NotNull] string fullPath, [NotNull] string name, Guid projectGuid, Guid projectTypeGuid, [NotNull] IEnumerable<string> configurations, [NotNull] IEnumerable<string> platforms, bool isMainProject, bool isDeployable)
         {
             FullPath = fullPath ?? throw new ArgumentNullException(nameof(fullPath));
             Name = name ?? throw new ArgumentNullException(nameof(name));
             ProjectGuid = projectGuid;
             ProjectTypeGuid = projectTypeGuid;
+            IsDeployable = isDeployable;
             IsMainProject = isMainProject;
             Configurations = configurations;
             Platforms = platforms;
@@ -67,6 +68,8 @@ namespace SlnGen.Build.Tasks.Internal
         public IEnumerable<string> Configurations { get; }
 
         public string FullPath { get; }
+
+        public bool IsDeployable { get; }
 
         public bool IsMainProject { get; }
 
@@ -109,7 +112,22 @@ namespace SlnGen.Build.Tasks.Internal
                 throw new FormatException($"property ProjectGuid has an invalid format in {project.FullPath}");
             }
 
-            return new SlnProject(project.FullPath, name, projectGuid, projectTypeGuid, configurations, platforms, isMainProject);
+            string isDeployableStr = project.GetPropertyValue("SlnGenIsDeployable");
+
+            bool isDeployable = false;
+
+            string projectFileExtension = Path.GetExtension(project.FullPath);
+
+            if (string.IsNullOrWhiteSpace(isDeployableStr) && !string.IsNullOrWhiteSpace(projectFileExtension) && projectFileExtension.Equals(".sfproj", StringComparison.OrdinalIgnoreCase))
+            {
+                isDeployable = true;
+            }
+            else
+            {
+                isDeployable = isDeployableStr.Equals("true", StringComparison.OrdinalIgnoreCase);
+            }
+
+            return new SlnProject(project.FullPath, name, projectGuid, projectTypeGuid, configurations, platforms, isMainProject, isDeployable);
         }
 
         /// <summary>
