@@ -31,6 +31,33 @@ By default, Visual Studio is launched and opens your generated solution file.
 
 Read more below to learn how to configure the behavior of SlnGen to fit your needs.
 
+## Customize the Solution File
+Use the following properties and items to customize the generated Solution file.
+
+| Property                 | Description                                                                                                | Values             | Default |
+|-----------------------------|--------------------------------------------------|
+| IncludeInSolutionFile | Indicates whether or not a project should be included in a generated Solution file. | `true` or `false` | `true` |
+| SlnGenFolders | Indicates whether or not a hierarchy of folders should be created.  If `false`, the projects are in a flat list. | `true` or `false` | `true` |
+
+| Item                        | Description                                      |
+|-----------------------------|--------------------------------------------------|
+| SlnGenSolutionItem | Specifies a file to include as a Solution Item. |
+
+
+```xml
+<PropertyGroup>
+  <!-- Exclude .sqlproj projects from generated solution files -->
+  <IncludeInSolutionFile Condition="'$(MSBuildProjectExtension)' == '.sqlproj'">false</SlnGenLaunchVisualStudio>
+
+  <!-- Disable folder hierarchy in Solution files, projects will be in a flat list instead -->
+  <SlnGenFolders>false</SlnGenFolders>
+</PropertyGroup>
+
+<ItemGroup>
+  <SlnGenSolutionItem Include="$(MSBuildThisFileDirectory)global.json" />
+  <SlnGenSolutionItem Include="$(MSBuildThisFileDirectory)README.md" />
+</ItemGroup>
+```
 
 ## Launching of Visual Studio
 
@@ -41,8 +68,6 @@ Read more below to learn how to configure the behavior of SlnGen to fit your nee
 | SlnGenSolutionFileFullPath | Specifies the full path to the Visual Studio solution file to generate.  By default, the path is the same as the project. | | ProjectPath.sln|
 | SlnGenUseShellExecute | Indicates whether or not the Visual Studio solution file should be opened by the registered file extension handler.  You can disable this setting to use whatever `devenv.exe` is on your `PATH` or you can specify a full path to `devenve.exe` with the `SlnGenDevEnvFullPath` property. | `true` or `false` | `true` |
 | SlnGenDevEnvFullPath | Specifies a full path to Visual Studio's `devenv.exe` to use when opening the solution file.  By default, SlnGen will launch the program associated with the `.sln` file extension.  However, in some cases you may want to specify a custom path to Visual Studio. | | |
-| SlnGenCollectStats | If your projects are loading slowly, SlnGen can log a performance summary to help you understand why.  You must specify an MSBuild logger verbosity of at least `Detailed` to see the summary in a log. | `true` or `false` | `false` |
-| SlnGenFolders | Indicates whether or not solution folders should be created. | `true` or `false` | `true` |
 
 
 Command-line argument
@@ -58,33 +83,6 @@ MSBuild properties
   <SlnGenLaunchVisualStudio>false</SlnGenLaunchVisualStudio>
   <SlnGenSolutionFileFullPath>$(MSBuildProjectDirectory)\$(MSBuildProjectName).sln</SlnGenSolutionFileFullPath>
   <SlnGenUseShellExecute>false</SlnGenUseShellExecute>
-  <SlnGenCollectStats>true</SlnGenCollectStats>
-</PropertyGroup>
-```
-
-## Troubleshooting
-
-SlnGen runs as a standard MSBuild target.  You must increase the logging verbosity of MSBuild.exe to see more diagnostic logging.  We recommend that you use [MSBuild Binary Logger](http://msbuildlog.com/).
-
-| Property                 | Description                                                                                                | Values             | Default |
-|--------------------------|------------------------------------------------------------------------------------------------------------|--------------------|---------|
-| SlnGenCollectStats | If your projects are loading slowly, SlnGen can log a performance summary to help you understand why.  You must specify an MSBuild logger verbosity of at least `Detailed` to see the summary in a log. | `true` or `false` | `false` |
-
-
-Log to a file named `msbuild.log`
-```
-MSBuild.exe /Target:SlnGen /Property:"SlnGenCollectStats=true" /FileLoggerParameters:Verbosity=Detailed
-```
-
-Log to binary log named `msbuild.binlog` viewable in the [MSBuild Structured Log Viewer](http://msbuildlog.com/)
-```
-MSBuild.exe /Target:SlnGen /Property:"SlnGenCollectStats=true" /BinaryLogger
-```
-
-MSBuild properties
-```xml
-<PropertyGroup>
-  <SlnGenCollectStats>true</SlnGenCollectStats>
 </PropertyGroup>
 ```
 
@@ -160,5 +158,31 @@ MSBuild.exe /Target:SlnGen /Property:"CustomBeforeSlnGenTargets=MyCustomLogic.ta
 <PropertyGroup>
   <CustomBeforeSlnGenTargets>build\Before.SlnGen.targets</CustomBeforeSlnGenTargets>
   <CustomAfterSlnGenTargets>build\After.SlnGen.targets</CustomAfterSlnGenTargets>
+</PropertyGroup>
+```
+
+## Troubleshooting
+
+SlnGen runs as a standard MSBuild target.  You must increase the logging verbosity of MSBuild.exe to see more diagnostic logging.  We recommend that you use [MSBuild Binary Logger](http://msbuildlog.com/).
+
+| Property                 | Description                                                                                                | Values             | Default |
+|--------------------------|------------------------------------------------------------------------------------------------------------|--------------------|---------|
+| SlnGenCollectStats | If your projects are loading slowly, SlnGen can log a performance summary to help you understand why.  You must specify an MSBuild logger verbosity of at least `Detailed` to see the summary in a log. | `true` or `false` | `false` |
+
+
+Log to a file named `msbuild.log`
+```
+MSBuild.exe /Target:SlnGen /Property:"SlnGenCollectStats=true" /FileLoggerParameters:Verbosity=Detailed
+```
+
+Log to binary log named `msbuild.binlog` viewable in the [MSBuild Structured Log Viewer](http://msbuildlog.com/)
+```
+MSBuild.exe /Target:SlnGen /Property:"SlnGenCollectStats=true" /BinaryLogger
+```
+
+MSBuild properties
+```xml
+<PropertyGroup>
+  <SlnGenCollectStats>true</SlnGenCollectStats>
 </PropertyGroup>
 ```
