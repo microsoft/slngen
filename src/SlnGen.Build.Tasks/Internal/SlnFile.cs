@@ -118,7 +118,7 @@ namespace SlnGen.Build.Tasks.Internal
 
             SlnHierarchy hierarchy = null;
 
-            if (useFolders)
+            if (useFolders && _projects.Any(i => !i.IsMainProject))
             {
                 hierarchy = new SlnHierarchy(_projects);
 

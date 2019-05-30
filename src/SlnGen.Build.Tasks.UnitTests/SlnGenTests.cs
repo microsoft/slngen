@@ -149,6 +149,42 @@ namespace SlnGen.Build.Tasks.UnitTests
         }
 
         [Fact]
+        public void SingleProject()
+        {
+            Dictionary<string, string> globlProperties = new Dictionary<string, string>
+            {
+                ["DesignTimeBuild"] = "true",
+                ["SlnGenLaunchVisualStudio"] = "false"
+            };
+
+            ProjectCollection projectCollection = new ProjectCollection(globlProperties);
+
+            ProjectCreator
+                .Create(Path.Combine(TestRootPath, "Directory.Build.props"))
+                .Save();
+            ProjectCreator
+                .Create(Path.Combine(TestRootPath, "Directory.Build.targets"))
+                .Property("SlnGenAssemblyFile", Path.Combine(Environment.CurrentDirectory, "SlnGen.Build.Tasks.dll"))
+                .Import(Path.Combine(Environment.CurrentDirectory, "build", "SlnGen.targets"), condition: "'$(IsCrossTargetingBuild)' != 'true'")
+                .Import(Path.Combine(Environment.CurrentDirectory, "buildCrossTargeting", "SlnGen.targets"), condition: "'$(IsCrossTargetingBuild)' == 'true'")
+                .Save();
+
+            ProjectCreator projectA = ProjectCreator.Templates
+                .SdkCsproj(
+                    Path.Combine(TestRootPath, "ProjectA", "ProjectA.csproj"),
+                    targetFramework: "netcoreapp2.0",
+                    projectCollection: projectCollection)
+                .Save()
+                .TryBuild("SlnGen", out bool result, out BuildOutput buildOutput, out IDictionary<string, TargetResult> targetOutputs);
+
+            result.ShouldBeTrue(buildOutput.GetConsoleLog());
+
+            KeyValuePair<string, TargetResult> targetOutput = targetOutputs.ShouldHaveSingleItem();
+
+            targetOutput.Key.ShouldBe("SlnGen");
+        }
+
+        [Fact]
         public void SolutionItems()
         {
             Dictionary<string, string> solutionItems = new Dictionary<string, string>
