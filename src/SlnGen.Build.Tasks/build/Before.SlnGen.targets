@@ -3,15 +3,17 @@
 
   <Import Project="$(CustomBeforeSlnGenTargets)" Condition="'$(CustomBeforeSlnGenTargets)' != '' and Exists('$(CustomBeforeSlnGenTargets)')"/>
 
-  <PropertyGroup Condition=" '$(SlnGenAssemblyFile)' == '' ">
-    <SlnGenAssemblyFile Condition=" '$(MSBuildRuntimeType)' == '' ">$(MSBuildThisFileDirectory)net45\SlnGen.Build.Tasks.dll</SlnGenAssemblyFile>
-    <SlnGenAssemblyFile Condition=" '$(MSBuildRuntimeType)' == 'Full' ">$(MSBuildThisFileDirectory)net46\SlnGen.Build.Tasks.dll</SlnGenAssemblyFile>
-    <SlnGenAssemblyFile Condition=" '$(MSBuildRuntimeType)' == 'Core' ">$(MSBuildThisFileDirectory)netstandard2.0\SlnGen.Build.Tasks.dll</SlnGenAssemblyFile>
+  <PropertyGroup Condition="'$(SlnGenAssemblyFile)' == ''">
+    <SlnGenAssemblyFile Condition="'$(MSBuildRuntimeType)' == ''">$(MSBuildThisFileDirectory)net45\SlnGen.Build.Tasks.dll</SlnGenAssemblyFile>
+    <SlnGenAssemblyFile Condition="'$(MSBuildRuntimeType)' == 'Full' And '$(MSBuildAssemblyVersion)' == '15.0'">$(MSBuildThisFileDirectory)net46\SlnGen.Build.Tasks.dll</SlnGenAssemblyFile>
+    <SlnGenAssemblyFile Condition="'$(MSBuildRuntimeType)' == 'Full' And '$(MSBuildAssemblyVersion)' >= '16.0'">$(MSBuildThisFileDirectory)net472\SlnGen.Build.Tasks.dll</SlnGenAssemblyFile>
+    <SlnGenAssemblyFile Condition="'$(MSBuildRuntimeType)' == 'Core' And '$(MSBuildAssemblyVersion)' == '15.0'">$(MSBuildThisFileDirectory)netstandard2.0\SlnGen.Build.Tasks.dll</SlnGenAssemblyFile>
+    <SlnGenAssemblyFile Condition="'$(MSBuildRuntimeType)' == 'Core' And '$(MSBuildAssemblyVersion)' >= '16.0'">$(MSBuildThisFileDirectory)netcoreapp2.1\SlnGen.Build.Tasks.dll</SlnGenAssemblyFile>
   </PropertyGroup>
   
   <PropertyGroup>
-    <SlnGenGlobalProperties Condition=" '$(SlnGenGlobalProperties)' != '' ">DesignTimeBuild=true;BuildingProject=false;$(SlnGenGlobalProperties)</SlnGenGlobalProperties>
-    <SlnGenGlobalProperties Condition=" '$(SlnGenGlobalProperties)' == '' ">DesignTimeBuild=true;BuildingProject=false</SlnGenGlobalProperties>
+    <SlnGenGlobalProperties Condition="'$(SlnGenGlobalProperties)' != ''">DesignTimeBuild=true;BuildingProject=false;$(SlnGenGlobalProperties)</SlnGenGlobalProperties>
+    <SlnGenGlobalProperties Condition="'$(SlnGenGlobalProperties)' == ''">DesignTimeBuild=true;BuildingProject=false</SlnGenGlobalProperties>
   </PropertyGroup>
 
   <UsingTask TaskName="SlnGen" AssemblyFile="$(SlnGenAssemblyFile)" />
