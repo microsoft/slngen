@@ -51,7 +51,7 @@ namespace SlnGen.Build.Tasks.UnitTests
             Dictionary<string, string> expectedGlobalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 ["Property1"] = "1A836FEB3ABA43B183034DFDD5C4E375",
-                ["Property2"] = "CEEC5C9FF0F344DAA32A0F545460EB2C"
+                ["Property2"] = "CEEC5C9FF0F344DAA32A0F545460EB2C",
             };
 
             ProjectCreator projectA = ProjectCreator

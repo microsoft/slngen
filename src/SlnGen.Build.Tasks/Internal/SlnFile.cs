@@ -34,7 +34,6 @@ namespace SlnGen.Build.Tasks.Internal
         /// <summary>
         /// Initializes a new instance of the <see cref="SlnFile" /> class.
         /// </summary>
-        /// <param name="projects">The project collection.</param>
         /// <param name="fileFormatVersion">The file format version.</param>
         public SlnFile(string fileFormatVersion)
         {
@@ -44,7 +43,6 @@ namespace SlnGen.Build.Tasks.Internal
         /// <summary>
         /// Initializes a new instance of the <see cref="SlnFile" /> class.
         /// </summary>
-        /// <param name="projects">The projects.</param>
         public SlnFile()
             : this("12.00")
         {
