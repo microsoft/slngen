@@ -15,9 +15,12 @@ using System.Linq;
 
 namespace SlnGen.Build.Tasks
 {
+    /// <summary>
+    /// An MSBuild task that generates a Visual Studio solution file.
+    /// </summary>
     public class SlnGen : TaskBase
     {
-        public const string CustomProjectTypeGuidMetadataName = "ProjectTypeGuid";
+        internal const string CustomProjectTypeGuidMetadataName = "ProjectTypeGuid";
 
         /// <summary>
         /// Gets or sets a value indicating whether MSBuild is currently building a Visual Studio solution file.
@@ -281,7 +284,7 @@ namespace SlnGen.Build.Tasks
                 processStartInfo = new ProcessStartInfo
                 {
                     FileName = DevEnvFullPath,
-                    Arguments = $"\"{SolutionFileFullPath}\""
+                    Arguments = $"\"{SolutionFileFullPath}\"",
                 };
             }
             else if (!UseShellExecute)
@@ -298,7 +301,7 @@ namespace SlnGen.Build.Tasks
                 processStartInfo = new ProcessStartInfo
                 {
                     FileName = SolutionFileFullPath,
-                    UseShellExecute = true
+                    UseShellExecute = true,
                 };
             }
 
@@ -331,7 +334,7 @@ namespace SlnGen.Build.Tasks
             // Create an MSBuildProject loader with the same global properties of the project that requested a solution file
             MSBuildProjectLoader projectLoader = new MSBuildProjectLoader(globalProperties, ToolsVersion, BuildEngine, ProjectLoadSettings.IgnoreMissingImports)
             {
-                CollectStats = CollectStats
+                CollectStats = CollectStats,
             };
 
             LogMessageHigh("Loading project references...");
@@ -354,8 +357,7 @@ namespace SlnGen.Build.Tasks
 
             foreach (KeyValuePair<string, TimeSpan> item in projectLoader.Statistics.ProjectLoadTimes.OrderByDescending(i => i.Value))
             {
-                // String.Format(CultureInfo.CurrentCulture, "{0,5}", ;
-                LogMessageLow($"  {Math.Round(item.Value.TotalMilliseconds, 0), 5} ms  {item.Key}", MessageImportance.Low);
+                LogMessageLow($"  {Math.Round(item.Value.TotalMilliseconds, 0)} ms  {item.Key}", MessageImportance.Low);
             }
         }
 

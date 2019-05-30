@@ -21,7 +21,7 @@ namespace SlnGen.Build.Tasks.UnitTests
             Dictionary<string, string> globalProperties = new Dictionary<string, string>
             {
                 ["Platform"] = "x64",
-                ["Configuration"] = string.Empty
+                ["Configuration"] = string.Empty,
             };
 
             using (TestProject testProject = TestProject.Create(globalProperties))
@@ -40,7 +40,7 @@ namespace SlnGen.Build.Tasks.UnitTests
             Dictionary<string, string> globalProperties = new Dictionary<string, string>
             {
                 ["Configuration"] = "Mix",
-                ["Platform"] = "x86"
+                ["Platform"] = "x86",
             };
 
             using (TestProject testProject = TestProject.Create(globalProperties))
@@ -66,7 +66,7 @@ namespace SlnGen.Build.Tasks.UnitTests
         {
             SlnProject actualProject = CreateAndValidateProject(globalProperties: new Dictionary<string, string>
             {
-                [SlnProject.UsingMicrosoftNetSdkPropertyName] = "true"
+                [SlnProject.UsingMicrosoftNetSdkPropertyName] = "true",
             });
 
             actualProject.ProjectGuid.ShouldNotBeNull();
@@ -114,7 +114,7 @@ namespace SlnGen.Build.Tasks.UnitTests
         {
             Dictionary<string, string> globalProperties = new Dictionary<string, string>
             {
-                [SlnProject.UsingMicrosoftNetSdkPropertyName] = "true"
+                [SlnProject.UsingMicrosoftNetSdkPropertyName] = "true",
             };
 
             SlnProject actualProject = CreateAndValidateProject(globalProperties: globalProperties, extension: extension);
@@ -165,7 +165,7 @@ namespace SlnGen.Build.Tasks.UnitTests
         {
             Dictionary<string, string> globalProperties = new Dictionary<string, string>
             {
-                { "IncludeInSolutionFile", "false" }
+                { "IncludeInSolutionFile", "false" },
             };
 
             Project project = CreateProject("foo", ".csproj", globalProperties: globalProperties);
@@ -178,7 +178,7 @@ namespace SlnGen.Build.Tasks.UnitTests
         {
             Dictionary<string, string> globalProperties = new Dictionary<string, string>
             {
-                { "IsTraversal", "true" }
+                { "IsTraversal", "true" },
             };
 
             Project project = CreateProject("dirs", ".proj", globalProperties: globalProperties);
@@ -278,7 +278,7 @@ namespace SlnGen.Build.Tasks.UnitTests
                         defaultPlatform: "x64",
                         projectCreator: projectCreator => projectCreator
                             .PropertyGroup(" '$(Configuration)|$(Platform)' == 'Release|amd64' ")
-                            .PropertyGroup(" '$(Configuration)|$(Platform)' == 'Debug|x64' "))
+                            .PropertyGroup(" '$(Configuration)|$(Platform)' == 'Debug|x64' ")),
                 };
             }
 

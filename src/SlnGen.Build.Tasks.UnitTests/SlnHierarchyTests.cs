@@ -25,7 +25,7 @@ namespace SlnGen.Build.Tasks.UnitTests
                 new SlnProject(@"D:\foo\bar\baz\baz.csproj", "baz", Guid.NewGuid(), SlnProject.DefaultLegacyProjectTypeGuid, configurations, platforms, false, isDeployable: false),
                 new SlnProject(@"D:\foo\bar\baz1\baz1.csproj", "baz1", Guid.NewGuid(), SlnProject.DefaultLegacyProjectTypeGuid, configurations, platforms, false, isDeployable: false),
                 new SlnProject(@"D:\foo\bar\baz2\baz2.csproj", "baz2", Guid.NewGuid(), SlnProject.DefaultLegacyProjectTypeGuid, configurations, platforms, false, isDeployable: false),
-                new SlnProject(@"D:\foo\bar1\bar1.csproj", "bar1", Guid.NewGuid(), SlnProject.DefaultLegacyProjectTypeGuid, configurations, platforms, false, isDeployable: false)
+                new SlnProject(@"D:\foo\bar1\bar1.csproj", "bar1", Guid.NewGuid(), SlnProject.DefaultLegacyProjectTypeGuid, configurations, platforms, false, isDeployable: false),
             };
 
             SlnHierarchy hierarchy = new SlnHierarchy(projects);
@@ -38,7 +38,7 @@ namespace SlnGen.Build.Tasks.UnitTests
                     @"D:\foo\bar\baz2",
                     @"D:\foo\bar",
                     @"D:\foo\bar1",
-                    @"D:\foo"
+                    @"D:\foo",
                 });
 
             foreach (SlnProject project in projects)

@@ -1,8 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net45;net46;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net45;net46;net472;netstandard2.0;netcoreapp2.1</TargetFrameworks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <BuildOutputTargetFolder>build\</BuildOutputTargetFolder>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   
   <PropertyGroup Label="Package properties">
@@ -24,7 +25,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' != 'net45' ">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net46' Or '$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="Microsoft.Build" VersionOverride="15.9.20" PrivateAssets="All" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.Build.Framework" VersionOverride="15.9.20" PrivateAssets="All" ExcludeAssets="Runtime" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472' Or '$(TargetFramework)' == 'netcoreapp2.1'">
     <PackageReference Include="Microsoft.Build" PrivateAssets="All" ExcludeAssets="Runtime" />
     <PackageReference Include="Microsoft.Build.Framework" PrivateAssets="All" ExcludeAssets="Runtime" />
   </ItemGroup>
@@ -38,7 +44,7 @@
     <None Include="buildCrossTargeting\*" Pack="true" PackagePath="\buildCrossTargeting" />
   </ItemGroup>
   
-  <Target Name="_UpdatePackageId" BeforeTargets="$(PackDependsOn)" >
+  <Target Name="_UpdatePackageId" BeforeTargets="$(PackDependsOn)">
     <!-- 
       Workaround for https://github.com/NuGet/Home/issues/6754 
       Only needed because SlnGen the project depends on SlnGen the package
@@ -48,8 +54,7 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="RemoveFrameworkAssemblyReferences"
-          BeforeTargets="GenerateNuspec">
+  <Target Name="RemoveFrameworkAssemblyReferences" BeforeTargets="GenerateNuspec">
     <ItemGroup>
       <_FrameworkAssemblyReferences Remove="@(_FrameworkAssemblyReferences)" />
     </ItemGroup>

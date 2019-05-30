@@ -7,14 +7,23 @@ using System;
 
 namespace SlnGen.Build.Tasks
 {
+    /// <summary>
+    /// A base class for all MSBuild tasks.
+    /// </summary>
     public abstract class TaskBase : ITask
     {
+        /// <inheritdoc cref="ITask.BuildEngine"/>
         public IBuildEngine BuildEngine { get; set; }
 
+        /// <inheritdoc cref="ITask.HostObject"/>
         public ITaskHost HostObject { get; set; }
 
+        /// <summary>
+        /// Gets a value indicating whether any errors have been logged.
+        /// </summary>
         protected bool HasLoggedErrors { get; private set; }
 
+        /// <inheritdoc cref="ITask.Execute"/>
         public bool Execute()
         {
             ExecuteTask();
@@ -22,8 +31,14 @@ namespace SlnGen.Build.Tasks
             return !HasLoggedErrors;
         }
 
+        /// <summary>
+        /// Executes the logic of the task.
+        /// </summary>
         protected abstract void ExecuteTask();
 
+        /// <summary>
+        /// Logs an error for a task.
+        /// </summary>
         protected void LogError(string message, string code = null, bool includeLocation = false)
         {
             HasLoggedErrors = true;
@@ -41,6 +56,9 @@ namespace SlnGen.Build.Tasks
                 senderName: null));
         }
 
+        /// <summary>
+        /// Logs a high importance message.
+        /// </summary>
         protected void LogMessageHigh(string message, params object[] args)
         {
             BuildEngine?.LogMessageEvent(new BuildMessageEventArgs(
@@ -59,6 +77,9 @@ namespace SlnGen.Build.Tasks
                 messageArgs: args));
         }
 
+        /// <summary>
+        /// Logs a low importance message.
+        /// </summary>
         protected void LogMessageLow(string message, params object[] args)
         {
             BuildEngine?.LogMessageEvent(new BuildMessageEventArgs(
@@ -77,6 +98,9 @@ namespace SlnGen.Build.Tasks
                 messageArgs: args));
         }
 
+        /// <summary>
+        /// Logs a message.
+        /// </summary>
         protected void LogMessageNormal(string message, params object[] args)
         {
             BuildEngine?.LogMessageEvent(new BuildMessageEventArgs(
@@ -95,6 +119,9 @@ namespace SlnGen.Build.Tasks
                 messageArgs: args));
         }
 
+        /// <summary>
+        /// Logs a warning.
+        /// </summary>
         protected void LogWarning(string message, string code = null, bool includeLocation = false)
         {
             BuildEngine?.LogWarningEvent(new BuildWarningEventArgs(
