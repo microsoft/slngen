@@ -7,6 +7,5 @@ $medium-breakpoint: 80em !default;
 @import "{{ site.theme }}";
 
 .main-content {
-    max-width: none;
-    border: 2px solid red;
+    border: 10px solid red;
 }
