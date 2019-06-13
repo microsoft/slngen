@@ -57,7 +57,7 @@ namespace SlnGen.Build.Tasks.Internal
             }
 
             // TODO: Unit tests, optimize
-            string commonPath = String.Empty;
+            string commonPath = string.Empty;
 
             List<string> separatedPath = paths
                 .First(str => str.Length == paths.Max(st2 => st2.Length))

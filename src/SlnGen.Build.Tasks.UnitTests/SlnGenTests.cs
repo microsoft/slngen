@@ -9,8 +9,10 @@ using Microsoft.Build.Utilities.ProjectCreation;
 using Shouldly;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Xunit;
 
 namespace SlnGen.Build.Tasks.UnitTests
@@ -200,7 +202,7 @@ namespace SlnGen.Build.Tasks.UnitTests
                 BuildEngine = buildEngine,
                 SolutionItems = solutionItems.Select(i => new MockTaskItem(i.Key)
                 {
-                    { "FullPath", i.Value }
+                    { "FullPath", i.Value },
                 }).ToArray<ITaskItem>(),
             };
 
@@ -213,7 +215,7 @@ namespace SlnGen.Build.Tasks.UnitTests
             {
                 new MockTaskItem(fileExtension)
                 {
-                    { SlnGen.CustomProjectTypeGuidMetadataName, projectTypeGuid }
+                    { SlnGen.CustomProjectTypeGuidMetadataName, projectTypeGuid },
                 },
             };
 

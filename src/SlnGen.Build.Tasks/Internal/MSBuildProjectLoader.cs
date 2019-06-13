@@ -73,7 +73,7 @@ namespace SlnGen.Build.Tasks.Internal
         /// <summary>
         /// Gets or sets a <see cref="Func{Project, Boolean}"/> that determines if a project is a traversal project.
         /// </summary>
-        public Func<Project, bool> IsTraveralProject { get; set; } = project => String.Equals("true", project.GetPropertyValue("IsTraversal"));
+        public Func<Project, bool> IsTraveralProject { get; set; } = project => string.Equals("true", project.GetPropertyValue("IsTraversal"));
 
         public MSBuildProjectLoaderStatistics Statistics { get; } = new MSBuildProjectLoaderStatistics();
 
