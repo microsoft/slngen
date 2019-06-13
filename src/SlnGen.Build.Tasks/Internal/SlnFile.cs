@@ -80,7 +80,7 @@ namespace SlnGen.Build.Tasks.Internal
         {
             string directoryName = Path.GetDirectoryName(path);
 
-            if (!String.IsNullOrWhiteSpace(directoryName))
+            if (!string.IsNullOrWhiteSpace(directoryName))
             {
                 Directory.CreateDirectory(directoryName);
             }

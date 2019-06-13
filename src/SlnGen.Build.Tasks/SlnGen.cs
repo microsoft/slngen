@@ -128,7 +128,7 @@ namespace SlnGen.Build.Tasks
         /// <returns>An <see cref="IEnumerable{String}"/> of full paths to include as solution items.</returns>
         internal IEnumerable<string> GetSolutionItems(Func<string, bool> fileExists)
         {
-            foreach (string solutionItem in SolutionItems.Select(i => i.GetMetadata("FullPath")).Where(i => !String.IsNullOrWhiteSpace(i)))
+            foreach (string solutionItem in SolutionItems.Select(i => i.GetMetadata("FullPath")).Where(i => !string.IsNullOrWhiteSpace(i)))
             {
                 if (!fileExists(solutionItem))
                 {
@@ -158,7 +158,7 @@ namespace SlnGen.Build.Tasks
 
                 string projectTypeGuidString = taskItem.GetMetadata(CustomProjectTypeGuidMetadataName)?.Trim();
 
-                if (!String.IsNullOrWhiteSpace(projectTypeGuidString) && Guid.TryParse(projectTypeGuidString, out Guid projectTypeGuid))
+                if (!string.IsNullOrWhiteSpace(projectTypeGuidString) && Guid.TryParse(projectTypeGuidString, out Guid projectTypeGuid))
                 {
                     // Trim and ToLower the file extension
                     projectTypeGuids[taskItem.ItemSpec.Trim().ToLowerInvariant()] = projectTypeGuid;
@@ -203,7 +203,7 @@ namespace SlnGen.Build.Tasks
 
         private void GenerateSolutionFile(ICollection<Project> projects)
         {
-            if (String.IsNullOrWhiteSpace(SolutionFileFullPath))
+            if (string.IsNullOrWhiteSpace(SolutionFileFullPath))
             {
                 SolutionFileFullPath = Path.ChangeExtension(ProjectFullPath, ".sln");
             }
@@ -272,7 +272,7 @@ namespace SlnGen.Build.Tasks
         {
             ProcessStartInfo processStartInfo;
 
-            if (!String.IsNullOrWhiteSpace(DevEnvFullPath))
+            if (!string.IsNullOrWhiteSpace(DevEnvFullPath))
             {
                 if (!File.Exists(DevEnvFullPath))
                 {
@@ -363,7 +363,7 @@ namespace SlnGen.Build.Tasks
 
         private IEnumerable<string> ParseList(string items)
         {
-            if (String.IsNullOrWhiteSpace(items))
+            if (string.IsNullOrWhiteSpace(items))
             {
                 return Enumerable.Empty<string>();
             }
@@ -373,12 +373,12 @@ namespace SlnGen.Build.Tasks
             // Split by ';'
             return items.Split(itemSeparators, StringSplitOptions.RemoveEmptyEntries)
                 .Select(i => i.Trim()) // Trim each entry
-                .Where(i => !String.IsNullOrWhiteSpace(i)); // Ignore empty entries after trimming
+                .Where(i => !string.IsNullOrWhiteSpace(i)); // Ignore empty entries after trimming
         }
 
         private IEnumerable<KeyValuePair<string, string>> ParseProperties(string properties)
         {
-            if (String.IsNullOrWhiteSpace(properties))
+            if (string.IsNullOrWhiteSpace(properties))
             {
                 return Enumerable.Empty<KeyValuePair<string, string>>();
             }
@@ -390,7 +390,7 @@ namespace SlnGen.Build.Tasks
                 .Select(i => i.Split(propertySeparators, 2, StringSplitOptions.RemoveEmptyEntries)) // Split by '='
                 .Where(i => i.Length == 2) // Ignore entries that don't have two items
                 .Select(i => new KeyValuePair<string, string>(i.First().Trim(), i.Last().Trim())) // Create a KeyValuePair with trimmed Key and Value
-                .Where(i => !String.IsNullOrWhiteSpace(i.Key) && !String.IsNullOrWhiteSpace(i.Value)); // Ignore items with an empty key or value
+                .Where(i => !string.IsNullOrWhiteSpace(i.Key) && !string.IsNullOrWhiteSpace(i.Value)); // Ignore items with an empty key or value
         }
     }
 }

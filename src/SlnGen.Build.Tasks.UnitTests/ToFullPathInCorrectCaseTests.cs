@@ -14,31 +14,40 @@ namespace SlnGen.Build.Tasks.UnitTests
         [Fact]
         public void IncorrectCaseInDirectory()
         {
-            ValidatePath(Path.GetTempFileName());
+            const string filename = "dca96b5e957449c4973f8fbb72c33e29.txt";
+
+            DirectoryInfo directory = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N")));
+            try
+            {
+                File.WriteAllText(Path.Combine(directory.FullName, filename), string.Empty);
+
+                Path.Combine(directory.FullName.ToUpperInvariant(), filename)
+                    .ToFullPathInCorrectCase()
+                    .ShouldBe(Path.Combine(directory.FullName, filename));
+            }
+            finally
+            {
+                directory.Delete(recursive: true);
+            }
         }
 
         [Fact]
         public void IncorrectCaseInFile()
         {
-            string expectedPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid().ToString("N").ToUpperInvariant()}.txt");
+            const string filename = "dca96b5e957449c4973f8fbb72c33e29.txt";
 
-            File.WriteAllText(expectedPath, String.Empty);
-
-            ValidatePath(expectedPath);
-        }
-
-        private void ValidatePath(string expectedPath)
-        {
+            DirectoryInfo directory = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N")));
             try
             {
-                expectedPath
-                    .ToLowerInvariant()
+                File.WriteAllText(Path.Combine(directory.FullName, filename), string.Empty);
+
+                Path.Combine(directory.FullName, filename.ToUpperInvariant())
                     .ToFullPathInCorrectCase()
-                    .ShouldBe(expectedPath);
+                    .ShouldBe(Path.Combine(directory.FullName, filename));
             }
             finally
             {
-                File.Delete(expectedPath);
+                directory.Delete(recursive: true);
             }
         }
     }

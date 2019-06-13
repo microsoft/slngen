@@ -43,42 +43,6 @@ namespace SlnGen.Build.Tasks
         private static readonly Lazy<Type> BuildRequestEntryTypeLazy = new Lazy<Type>(() => BuildManagerAssemblyLazy.Value.GetType("Microsoft.Build.BackEnd.BuildRequestEntry", throwOnError: false));
 
         /// <summary>
-        /// Converts the specified path to its long form.
-        /// </summary>
-        /// <param name="directoryInfo">The <see cref="DirectoryInfo"/> object to get a long path name for.</param>
-        /// <returns>The specified path in its long form and correct case according to the file system.</returns>
-        public static string GetLongPathName(this DirectoryInfo directoryInfo)
-        {
-            if (!directoryInfo.Exists)
-            {
-                throw new DirectoryNotFoundException($"Could not find part of the path \"{directoryInfo.FullName}\"");
-            }
-
-            StringBuilder stringBuilder = new StringBuilder(directoryInfo.FullName.Length + 1);
-
-            int result = NativeMethods.GetLongPathName(directoryInfo.FullName, stringBuilder, stringBuilder.Capacity);
-
-            stringBuilder[0] = char.ToUpperInvariant(stringBuilder[0]);
-
-            return stringBuilder.ToString(0, result);
-        }
-
-        /// <summary>
-        /// Gets the value of the given property in this project.
-        /// </summary>
-        /// <param name="project">The <see cref="Project"/> to get the property value from.</param>
-        /// <param name="name">The name of the property to get the value of.</param>
-        /// <param name="defaultValue">A default value to return in the case when the property has no value.</param>
-        /// <returns>The value of the property if one exists, otherwise the default value specified.</returns>
-        public static string GetPropertyValueOrDefault(this Project project, string name, string defaultValue)
-        {
-            string value = project.GetPropertyValue(name);
-
-            // MSBuild always returns String.Empty if the property has no value
-            return value == String.Empty ? defaultValue : value;
-        }
-
-        /// <summary>
         /// Gets the value of the given conditioned property in this project.
         /// </summary>
         /// <param name="project">The <see cref="Project"/> to get the property value from.</param>
@@ -124,6 +88,21 @@ namespace SlnGen.Build.Tasks
         }
 
         /// <summary>
+        /// Gets the value of the given property in this project.
+        /// </summary>
+        /// <param name="project">The <see cref="Project"/> to get the property value from.</param>
+        /// <param name="name">The name of the property to get the value of.</param>
+        /// <param name="defaultValue">A default value to return in the case when the property has no value.</param>
+        /// <returns>The value of the property if one exists, otherwise the default value specified.</returns>
+        public static string GetPropertyValueOrDefault(this Project project, string name, string defaultValue)
+        {
+            string value = project.GetPropertyValue(name);
+
+            // MSBuild always returns String.Empty if the property has no value
+            return value == string.Empty ? defaultValue : value;
+        }
+
+        /// <summary>
         /// Returns the absolute path for the specified path string in the correct case according to the file system.
         /// </summary>
         /// <param name="str">The string.</param>
@@ -137,11 +116,14 @@ namespace SlnGen.Build.Tasks
                 return str;
             }
 
-            string filename = Path.GetFileName(fullPath);
+            using (FileStream stream = File.Open(str, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            {
+                StringBuilder stringBuilder = new StringBuilder(NativeMethods.GetFinalPathNameByHandle(stream.SafeFileHandle, null, 0, 0));
 
-            string directory = Directory.GetParent(fullPath).GetLongPathName();
+                NativeMethods.GetFinalPathNameByHandle(stream.SafeFileHandle, stringBuilder, stringBuilder.Capacity, 0);
 
-            return Directory.EnumerateFiles(directory, filename).First();
+                return stringBuilder.ToString(4, stringBuilder.Capacity - 5);
+            }
         }
 
         /// <summary>
