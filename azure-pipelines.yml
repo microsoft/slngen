@@ -6,7 +6,8 @@ trigger:
   batch: true
   branches:
     include:
-    - master
+    - 'master'
+    - 'refs/tags/*'
   paths:
     exclude:
     - README.md
