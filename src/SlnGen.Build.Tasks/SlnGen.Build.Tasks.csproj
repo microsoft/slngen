@@ -3,6 +3,9 @@
     <TargetFrameworks>net45;net46;net472;netstandard2.0;netcoreapp2.1</TargetFrameworks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <BuildOutputTargetFolder>build\</BuildOutputTargetFolder>
+    <ArtifactsPath>..\..\artifacts\$(MSBuildProjectName)</ArtifactsPath>
+    <CopyArtifactsAfterTargets>Pack</CopyArtifactsAfterTargets>
+    <DefaultArtifactsFileMatch>*nupkg</DefaultArtifactsFileMatch>
     <NoWarn>$(NoWarn);SA0001</NoWarn>
   </PropertyGroup>
   

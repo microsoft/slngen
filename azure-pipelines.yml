@@ -1,0 +1,31 @@
+resources:
+- repo: self
+queue:
+  name: Hosted VS2017
+  demands: 
+  - msbuild
+  - visualstudio
+  - vstest
+
+steps:
+- task: MSBuild@1
+  displayName: 'Build Solution'
+  inputs:
+    solution: 'SlnGen.sln'
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+
+- task: VSTest@2
+  displayName: 'Run Unit Tests'
+  inputs:
+    testAssemblyVer2: |
+     **\*Tests.dll
+     !**\obj\**
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+
+- task: PublishPipelineArtifact@0
+  displayName: 'Publish Artifacts'
+  inputs:
+    artifactName: 'drop'
+    targetPath: 'artifacts'

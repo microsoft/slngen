@@ -2,3 +2,4 @@
 /ConsoleLoggerParameters:Verbosity=Minimal;Summary;ForceNoAlign
 /MaxCPUCount
 /NodeReuse:false
+/Property:NuGetInteractive=true
