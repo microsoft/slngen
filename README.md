@@ -1,6 +1,6 @@
 # SlnGen
 
-[![Build status](https://ci.appveyor.com/api/projects/status/t439uupmyrpd9iah?svg=true)](https://ci.appveyor.com/project/CBT/slngen)
+[![Build Status](https://jeffkl.visualstudio.com/Public/_apis/build/status/SlnGen?branchName=master)](https://jeffkl.visualstudio.com/Public/_build/latest?definitionId=16&branchName=master)
 [![NuGet package](https://img.shields.io/nuget/v/SlnGen.svg)](https://nuget.org/packages/SlnGen)
 [![NuGet downloads](https://img.shields.io/nuget/dt/SlnGen.svg)](https://nuget.org/packages/SlnGen)
 
