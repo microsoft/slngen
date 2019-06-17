@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <GlobalPackageReference Include="Microsoft.Build.Artifacts" Version="1.0.68" />
+    <GlobalPackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0-preview.2" />
     <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="2.3.167" />
     <GlobalPackageReference Include="SlnGen" Version="2.2.6" />
     <GlobalPackageReference Include="StyleCop.Analyzers" Version="1.1.118" />
