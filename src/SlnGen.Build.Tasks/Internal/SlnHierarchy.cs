@@ -69,9 +69,9 @@ namespace SlnGen.Build.Tasks.Internal
             {
                 if (commonPath.Length == 0 && paths.All(str => str.StartsWith(pathSegment)))
                 {
-                    commonPath = pathSegment;
+                    commonPath = pathSegment + Path.DirectorySeparatorChar;
                 }
-                else if (paths.All(str => str.StartsWith(nextPath = $"{commonPath}{Path.DirectorySeparatorChar}{pathSegment}{Path.DirectorySeparatorChar}")))
+                else if (paths.All(str => str.StartsWith(nextPath = $"{commonPath}{pathSegment}{Path.DirectorySeparatorChar}")))
                 {
                     commonPath = nextPath;
                 }
