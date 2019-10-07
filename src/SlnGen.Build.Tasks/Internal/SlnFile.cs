@@ -148,12 +148,12 @@ namespace SlnGen.Build.Tasks.Internal
 
             writer.WriteLine("	GlobalSection(SolutionConfigurationPlatforms) = preSolution");
 
-            IEnumerable<string> globalConfigurations = new HashSet<string>(_projects.SelectMany(p => p.Configurations)).Distinct();
-            IEnumerable<string> globalPlatforms = new HashSet<string>(_projects.SelectMany(p => p.Platforms)).Distinct().ToList();
+            var allPlatforms = new HashSet<string>(_projects.SelectMany(i => i.Platforms).OrderBy(i => i), StringComparer.OrdinalIgnoreCase);
+            var allConfigurations = new HashSet<string>(_projects.SelectMany(i => i.Configurations), StringComparer.OrdinalIgnoreCase);
 
-            foreach (string configuration in globalConfigurations)
+            foreach (string configuration in allConfigurations)
             {
-                foreach (string platform in globalPlatforms)
+                foreach (string platform in allPlatforms)
                 {
                     if (!string.IsNullOrWhiteSpace(configuration) && !string.IsNullOrWhiteSpace(platform))
                     {
@@ -167,14 +167,18 @@ namespace SlnGen.Build.Tasks.Internal
             writer.WriteLine("	GlobalSection(ProjectConfigurationPlatforms) = preSolution");
             foreach (SlnProject project in _projects)
             {
-                foreach (string configuration in project.Configurations)
+                foreach (string configuration in allConfigurations)
                 {
-                    foreach (string platform in project.Platforms)
+                    foreach (string platform in allPlatforms)
                     {
                         if (!string.IsNullOrWhiteSpace(configuration) && !string.IsNullOrWhiteSpace(platform))
                         {
                             writer.WriteLine($@"		{project.ProjectGuid.ToSolutionString()}.{configuration}|{platform}.ActiveCfg = {configuration}|{platform}");
-                            writer.WriteLine($@"		{project.ProjectGuid.ToSolutionString()}.{configuration}|{platform}.Build.0 = {configuration}|{platform}");
+                            if (project.Configurations.Contains(configuration) && project.Platforms.Contains(platform))
+                            {
+                                writer.WriteLine($@"		{project.ProjectGuid.ToSolutionString()}.{configuration}|{platform}.Build.0 = {configuration}|{platform}");
+                            }
+
                             if (project.IsDeployable)
                             {
                                 writer.WriteLine($@"		{project.ProjectGuid.ToSolutionString()}.{configuration}|{platform}.Deploy.0 = {configuration}|{platform}");

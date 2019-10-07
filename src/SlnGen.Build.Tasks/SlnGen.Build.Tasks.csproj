@@ -6,7 +6,7 @@
     <ArtifactsPath>..\..\artifacts\$(MSBuildProjectName)</ArtifactsPath>
     <CopyArtifactsAfterTargets>Pack</CopyArtifactsAfterTargets>
     <DefaultArtifactsFileMatch>*nupkg</DefaultArtifactsFileMatch>
-    <NoWarn>$(NoWarn);SA0001</NoWarn>
+    <NoWarn>$(NoWarn);SA0001;NU5128</NoWarn>
   </PropertyGroup>
   
   <PropertyGroup Label="Package properties">
