@@ -148,8 +148,8 @@ namespace SlnGen.Build.Tasks.Internal
 
             writer.WriteLine("	GlobalSection(SolutionConfigurationPlatforms) = preSolution");
 
-            var allPlatforms = new HashSet<string>(_projects.SelectMany(i => i.Platforms).OrderBy(i => i), StringComparer.OrdinalIgnoreCase);
-            var allConfigurations = new HashSet<string>(_projects.SelectMany(i => i.Configurations), StringComparer.OrdinalIgnoreCase);
+            HashSet<string> allPlatforms = new HashSet<string>(_projects.SelectMany(i => i.Platforms).OrderBy(i => i), StringComparer.OrdinalIgnoreCase);
+            HashSet<string> allConfigurations = new HashSet<string>(_projects.SelectMany(i => i.Configurations), StringComparer.OrdinalIgnoreCase);
 
             foreach (string configuration in allConfigurations)
             {
