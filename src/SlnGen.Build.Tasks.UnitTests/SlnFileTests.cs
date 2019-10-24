@@ -105,9 +105,10 @@ namespace SlnGen.Build.Tasks.UnitTests
                 projectInSolution.ProjectGuid.ShouldBe(slnProject.ProjectGuid.ToSolutionString());
                 projectInSolution.ProjectName.ShouldBe(slnProject.Name);
 
-                IEnumerable<string> configurationPlatforms = from configuration in slnProject.Configurations from platform in slnProject.Platforms select $"{configuration}|{platform}";
+                IEnumerable<string> expected = slnProject.Configurations.SelectMany(configuration => slnProject.Platforms, (configuration, platform) => $"{configuration}|{platform}");
+                IEnumerable<string> actual = projectInSolution.ProjectConfigurations.Where(i => i.Value.IncludeInBuild).Select(i => i.Key);
 
-                configurationPlatforms.ShouldBe(projectInSolution.ProjectConfigurations.Keys, ignoreOrder: true);
+                expected.ShouldBe(actual, ignoreOrder: true);
 
                 customValidator?.Invoke(slnProject, projectInSolution);
             }

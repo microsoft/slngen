@@ -30,7 +30,7 @@ namespace SlnGen.Build.Tasks.UnitTests
 
                 slnProject.Configurations.ShouldBe(new[] { "Debug", "Release" }, ignoreOrder: true);
 
-                slnProject.Platforms.ShouldBe(new[] { "amd64", "AnyCPU", "x64" }, ignoreOrder: true);
+                slnProject.Platforms.ShouldBe(new[] { "amd64", "Any CPU", "x64" }, ignoreOrder: true);
             }
         }
 
@@ -49,7 +49,7 @@ namespace SlnGen.Build.Tasks.UnitTests
 
                 slnProject.Configurations.ShouldBe(new[] { "Debug", "Mix", "Release" }, ignoreOrder: true);
 
-                slnProject.Platforms.ShouldBe(new[] { "amd64", "AnyCPU", "x86", "x64" }, ignoreOrder: true);
+                slnProject.Platforms.ShouldBe(new[] { "amd64", "Any CPU", "x86", "x64" }, ignoreOrder: true);
             }
         }
 
