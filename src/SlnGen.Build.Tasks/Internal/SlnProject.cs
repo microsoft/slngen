@@ -61,11 +61,11 @@ namespace SlnGen.Build.Tasks.Internal
             ProjectTypeGuid = projectTypeGuid;
             IsDeployable = isDeployable;
             IsMainProject = isMainProject;
-            Configurations = configurations;
-            Platforms = platforms;
+            Configurations = new HashSet<string>(configurations, StringComparer.OrdinalIgnoreCase);
+            Platforms = new HashSet<string>(platforms, StringComparer.OrdinalIgnoreCase);
         }
 
-        public IEnumerable<string> Configurations { get; }
+        public HashSet<string> Configurations { get; }
 
         public string FullPath { get; }
 
@@ -75,7 +75,7 @@ namespace SlnGen.Build.Tasks.Internal
 
         public string Name { get; }
 
-        public IEnumerable<string> Platforms { get; }
+        public HashSet<string> Platforms { get; }
 
         public Guid ProjectGuid { get; }
 
@@ -103,7 +103,7 @@ namespace SlnGen.Build.Tasks.Internal
             Guid projectTypeGuid = GetKnownProjectTypeGuid(extension, isUsingMicrosoftNetSdk, customProjectTypeGuids);
 
             IEnumerable<string> configurations = project.GetPossiblePropertyValuesOrDefault("Configuration", "Debug");
-            IEnumerable<string> platforms = project.GetPossiblePropertyValuesOrDefault("Platform", "AnyCPU");
+            IEnumerable<string> platforms = GetPlatforms(project);
 
             Guid projectGuid = Guid.NewGuid();
 
@@ -114,18 +114,7 @@ namespace SlnGen.Build.Tasks.Internal
 
             string isDeployableStr = project.GetPropertyValue("SlnGenIsDeployable");
 
-            bool isDeployable = false;
-
-            string projectFileExtension = Path.GetExtension(project.FullPath);
-
-            if (string.IsNullOrWhiteSpace(isDeployableStr) && !string.IsNullOrWhiteSpace(projectFileExtension) && projectFileExtension.Equals(".sfproj", StringComparison.OrdinalIgnoreCase))
-            {
-                isDeployable = true;
-            }
-            else
-            {
-                isDeployable = isDeployableStr.Equals("true", StringComparison.OrdinalIgnoreCase);
-            }
+            bool isDeployable = isDeployableStr.Equals("true", StringComparison.OrdinalIgnoreCase) || (string.IsNullOrWhiteSpace(isDeployableStr) && string.Equals(Path.GetExtension(project.FullPath), ".sfproj", StringComparison.OrdinalIgnoreCase));
 
             return new SlnProject(project.FullPath, name, projectGuid, projectTypeGuid, configurations, platforms, isMainProject, isDeployable);
         }
@@ -157,6 +146,21 @@ namespace SlnGen.Build.Tasks.Internal
             }
 
             return projectTypeGuid;
+        }
+
+        private static IEnumerable<string> GetPlatforms(Project project)
+        {
+            foreach (string platform in project.GetPossiblePropertyValuesOrDefault("Platform", "Any CPU"))
+            {
+                if (string.Equals(platform, "AnyCPU", StringComparison.OrdinalIgnoreCase))
+                {
+                    yield return "Any CPU";
+                }
+                else
+                {
+                    yield return platform;
+                }
+            }
         }
     }
 }
