@@ -153,7 +153,7 @@ namespace SlnGen.Build.Tasks.Internal
 
             foreach (string configuration in allConfigurations)
             {
-                foreach (string platform in allPlatforms)
+                foreach (string platform in allPlatforms.Where(i => !string.Equals(i, "Win32", StringComparison.OrdinalIgnoreCase)))
                 {
                     if (!string.IsNullOrWhiteSpace(configuration) && !string.IsNullOrWhiteSpace(platform))
                     {
@@ -173,15 +173,15 @@ namespace SlnGen.Build.Tasks.Internal
                     {
                         if (!string.IsNullOrWhiteSpace(configuration) && !string.IsNullOrWhiteSpace(platform))
                         {
-                            writer.WriteLine($@"		{project.ProjectGuid.ToSolutionString()}.{configuration}|{platform}.ActiveCfg = {configuration}|{platform}");
                             if (project.Configurations.Contains(configuration) && project.Platforms.Contains(platform))
                             {
+                                writer.WriteLine($@"		{project.ProjectGuid.ToSolutionString()}.{configuration}|{platform}.ActiveCfg = {configuration}|{platform}");
                                 writer.WriteLine($@"		{project.ProjectGuid.ToSolutionString()}.{configuration}|{platform}.Build.0 = {configuration}|{platform}");
-                            }
 
-                            if (project.IsDeployable)
-                            {
-                                writer.WriteLine($@"		{project.ProjectGuid.ToSolutionString()}.{configuration}|{platform}.Deploy.0 = {configuration}|{platform}");
+                                if (project.IsDeployable)
+                                {
+                                    writer.WriteLine($@"		{project.ProjectGuid.ToSolutionString()}.{configuration}|{platform}.Deploy.0 = {configuration}|{platform}");
+                                }
                             }
                         }
                     }
