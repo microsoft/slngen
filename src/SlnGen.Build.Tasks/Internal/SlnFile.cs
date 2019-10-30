@@ -133,7 +133,7 @@ namespace SlnGen.Build.Tasks.Internal
             {
                 writer.WriteLine(@"	GlobalSection(NestedProjects) = preSolution");
 
-                foreach (SlnFolder folder in hierarchy.Folders.Where(x => x.Parent != null))
+                foreach (SlnFolder folder in hierarchy.Folders.Where(i => i.Parent != null))
                 {
                     foreach (SlnProject project in folder.Projects)
                     {
