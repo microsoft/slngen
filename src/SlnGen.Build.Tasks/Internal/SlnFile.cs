@@ -133,17 +133,14 @@ namespace SlnGen.Build.Tasks.Internal
             {
                 writer.WriteLine(@"	GlobalSection(NestedProjects) = preSolution");
 
-                foreach (SlnFolder folder in hierarchy.Folders)
+                foreach (SlnFolder folder in hierarchy.Folders.Where(x => x.Parent != null))
                 {
                     foreach (SlnProject project in folder.Projects)
                     {
                         writer.WriteLine($@"		{project.ProjectGuid.ToSolutionString()} = {folder.FolderGuid.ToSolutionString()}");
                     }
 
-                    if (folder.Parent != null)
-                    {
-                        writer.WriteLine($@"		{folder.FolderGuid.ToSolutionString()} = {folder.Parent.FolderGuid.ToSolutionString()}");
-                    }
+                    writer.WriteLine($@"		{folder.FolderGuid.ToSolutionString()} = {folder.Parent.FolderGuid.ToSolutionString()}");
                 }
 
                 writer.WriteLine("	EndGlobalSection");
