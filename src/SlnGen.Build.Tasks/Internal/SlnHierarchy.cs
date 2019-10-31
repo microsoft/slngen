@@ -145,6 +145,7 @@ namespace SlnGen.Build.Tasks.Internal
             if (!_rootFolder.Folders.Contains(childFolder))
             {
                 _rootFolder.Folders.Add(childFolder);
+                childFolder.Parent = _rootFolder;
             }
         }
 
