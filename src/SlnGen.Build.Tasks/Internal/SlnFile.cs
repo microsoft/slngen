@@ -164,7 +164,7 @@ namespace SlnGen.Build.Tasks.Internal
 
             writer.WriteLine("	EndGlobalSection");
 
-            writer.WriteLine("	GlobalSection(ProjectConfigurationPlatforms) = preSolution");
+            writer.WriteLine("	GlobalSection(ProjectConfigurationPlatforms) = postSolution");
             foreach (SlnProject project in _projects)
             {
                 foreach (string configuration in allConfigurations)
