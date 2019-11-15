@@ -80,6 +80,7 @@ namespace SlnGen.Build.Tasks.UnitTests
         [InlineData(".vbproj")]
         [InlineData(".fsproj")]
         [InlineData(".wixproj")]
+        [InlineData(".sfproj")]
         public void GetProjectTypeGuidLegacyProject(string extension)
         {
             SlnProject actualProject = CreateAndValidateProject(extension: extension);

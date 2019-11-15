@@ -51,6 +51,7 @@ namespace SlnGen.Build.Tasks.Internal
             [".vcxproj"] = new Guid("8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942"),
             [".vjsproj"] = new Guid("E6FDF86B-F3D1-11D4-8576-0002A516ECE8"),
             [".wixproj"] = new Guid("930C7802-8A8C-48F9-8165-68863BCCD9DD"),
+            [".sfproj"] = new Guid("A07B5EB6-E848-4116-A8D0-A826331D98C6"),
         };
 
         public SlnProject([NotNull] string fullPath, [NotNull] string name, Guid projectGuid, Guid projectTypeGuid, [NotNull] IEnumerable<string> configurations, [NotNull] IEnumerable<string> platforms, bool isMainProject, bool isDeployable)
