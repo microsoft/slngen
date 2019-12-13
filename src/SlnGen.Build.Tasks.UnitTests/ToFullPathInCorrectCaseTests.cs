@@ -3,6 +3,7 @@
 // Licensed under the MIT license.
 
 using Shouldly;
+using SlnGen.Common;
 using System;
 using System.IO;
 using Xunit;

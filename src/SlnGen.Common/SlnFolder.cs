@@ -6,9 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace SlnGen.Build.Tasks.Internal
+namespace SlnGen.Common
 {
-    internal sealed class SlnFolder
+    public sealed class SlnFolder
     {
         public static readonly Guid FolderProjectTypeGuid = new Guid("{2150E333-8FDC-42A3-9474-1A3956D46DE8}");
 

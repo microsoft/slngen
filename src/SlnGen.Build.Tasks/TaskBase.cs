@@ -32,14 +32,9 @@ namespace SlnGen.Build.Tasks
         }
 
         /// <summary>
-        /// Executes the logic of the task.
-        /// </summary>
-        protected abstract void ExecuteTask();
-
-        /// <summary>
         /// Logs an error for a task.
         /// </summary>
-        protected void LogError(string message, string code = null, bool includeLocation = false)
+        public void LogError(string message, string code = null, bool includeLocation = false)
         {
             HasLoggedErrors = true;
 
@@ -59,7 +54,7 @@ namespace SlnGen.Build.Tasks
         /// <summary>
         /// Logs a high importance message.
         /// </summary>
-        protected void LogMessageHigh(string message, params object[] args)
+        public void LogMessageHigh(string message, params object[] args)
         {
             BuildEngine?.LogMessageEvent(new BuildMessageEventArgs(
                 subcategory: null,
@@ -80,7 +75,7 @@ namespace SlnGen.Build.Tasks
         /// <summary>
         /// Logs a low importance message.
         /// </summary>
-        protected void LogMessageLow(string message, params object[] args)
+        public void LogMessageLow(string message, params object[] args)
         {
             BuildEngine?.LogMessageEvent(new BuildMessageEventArgs(
                 subcategory: null,
@@ -101,7 +96,7 @@ namespace SlnGen.Build.Tasks
         /// <summary>
         /// Logs a message.
         /// </summary>
-        protected void LogMessageNormal(string message, params object[] args)
+        public void LogMessageNormal(string message, params object[] args)
         {
             BuildEngine?.LogMessageEvent(new BuildMessageEventArgs(
                 subcategory: null,
@@ -122,7 +117,7 @@ namespace SlnGen.Build.Tasks
         /// <summary>
         /// Logs a warning.
         /// </summary>
-        protected void LogWarning(string message, string code = null, bool includeLocation = false)
+        public void LogWarning(string message, string code = null, bool includeLocation = false)
         {
             BuildEngine?.LogWarningEvent(new BuildWarningEventArgs(
                 subcategory: null,
@@ -136,5 +131,10 @@ namespace SlnGen.Build.Tasks
                 helpKeyword: null,
                 senderName: null));
         }
+
+        /// <summary>
+        /// Executes the logic of the task.
+        /// </summary>
+        protected abstract void ExecuteTask();
     }
 }

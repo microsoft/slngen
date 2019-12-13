@@ -6,7 +6,7 @@ using Microsoft.Build.Evaluation;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities.ProjectCreation;
 using Shouldly;
-using SlnGen.Build.Tasks.Internal;
+using SlnGen.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +21,7 @@ namespace SlnGen.Build.Tasks.UnitTests
         {
             ArgumentNullException exception = Should.Throw<ArgumentNullException>(() =>
             {
-                MSBuildProjectLoader unused = new MSBuildProjectLoader(globalProperties: null, toolsVersion: null, buildEngine: null);
+                _ = new MSBuildProjectLoader(globalProperties: null, toolsVersion: null, buildEngine: null);
             });
 
             exception.ParamName.ShouldBe("buildEngine");

@@ -6,12 +6,12 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace SlnGen.Build.Tasks.Internal
+namespace SlnGen.Common
 {
     /// <summary>
     /// Represents statistics of operations performed by the <see cref="MSBuildProjectLoader"/> class.
     /// </summary>
-    internal sealed class MSBuildProjectLoaderStatistics
+    public sealed class MSBuildProjectLoaderStatistics
     {
         private readonly ConcurrentDictionary<string, TimeSpan> _projectLoadTimes = new ConcurrentDictionary<string, TimeSpan>();
 

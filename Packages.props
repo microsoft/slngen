@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <PackageReference Update="JetBrains.Annotations" Version="2019.1.3" />
     <PackageReference Update="MSBuild.ProjectCreation" Version="1.2.11" />
     <PackageReference Update="Microsoft.Build" Version="16.0.461" ExcludeAssets="Runtime" />
     <PackageReference Update="Microsoft.Build.Framework" Version="16.0.461" ExcludeAssets="Runtime" />

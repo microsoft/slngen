@@ -2,19 +2,16 @@
 //
 // Licensed under the MIT license.
 
-using JetBrains.Annotations;
 using Microsoft.Build.Evaluation;
+using Microsoft.Build.Framework;
 using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace SlnGen.Build.Tasks.Internal
+namespace SlnGen.Common
 {
-    internal sealed class SlnProject
+    public sealed class SlnProject
     {
-        public const string AssemblyNamePropertyName = "AssemblyName";
-        public const string ProjectGuidPropertyName = "ProjectGuid";
-        public const string UsingMicrosoftNetSdkPropertyName = "UsingMicrosoftNETSdk";
         public static readonly Guid DefaultLegacyProjectTypeGuid = new Guid("FAE04EC0-301F-11D3-BF4B-00C04F79EFBC");
         public static readonly Guid DefaultNetSdkProjectTypeGuid = new Guid("9A19103F-16F7-4668-BE54-9A1E7A4F7556");
 
@@ -54,7 +51,7 @@ namespace SlnGen.Build.Tasks.Internal
             [".sfproj"] = new Guid("A07B5EB6-E848-4116-A8D0-A826331D98C6"),
         };
 
-        public SlnProject([NotNull] string fullPath, [NotNull] string name, Guid projectGuid, Guid projectTypeGuid, [NotNull] IEnumerable<string> configurations, [NotNull] IEnumerable<string> platforms, bool isMainProject, bool isDeployable)
+        public SlnProject(string fullPath, string name, Guid projectGuid, Guid projectTypeGuid, IEnumerable<string> configurations, IEnumerable<string> platforms, bool isMainProject, bool isDeployable)
         {
             FullPath = fullPath ?? throw new ArgumentNullException(nameof(fullPath));
             Name = name ?? throw new ArgumentNullException(nameof(name));
@@ -82,8 +79,7 @@ namespace SlnGen.Build.Tasks.Internal
 
         public Guid ProjectTypeGuid { get; }
 
-        [NotNull]
-        public static SlnProject FromProject([NotNull] Project project, [NotNull] IReadOnlyDictionary<string, Guid> customProjectTypeGuids, bool isMainProject = false)
+        public static SlnProject FromProject(Project project, IReadOnlyDictionary<string, Guid> customProjectTypeGuids, bool isMainProject = false)
         {
             if (project == null)
             {
@@ -95,9 +91,14 @@ namespace SlnGen.Build.Tasks.Internal
                 throw new ArgumentNullException(nameof(customProjectTypeGuids));
             }
 
-            string name = project.GetPropertyValueOrDefault(AssemblyNamePropertyName, Path.GetFileNameWithoutExtension(project.FullPath));
+            if (!ShouldIncludeInSolution(project))
+            {
+                return null;
+            }
 
-            bool isUsingMicrosoftNetSdk = project.GetPropertyValue(UsingMicrosoftNetSdkPropertyName).Equals("true", StringComparison.OrdinalIgnoreCase);
+            string name = project.GetPropertyValueOrDefault(SlnConstants.AssemblyName, Path.GetFileNameWithoutExtension(project.FullPath));
+
+            bool isUsingMicrosoftNetSdk = project.GetPropertyValue(SlnConstants.UsingMicrosoftNETSdk).Equals("true", StringComparison.OrdinalIgnoreCase);
 
             string extension = Path.GetExtension(project.FullPath);
 
@@ -108,7 +109,7 @@ namespace SlnGen.Build.Tasks.Internal
 
             Guid projectGuid = Guid.NewGuid();
 
-            if (!isUsingMicrosoftNetSdk && !Guid.TryParse(project.GetPropertyValueOrDefault(ProjectGuidPropertyName, projectGuid.ToString()), out projectGuid))
+            if (!isUsingMicrosoftNetSdk && !Guid.TryParse(project.GetPropertyValueOrDefault(SlnConstants.ProjectGuid, projectGuid.ToString()), out projectGuid))
             {
                 throw new FormatException($"property ProjectGuid has an invalid format in {project.FullPath}");
             }
@@ -118,6 +119,32 @@ namespace SlnGen.Build.Tasks.Internal
             bool isDeployable = isDeployableStr.Equals("true", StringComparison.OrdinalIgnoreCase) || (string.IsNullOrWhiteSpace(isDeployableStr) && string.Equals(Path.GetExtension(project.FullPath), ".sfproj", StringComparison.OrdinalIgnoreCase));
 
             return new SlnProject(project.FullPath, name, projectGuid, projectTypeGuid, configurations, platforms, isMainProject, isDeployable);
+        }
+
+        public static Dictionary<string, Guid> GetCustomProjectTypeGuids(IEnumerable<ITaskItem> items)
+        {
+            Dictionary<string, Guid> projectTypeGuids = new Dictionary<string, Guid>();
+
+            foreach (ITaskItem taskItem in items)
+            {
+                string extension = taskItem.ItemSpec.Trim();
+
+                // Only consider items that start with a "." because they are supposed to be file extensions
+                if (!extension.StartsWith("."))
+                {
+                    continue;
+                }
+
+                string projectTypeGuidString = taskItem.GetMetadata(SlnConstants.ProjectTypeGuid)?.Trim();
+
+                if (!string.IsNullOrWhiteSpace(projectTypeGuidString) && Guid.TryParse(projectTypeGuidString, out Guid projectTypeGuid))
+                {
+                    // Trim and ToLower the file extension
+                    projectTypeGuids[taskItem.ItemSpec.Trim().ToLowerInvariant()] = projectTypeGuid;
+                }
+            }
+
+            return projectTypeGuids;
         }
 
         /// <summary>
@@ -147,6 +174,19 @@ namespace SlnGen.Build.Tasks.Internal
             }
 
             return projectTypeGuid;
+        }
+
+        /// <summary>
+        /// Checks whether a project should be included in the solution or not.
+        /// </summary>
+        /// <param name="project">The project.</param>
+        /// <returns><code>true</code> if it should be included, <code>false</code> otherwise.</returns>
+        internal static bool ShouldIncludeInSolution(Project project)
+        {
+            return
+                !project.GetPropertyValue(SlnConstants.IncludeInSolutionFile).Equals(bool.FalseString, StringComparison.OrdinalIgnoreCase) // Filter out projects that explicitly should not be included
+                &&
+                !project.GetPropertyValue(SlnConstants.IsTraversal).Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase);  // Filter out traversal projects by looking for an IsTraversal property
         }
 
         private static IEnumerable<string> GetPlatforms(Project project)

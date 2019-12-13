@@ -7,13 +7,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace SlnGen.Build.Tasks.Internal
+namespace SlnGen.Common
 {
     /// <summary>
     /// Represents the hierarchy of projects in a Visual Studio solution.
     /// </summary>
     /// <remarks>This assumes all projects are on the same drive.</remarks>
-    internal sealed class SlnHierarchy
+    public sealed class SlnHierarchy
     {
         /// <summary>
         /// Stores a mapping of full paths to <see cref="SlnFolder" /> objects.

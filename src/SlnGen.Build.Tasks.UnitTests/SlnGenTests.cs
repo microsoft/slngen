@@ -7,12 +7,11 @@ using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities.ProjectCreation;
 using Shouldly;
+using SlnGen.Common;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using Xunit;
 
 namespace SlnGen.Build.Tasks.UnitTests
@@ -28,11 +27,11 @@ namespace SlnGen.Build.Tasks.UnitTests
             {
                 new MockTaskItem(" .foo ")
                 {
-                    { SlnGen.CustomProjectTypeGuidMetadataName, "1AB09E1B-77F6-4982-B020-374DB9DF2BD2" },
+                    { SlnConstants.ProjectTypeGuid, "1AB09E1B-77F6-4982-B020-374DB9DF2BD2" },
                 },
                 new MockTaskItem(".foo")
                 {
-                    { SlnGen.CustomProjectTypeGuidMetadataName, expectedProjectTypeGuid.ToString() },
+                    { SlnConstants.ProjectTypeGuid, expectedProjectTypeGuid.ToString() },
                 },
             };
 
@@ -58,11 +57,11 @@ namespace SlnGen.Build.Tasks.UnitTests
             {
                 new MockTaskItem("foo")
                 {
-                    { SlnGen.CustomProjectTypeGuidMetadataName, "9d933978-2d2a-4fb2-b72d-8746d88e73b7" },
+                    { SlnConstants.ProjectTypeGuid, "9d933978-2d2a-4fb2-b72d-8746d88e73b7" },
                 },
                 new MockTaskItem(".foo")
                 {
-                    { SlnGen.CustomProjectTypeGuidMetadataName, expectedProjectTypeGuid.ToString() },
+                    { SlnConstants.ProjectTypeGuid, expectedProjectTypeGuid.ToString() },
                 },
             };
 
@@ -171,7 +170,7 @@ namespace SlnGen.Build.Tasks.UnitTests
                 .Import(Path.Combine(Environment.CurrentDirectory, "buildCrossTargeting", "SlnGen.targets"), condition: "'$(IsCrossTargetingBuild)' == 'true'")
                 .Save();
 
-            ProjectCreator projectA = ProjectCreator.Templates
+            ProjectCreator.Templates
                 .SdkCsproj(
                     Path.Combine(TestRootPath, "ProjectA", "ProjectA.csproj"),
                     targetFramework: "netcoreapp2.0",
@@ -215,7 +214,7 @@ namespace SlnGen.Build.Tasks.UnitTests
             {
                 new MockTaskItem(fileExtension)
                 {
-                    { SlnGen.CustomProjectTypeGuidMetadataName, projectTypeGuid },
+                    { SlnConstants.ProjectTypeGuid, projectTypeGuid },
                 },
             };
 
@@ -224,12 +223,7 @@ namespace SlnGen.Build.Tasks.UnitTests
 
         private static void ValidateParseCustomProjectTypeGuids(ITaskItem[] customProjectTypeGuids, string expectedFileExtension, Guid expectedProjectTypeGuid)
         {
-            SlnGen slnGen = new SlnGen
-            {
-                CustomProjectTypeGuids = customProjectTypeGuids,
-            };
-
-            Dictionary<string, Guid> actualProjectTypeGuids = slnGen.ParseCustomProjectTypeGuids();
+            Dictionary<string, Guid> actualProjectTypeGuids = SlnProject.GetCustomProjectTypeGuids(customProjectTypeGuids);
 
             KeyValuePair<string, Guid> actualProjectTypeGuid = actualProjectTypeGuids.ShouldHaveSingleItem();
 
