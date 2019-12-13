@@ -15,10 +15,11 @@ namespace SlnGen.Common
     public static class SlnGenUtility
     {
         public static readonly char[] EqualsSign = { '=' };
+
         public static readonly char[] Semicolon = { ';' };
 
         public static void GenerateSolutionFile(
-                    ProjectCollection projectCollection,
+            ProjectCollection projectCollection,
             string solutionFileFullPath,
             string projectFileFullPath,
             IReadOnlyDictionary<string, Guid> customProjectTypeGuids,
