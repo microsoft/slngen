@@ -5,7 +5,7 @@
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Utilities.ProjectCreation;
 using Shouldly;
-using SlnGen.Build.Tasks.Internal;
+using SlnGen.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -66,7 +66,7 @@ namespace SlnGen.Build.Tasks.UnitTests
         {
             SlnProject actualProject = CreateAndValidateProject(globalProperties: new Dictionary<string, string>
             {
-                [SlnProject.UsingMicrosoftNetSdkPropertyName] = "true",
+                [SlnConstants.UsingMicrosoftNETSdk] = "true",
             });
 
             actualProject.ProjectGuid.ShouldNotBeNull();
@@ -115,7 +115,7 @@ namespace SlnGen.Build.Tasks.UnitTests
         {
             Dictionary<string, string> globalProperties = new Dictionary<string, string>
             {
-                [SlnProject.UsingMicrosoftNetSdkPropertyName] = "true",
+                [SlnConstants.UsingMicrosoftNETSdk] = "true",
             };
 
             SlnProject actualProject = CreateAndValidateProject(globalProperties: globalProperties, extension: extension);
@@ -171,7 +171,7 @@ namespace SlnGen.Build.Tasks.UnitTests
 
             Project project = CreateProject("foo", ".csproj", globalProperties: globalProperties);
 
-            SlnGen.ShouldIncludeInSolution(project).ShouldBeFalse();
+            SlnProject.ShouldIncludeInSolution(project).ShouldBeFalse();
         }
 
         [Fact]
@@ -184,7 +184,7 @@ namespace SlnGen.Build.Tasks.UnitTests
 
             Project project = CreateProject("dirs", ".proj", globalProperties: globalProperties);
 
-            SlnGen.ShouldIncludeInSolution(project).ShouldBeFalse();
+            SlnProject.ShouldIncludeInSolution(project).ShouldBeFalse();
         }
 
         [Fact]
@@ -243,12 +243,12 @@ namespace SlnGen.Build.Tasks.UnitTests
 
             if (!string.IsNullOrWhiteSpace(projectGuid))
             {
-                globalProperties[SlnProject.ProjectGuidPropertyName] = projectGuid;
+                globalProperties[SlnConstants.ProjectGuid] = projectGuid;
             }
 
             if (!string.IsNullOrWhiteSpace(name))
             {
-                globalProperties[SlnProject.AssemblyNamePropertyName] = name;
+                globalProperties[SlnConstants.AssemblyName] = name;
             }
 
             return MockProject.Create(fullPath, globalProperties);

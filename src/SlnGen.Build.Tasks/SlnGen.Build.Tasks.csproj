@@ -7,6 +7,7 @@
     <CopyArtifactsAfterTargets>Pack</CopyArtifactsAfterTargets>
     <DefaultArtifactsFileMatch>*nupkg</DefaultArtifactsFileMatch>
     <NoWarn>$(NoWarn);SA0001;NU5128</NoWarn>
+    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
   </PropertyGroup>
   
   <PropertyGroup Label="Package properties">
@@ -39,7 +40,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" PrivateAssets="All" />
+    <ProjectReference Include="..\SlnGen.Common\SlnGen.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -57,9 +58,16 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="RemoveFrameworkAssemblyReferences" BeforeTargets="GenerateNuspec">
+  <Target Name="RemoveFrameworkAssemblyReferencesAndProjectReferencesWithVersions" BeforeTargets="GenerateNuspec">
     <ItemGroup>
       <_FrameworkAssemblyReferences Remove="@(_FrameworkAssemblyReferences)" />
+      <_ProjectReferencesWithVersions Remove="@(_ProjectReferencesWithVersions)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="CopyProjectReferencesToPackage" DependsOnTargets="ResolveReferences">
+    <ItemGroup>
+      <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))" />
     </ItemGroup>
   </Target>
 </Project>

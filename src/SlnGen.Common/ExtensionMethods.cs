@@ -5,7 +5,6 @@
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
-using SlnGen.Build.Tasks.Internal;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,9 +12,9 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace SlnGen.Build.Tasks
+namespace SlnGen.Common
 {
-    internal static class ExtensionMethods
+    public static class ExtensionMethods
     {
         /// <summary>
         /// Stores the <see cref="Assembly"/> containing the type <see cref="BuildManager"/>.

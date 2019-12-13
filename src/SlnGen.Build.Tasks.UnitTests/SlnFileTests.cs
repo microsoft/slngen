@@ -4,7 +4,7 @@
 
 using Microsoft.Build.Construction;
 using Shouldly;
-using SlnGen.Build.Tasks.Internal;
+using SlnGen.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;

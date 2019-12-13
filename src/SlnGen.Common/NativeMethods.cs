@@ -5,7 +5,7 @@
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace SlnGen.Build.Tasks.Internal
+namespace SlnGen.Common
 {
     internal static class NativeMethods
     {

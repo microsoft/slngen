@@ -11,12 +11,12 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SlnGen.Build.Tasks.Internal
+namespace SlnGen.Common
 {
     /// <summary>
     /// A class for loading MSBuild projects and their project references.
     /// </summary>
-    internal sealed class MSBuildProjectLoader
+    public sealed class MSBuildProjectLoader
     {
         /// <summary>
         /// The name of the <ProjectReference /> item in MSBuild projects.

@@ -2,22 +2,24 @@
 //
 // Licensed under the MIT license.
 
+using Microsoft.Build.Evaluation;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
-namespace SlnGen.Build.Tasks.Internal
+namespace SlnGen.Common
 {
-    internal sealed class SlnFile
+    public sealed class SlnFile
     {
         /// <summary>
-        /// The solution header
+        /// The solution header.
         /// </summary>
         private const string Header = "Microsoft Visual Studio Solution File, Format Version {0}";
 
         /// <summary>
-        /// The file format version
+        /// The file format version.
         /// </summary>
         private readonly string _fileFormatVersion;
 
@@ -60,6 +62,15 @@ namespace SlnGen.Build.Tasks.Internal
         public void AddProjects(IEnumerable<SlnProject> projects)
         {
             _projects.AddRange(projects);
+        }
+
+        public void AddProjects(ProjectCollection projectCollection, IReadOnlyDictionary<string, Guid> customProjectTypeGuids, string mainProjectFullPath)
+        {
+            _projects.AddRange(
+                projectCollection
+                    .LoadedProjects
+                    .Select(i => SlnProject.FromProject(i, customProjectTypeGuids, string.Equals(i.FullPath, mainProjectFullPath, StringComparison.OrdinalIgnoreCase)))
+                    .Where(i => i != null));
         }
 
         /// <summary>
@@ -129,7 +140,7 @@ namespace SlnGen.Build.Tasks.Internal
 
             writer.WriteLine("Global");
 
-            if (useFolders && _projects.Count > 1)
+            if (useFolders && _projects.Count > 1 && hierarchy != null)
             {
                 writer.WriteLine(@"	GlobalSection(NestedProjects) = preSolution");
 
