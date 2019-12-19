@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <PackageReference Update="MSBuild.ProjectCreation" Version="1.3.1" />
-    <PackageReference Update="Microsoft.Build" Version="16.4.0" ExcludeAssets="Runtime" />
-    <PackageReference Update="Microsoft.Build.Framework" Version="16.4.0" ExcludeAssets="Runtime" />
+    <PackageReference Update="Microsoft.Build" Version="16.4.0" />
+    <PackageReference Update="Microsoft.Build.Utilities.Core" Version="16.4.0" />
     <PackageReference Update="Microsoft.NET.Test.Sdk" Version="16.4.0" />
+    <PackageReference Update="MSBuild.ProjectCreation" Version="1.3.1" />
     <PackageReference Update="Shouldly" Version="3.0.2" />
     <PackageReference Update="xunit" Version="2.4.1" />
     <PackageReference Update="xunit.runner.visualstudio" Version="2.4.1" />

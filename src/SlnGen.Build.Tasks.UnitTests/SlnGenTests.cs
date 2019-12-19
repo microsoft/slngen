@@ -116,7 +116,7 @@ namespace SlnGen.Build.Tasks.UnitTests
 
             ProjectCreator
                 .Create(
-                    Path.Combine(TestRootPath, "ProjectC", "ProjectC.csproj"),
+                    Path.Combine(TestRootPath, "ProjectE", "ProjectE.csproj"),
                     sdk: "Microsoft.NET.Sdk",
                     projectCollection: projectCollection,
                     projectFileOptions: NewProjectFileOptions.None)

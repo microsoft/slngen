@@ -5,6 +5,7 @@
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 using SlnGen.Common;
 using System;
 using System.Collections.Generic;
@@ -16,7 +17,7 @@ namespace SlnGen.Build.Tasks
     /// <summary>
     /// An MSBuild task that generates a Visual Studio solution file.
     /// </summary>
-    public class SlnGen : TaskBase, ISlnGenLogger
+    public class SlnGen : Task
     {
         /// <summary>
         /// Gets or sets a value indicating whether MSBuild is currently building a Visual Studio solution file.
@@ -95,6 +96,58 @@ namespace SlnGen.Build.Tasks
         /// </summary>
         public bool UseShellExecute { get; set; }
 
+        /// <inheritdoc cref="Task.Execute()" />
+        public override bool Execute()
+        {
+            ISlnGenLogger logger = new TaskLogger(BuildEngine);
+
+            if (BuildingSolutionFile)
+            {
+                if (!File.Exists(SolutionFileFullPath))
+                {
+                    Log.LogError($"Could not find part of the path '{SolutionFileFullPath}'.");
+                }
+            }
+            else
+            {
+                IDictionary<string, string> globalProperties = GetGlobalProperties();
+
+                // Load up the full project closure
+                ProjectCollection projectCollection = SlnGenUtility.LoadProjectsAndReferences(
+                    globalProperties,
+                    ToolsVersion,
+                    BuildEngine,
+                    CollectStats,
+                    ProjectFullPath,
+                    ProjectReferences,
+                    logger);
+
+                // Return if loading projects logged any errors
+                if (!Log.HasLoggedErrors)
+                {
+                    SlnGenUtility.GenerateSolutionFile(
+                        projectCollection,
+                        SolutionFileFullPath,
+                        ProjectFullPath,
+                        SlnProject.GetCustomProjectTypeGuids(CustomProjectTypeGuids),
+                        Folders,
+                        GetSolutionItems(),
+                        logger);
+                }
+            }
+
+            if (!Log.HasLoggedErrors && ShouldLaunchVisualStudio)
+            {
+                SlnGenUtility.LaunchVisualStudio(
+                    DevEnvFullPath,
+                    UseShellExecute,
+                    SolutionFileFullPath,
+                    logger);
+            }
+
+            return !Log.HasLoggedErrors;
+        }
+
         /// <summary>
         /// Gets the solution items' full paths.
         /// </summary>
@@ -115,63 +168,12 @@ namespace SlnGen.Build.Tasks
             {
                 if (!fileExists(solutionItem))
                 {
-                    LogMessageLow($"The solution item \"{solutionItem}\" does not exist and will not be added to the solution.");
+                    Log.LogMessageFromText($"The solution item \"{solutionItem}\" does not exist and will not be added to the solution.", MessageImportance.Low);
                 }
                 else
                 {
                     yield return solutionItem;
                 }
-            }
-        }
-
-        /// <summary>
-        /// Executes the task.
-        /// </summary>
-        protected override void ExecuteTask()
-        {
-            if (BuildingSolutionFile)
-            {
-                if (!File.Exists(SolutionFileFullPath))
-                {
-                    LogError($"Could not find part of the path '{SolutionFileFullPath}'.");
-                    return;
-                }
-            }
-            else
-            {
-                IDictionary<string, string> globalProperties = GetGlobalProperties();
-
-                // Load up the full project closure
-                ProjectCollection projectCollection = SlnGenUtility.LoadProjectsAndReferences(
-                    globalProperties,
-                    ToolsVersion,
-                    BuildEngine,
-                    CollectStats,
-                    ProjectFullPath,
-                    ProjectReferences,
-                    logger: this);
-
-                // Return if loading projects logged any errors
-                if (!HasLoggedErrors)
-                {
-                    SlnGenUtility.GenerateSolutionFile(
-                        projectCollection,
-                        SolutionFileFullPath,
-                        ProjectFullPath,
-                        SlnProject.GetCustomProjectTypeGuids(CustomProjectTypeGuids),
-                        Folders,
-                        GetSolutionItems(),
-                        logger: this);
-                }
-            }
-
-            if (!HasLoggedErrors && ShouldLaunchVisualStudio)
-            {
-                SlnGenUtility.LaunchVisualStudio(
-                    DevEnvFullPath,
-                    UseShellExecute,
-                    SolutionFileFullPath,
-                    logger: this);
             }
         }
 
@@ -201,10 +203,10 @@ namespace SlnGen.Build.Tasks
 
             if (globalProperties.Count > 0)
             {
-                LogMessageLow("Global Properties:");
+                Log.LogMessageFromText("Global Properties:", MessageImportance.Low);
                 foreach (KeyValuePair<string, string> globalProperty in globalProperties)
                 {
-                    LogMessageLow("  {0} = {1}", globalProperty.Key, globalProperty.Value);
+                    Log.LogMessage(MessageImportance.Low, "  {0} = {1}", globalProperty.Key, globalProperty.Value);
                 }
             }
 

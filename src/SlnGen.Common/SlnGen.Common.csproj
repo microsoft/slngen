@@ -10,11 +10,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'net46' Or '$(TargetFramework)' == 'netstandard2.0'">
-    <PackageReference Include="Microsoft.Build" VersionOverride="15.9.20" PrivateAssets="All" ExcludeAssets="Runtime" />
-    <PackageReference Include="Microsoft.Build.Framework" VersionOverride="15.9.20" PrivateAssets="All" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.Build" VersionOverride="15.9.20" ExcludeAssets="Runtime" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'net472' Or '$(TargetFramework)' == 'netcoreapp2.1'">
-    <PackageReference Include="Microsoft.Build" PrivateAssets="All" ExcludeAssets="Runtime" />
-    <PackageReference Include="Microsoft.Build.Framework" PrivateAssets="All" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" />
   </ItemGroup>
 </Project>
