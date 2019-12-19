@@ -2,27 +2,41 @@
 //
 // Licensed under the MIT license.
 
+using Microsoft.Build.Framework;
 using SlnGen.Common;
+using System;
 
 namespace SlnGen.Build.Tasks
 {
+    /// <summary>
+    /// Represents an implementation of <see cref="ISlnGenLogger" /> for an MSBuild task.
+    /// </summary>
     internal class TaskLogger : ISlnGenLogger
     {
-        private readonly TaskBase _task;
+        private readonly IBuildEngine _buildEngine;
 
-        public TaskLogger(TaskBase task)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TaskLogger"/> class.
+        /// </summary>
+        /// <param name="buildEngine">An <see cref="IBuildEngine" /> instance to use for logging.</param>
+        public TaskLogger(IBuildEngine buildEngine)
         {
-            _task = task;
+            _buildEngine = buildEngine;
         }
 
-        public void LogError(string message, string code = null, bool includeLocation = false) => _task.LogError(message, code, includeLocation);
+        /// <inheritdoc cref="ISlnGenLogger.LogError" />
+        public void LogError(string message, string code = null) => _buildEngine.LogErrorEvent(new BuildErrorEventArgs(null, code, null, 0, 0, 0, 0, message, null, null));
 
-        public void LogMessageHigh(string message, params object[] args) => _task.LogMessageHigh(message, args);
+        /// <inheritdoc cref="ISlnGenLogger.LogMessageHigh" />
+        public void LogMessageHigh(string message, params object[] args) => _buildEngine.LogMessageEvent(new BuildMessageEventArgs(message, null, null, MessageImportance.High, DateTime.UtcNow, args));
 
-        public void LogMessageLow(string message, params object[] args) => _task.LogMessageLow(message, args);
+        /// <inheritdoc cref="ISlnGenLogger.LogMessageLow" />
+        public void LogMessageLow(string message, params object[] args) => _buildEngine.LogMessageEvent(new BuildMessageEventArgs(message, null, null, MessageImportance.Low, DateTime.UtcNow, args));
 
-        public void LogMessageNormal(string message, params object[] args) => _task.LogMessageNormal(message, args);
+        /// <inheritdoc cref="ISlnGenLogger.LogMessageNormal" />
+        public void LogMessageNormal(string message, params object[] args) => _buildEngine.LogMessageEvent(new BuildMessageEventArgs(message, null, null, MessageImportance.Normal, DateTime.UtcNow, args));
 
-        public void LogWarning(string message, string code = null, bool includeLocation = false) => _task.LogWarning(message, code, includeLocation);
+        /// <inheritdoc cref="ISlnGenLogger.LogWarning" />
+        public void LogWarning(string message, string code = null) => _buildEngine.LogWarningEvent(new BuildWarningEventArgs(null, code, null, 0, 0, 0, 0, message, null, null));
     }
 }

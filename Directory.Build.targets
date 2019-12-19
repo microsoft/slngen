@@ -1,5 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project>
   <PropertyGroup>
     <!-- Full symbols so that unit test assertions have more info -->
     <DebugType Condition=" '$(Configuration)' == 'Debug' ">Full</DebugType>
@@ -15,5 +14,5 @@
     </AdditionalFiles>
   </ItemGroup>
 
-  <Sdk Name="Microsoft.Build.CentralPackageVersions" />
+  <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.52" />
 </Project>
