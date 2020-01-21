@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net472;netcoreapp2.1</TargetFrameworks>
+    <NoWarn>$(NoWarn);SA0001</NoWarn>
+    <ServerGarbageCollection Condition="'$(TargetFramework)' == 'netcoreapp2.1'">true</ServerGarbageCollection>
+    <CompileDependsOn>GenerateAssemblyVersionInfo;$(CompileDependsOn)</CompileDependsOn>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" />
+    <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.Build.Locator" />
+    <PackageReference Include="Microsoft.Build.Runtime" IncludeAssets="None" ExcludeAssets="Runtime" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.VisualStudio.Telemetry" Condition="'$(TargetFramework)' == 'net472'" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SlnGen.Common\SlnGen.Common.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net472\MSBuild.exe" Condition="'$(TargetFramework)' == 'net472'" />
+    <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\netcoreapp2.1\MSBuild.dll" Condition="'$(TargetFramework)' == 'netcoreapp2.1'" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" Condition="'$(TargetFramework)' == 'net472'" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Strings.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Strings.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Strings.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Strings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+</Project>

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeff Kluge. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation.
 //
 // Licensed under the MIT license.
 
@@ -129,9 +129,9 @@ namespace SlnGen.Build.Tasks
                         projectCollection,
                         SolutionFileFullPath,
                         ProjectFullPath,
-                        SlnProject.GetCustomProjectTypeGuids(CustomProjectTypeGuids),
+                        SlnProject.GetCustomProjectTypeGuids(CustomProjectTypeGuids.Select(i => new MSBuildTaskItem(i))),
                         Folders,
-                        GetSolutionItems(),
+                        SlnFile.GetSolutionItems(SolutionItems.Select(i => new MSBuildTaskItem(i)), logger),
                         logger);
                 }
             }
@@ -146,35 +146,6 @@ namespace SlnGen.Build.Tasks
             }
 
             return !Log.HasLoggedErrors;
-        }
-
-        /// <summary>
-        /// Gets the solution items' full paths.
-        /// </summary>
-        /// <returns>An <see cref="IEnumerable{String}"/> of full paths to include as solution items.</returns>
-        internal IEnumerable<string> GetSolutionItems()
-        {
-            return GetSolutionItems(File.Exists);
-        }
-
-        /// <summary>
-        /// Gets the solution items' full paths.
-        /// </summary>
-        /// <param name="fileExists">A <see cref="Func{String, Boolean}"/> to use when determining if a file exists.</param>
-        /// <returns>An <see cref="IEnumerable{String}"/> of full paths to include as solution items.</returns>
-        internal IEnumerable<string> GetSolutionItems(Func<string, bool> fileExists)
-        {
-            foreach (string solutionItem in SolutionItems.Select(i => i.GetMetadata("FullPath")).Where(i => !string.IsNullOrWhiteSpace(i)))
-            {
-                if (!fileExists(solutionItem))
-                {
-                    Log.LogMessageFromText($"The solution item \"{solutionItem}\" does not exist and will not be added to the solution.", MessageImportance.Low);
-                }
-                else
-                {
-                    yield return solutionItem;
-                }
-            }
         }
 
         private IDictionary<string, string> GetGlobalProperties()

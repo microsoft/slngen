@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeff Kluge. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation.
 //
 // Licensed under the MIT license.
 
@@ -6,13 +6,13 @@ using Microsoft.Build.Evaluation;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities.ProjectCreation;
 using Shouldly;
-using SlnGen.Common;
+using SlnGen.UnitTests.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
-namespace SlnGen.Build.Tasks.UnitTests
+namespace SlnGen.Common.UnitTests
 {
     public class MSBuildProjectLoaderTests : TestBase
     {

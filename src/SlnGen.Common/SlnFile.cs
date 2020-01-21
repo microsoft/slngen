@@ -1,11 +1,11 @@
-﻿// Copyright (c) Jeff Kluge. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation.
 //
 // Licensed under the MIT license.
 
 using Microsoft.Build.Evaluation;
+using Microsoft.Build.Framework;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -56,6 +56,17 @@ namespace SlnGen.Common
         public IReadOnlyCollection<string> SolutionItems => _solutionItems;
 
         /// <summary>
+        /// Gets the solution items' full paths.
+        /// </summary>
+        /// <param name="items">The <see cref="IEnumerable{IMSBuildItem}" /> containing the solution items.</param>
+        /// <param name="logger">A <see cref="ISlnGenLogger" /> to use for logging.</param>
+        /// <returns>An <see cref="IEnumerable{String}"/> of full paths to include as solution items.</returns>
+        public static IEnumerable<string> GetSolutionItems(IEnumerable<IMSBuildItem> items, ISlnGenLogger logger)
+        {
+            return GetSolutionItems(items, logger, File.Exists);
+        }
+
+        /// <summary>
         /// Adds the specified projects.
         /// </summary>
         /// <param name="projects">An <see cref="IEnumerable{SlnProject}"/> containing projects to add to the solution.</param>
@@ -69,6 +80,7 @@ namespace SlnGen.Common
             _projects.AddRange(
                 projectCollection
                     .LoadedProjects
+                    .Distinct(new EqualityComparer<Project>((x, y) => string.Equals(x.FullPath, y.FullPath, StringComparison.OrdinalIgnoreCase), i => i.FullPath.GetHashCode()))
                     .Select(i => SlnProject.FromProject(i, customProjectTypeGuids, string.Equals(i.FullPath, mainProjectFullPath, StringComparison.OrdinalIgnoreCase)))
                     .Where(i => i != null));
         }
@@ -119,7 +131,7 @@ namespace SlnGen.Common
                 writer.WriteLine("EndProject");
             }
 
-            foreach (SlnProject project in _projects)
+            foreach (SlnProject project in _projects.OrderBy(i => i.FullPath))
             {
                 writer.WriteLine($@"Project(""{project.ProjectTypeGuid.ToSolutionString()}"") = ""{project.Name}"", ""{project.FullPath}"", ""{project.ProjectGuid.ToSolutionString()}""");
                 writer.WriteLine("EndProject");
@@ -202,6 +214,48 @@ namespace SlnGen.Common
             writer.WriteLine("	EndGlobalSection");
 
             writer.WriteLine("EndGlobal");
+        }
+
+        /// <summary>
+        /// Gets the solution items' full paths.
+        /// </summary>
+        /// <param name="items">The <see cref="IEnumerable{IMSBuildItem}" /> containing the solution items.</param>
+        /// <param name="logger">A <see cref="ISlnGenLogger" /> to use for logging.</param>
+        /// <param name="fileExists">A <see cref="Func{String, Boolean}"/> to use when determining if a file exists.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="items" /> is <code>null</code>
+        /// -or-
+        /// <paramref name="logger" /> is <code>null</code>
+        /// -or-
+        /// <paramref name="fileExists" /> is <code>null</code>.</exception>
+        /// <returns>An <see cref="IEnumerable{String}"/> of full paths to include as solution items.</returns>
+        internal static IEnumerable<string> GetSolutionItems(IEnumerable<IMSBuildItem> items, ISlnGenLogger logger, Func<string, bool> fileExists)
+        {
+            if (items == null)
+            {
+                throw new ArgumentNullException(nameof(items));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            if (fileExists == null)
+            {
+                throw new ArgumentNullException(nameof(fileExists));
+            }
+
+            foreach (string solutionItem in items.Select(i => i.GetMetadata("FullPath")).Where(i => !string.IsNullOrWhiteSpace(i)))
+            {
+                if (!fileExists(solutionItem))
+                {
+                    logger.LogMessageLow($"The solution item \"{solutionItem}\" does not exist and will not be added to the solution.", MessageImportance.Low);
+                }
+                else
+                {
+                    yield return solutionItem;
+                }
+            }
         }
     }
 }

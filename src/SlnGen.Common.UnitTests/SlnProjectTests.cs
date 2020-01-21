@@ -1,17 +1,19 @@
-﻿// Copyright (c) Jeff Kluge. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation.
 //
 // Licensed under the MIT license.
 
 using Microsoft.Build.Evaluation;
+using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities.ProjectCreation;
 using Shouldly;
-using SlnGen.Common;
+using SlnGen.UnitTests.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Xunit;
 
-namespace SlnGen.Build.Tasks.UnitTests
+namespace SlnGen.Common.UnitTests
 {
     public class SlnProjectTests : TestBase
     {
@@ -162,6 +164,56 @@ namespace SlnGen.Build.Tasks.UnitTests
         }
 
         [Fact]
+        public void ParseCustomProjectTypeGuidsDeduplicatesList()
+        {
+            Guid expectedProjectTypeGuid = new Guid("C139C737-2894-46A0-B1EB-DDD052FD8DCB");
+
+            ITaskItem[] customProjectTypeGuids =
+            {
+                new MockTaskItem(" .foo ")
+                {
+                    { SlnConstants.ProjectTypeGuid, "1AB09E1B-77F6-4982-B020-374DB9DF2BD2" },
+                },
+                new MockTaskItem(".foo")
+                {
+                    { SlnConstants.ProjectTypeGuid, expectedProjectTypeGuid.ToString() },
+                },
+            };
+
+            ValidateParseCustomProjectTypeGuids(customProjectTypeGuids, ".foo", expectedProjectTypeGuid);
+        }
+
+        [Fact]
+        public void ParseCustomProjectTypeGuidsFormatsFileExtensionAndGuid()
+        {
+            ValidateParseCustomProjectTypeGuids(
+                " .FoO  ",
+                "  9d9339782d2a4fb2b72d8746d88e73b7 ",
+                ".foo",
+                new Guid("9D933978-2D2A-4FB2-B72D-8746D88E73B7"));
+        }
+
+        [Fact]
+        public void ParseCustomProjectTypeGuidsIgnoresNonFileExtensions()
+        {
+            Guid expectedProjectTypeGuid = new Guid("C139C737-2894-46A0-B1EB-DDD052FD8DCB");
+
+            ITaskItem[] customProjectTypeGuids =
+            {
+                new MockTaskItem("foo")
+                {
+                    { SlnConstants.ProjectTypeGuid, "9d933978-2d2a-4fb2-b72d-8746d88e73b7" },
+                },
+                new MockTaskItem(".foo")
+                {
+                    { SlnConstants.ProjectTypeGuid, expectedProjectTypeGuid.ToString() },
+                },
+            };
+
+            ValidateParseCustomProjectTypeGuids(customProjectTypeGuids, ".foo", expectedProjectTypeGuid);
+        }
+
+        [Fact]
         public void ShouldIncludeInSolutionExclusion()
         {
             Dictionary<string, string> globalProperties = new Dictionary<string, string>
@@ -197,6 +249,29 @@ namespace SlnGen.Build.Tasks.UnitTests
         public void UseFileName()
         {
             CreateAndValidateProject(expectedGuid: "{DE681393-7151-459D-862C-918CCD2CB371}");
+        }
+
+        private static void ValidateParseCustomProjectTypeGuids(string fileExtension, string projectTypeGuid, string expectedFileExtension, Guid expectedProjectTypeGuid)
+        {
+            ITaskItem[] customProjectTypeGuids =
+            {
+                new MockTaskItem(fileExtension)
+                {
+                    { SlnConstants.ProjectTypeGuid, projectTypeGuid },
+                },
+            };
+
+            ValidateParseCustomProjectTypeGuids(customProjectTypeGuids, expectedFileExtension, expectedProjectTypeGuid);
+        }
+
+        private static void ValidateParseCustomProjectTypeGuids(ITaskItem[] customProjectTypeGuids, string expectedFileExtension, Guid expectedProjectTypeGuid)
+        {
+            Dictionary<string, Guid> actualProjectTypeGuids = SlnProject.GetCustomProjectTypeGuids(customProjectTypeGuids.Select(i => new MSBuildTaskItem(i)));
+
+            KeyValuePair<string, Guid> actualProjectTypeGuid = actualProjectTypeGuids.ShouldHaveSingleItem();
+
+            actualProjectTypeGuid.Key.ShouldBe(expectedFileExtension);
+            actualProjectTypeGuid.Value.ShouldBe(expectedProjectTypeGuid);
         }
 
         private SlnProject CreateAndValidateProject(bool isMainProject = false, string expectedGuid = null, string expectedName = null, string extension = ".csproj", IDictionary<string, string> globalProperties = null, string isDeployable = null)

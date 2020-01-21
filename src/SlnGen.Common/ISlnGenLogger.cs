@@ -1,6 +1,9 @@
-﻿// Copyright (c) Jeff Kluge. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation.
 //
 // Licensed under the MIT license.
+
+using Microsoft.Build.Framework;
+using System.Collections.Generic;
 
 namespace SlnGen.Common
 {
@@ -9,6 +12,8 @@ namespace SlnGen.Common
     /// </summary>
     public interface ISlnGenLogger
     {
+        bool HasLoggedErrors { get; }
+
         /// <summary>
         /// Logs an error.
         /// </summary>
@@ -36,6 +41,13 @@ namespace SlnGen.Common
         /// <param name="message">The message to log.</param>
         /// <param name="args">Optional format arguments for the message.</param>
         void LogMessageNormal(string message, params object[] args);
+
+        /// <summary>
+        /// Logs telemetry.
+        /// </summary>
+        /// <param name="eventName">The name of the event.</param>
+        /// <param name="properties">The properties of the event.</param>
+        void LogTelemetry(string eventName, IDictionary<string, string> properties);
 
         /// <summary>
         /// Logs a warning.

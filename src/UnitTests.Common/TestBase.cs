@@ -1,4 +1,4 @@
-// Copyright (c) Jeff Kluge. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 //
 // Licensed under the MIT license.
 
@@ -7,7 +7,7 @@ using System;
 using System.IO;
 using System.Reflection;
 
-namespace SlnGen.Build.Tasks.UnitTests
+namespace SlnGen.UnitTests.Common
 {
     public abstract class TestBase : MSBuildTestBase
     {

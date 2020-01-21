@@ -1,17 +1,18 @@
-﻿// Copyright (c) Jeff Kluge. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation.
 //
 // Licensed under the MIT license.
 
 using Microsoft.Build.Framework;
 using SlnGen.Common;
 using System;
+using System.Collections.Generic;
 
 namespace SlnGen.Build.Tasks
 {
     /// <summary>
     /// Represents an implementation of <see cref="ISlnGenLogger" /> for an MSBuild task.
     /// </summary>
-    internal class TaskLogger : ISlnGenLogger
+    internal class TaskLogger : SlnGenLoggerBase
     {
         private readonly IBuildEngine _buildEngine;
 
@@ -25,18 +26,30 @@ namespace SlnGen.Build.Tasks
         }
 
         /// <inheritdoc cref="ISlnGenLogger.LogError" />
-        public void LogError(string message, string code = null) => _buildEngine.LogErrorEvent(new BuildErrorEventArgs(null, code, null, 0, 0, 0, 0, message, null, null));
+        public override void LogError(string message, string code = null)
+        {
+            _buildEngine.LogErrorEvent(new BuildErrorEventArgs(null, code, null, 0, 0, 0, 0, message, null, null));
+
+            base.LogError(message, code);
+        }
 
         /// <inheritdoc cref="ISlnGenLogger.LogMessageHigh" />
-        public void LogMessageHigh(string message, params object[] args) => _buildEngine.LogMessageEvent(new BuildMessageEventArgs(message, null, null, MessageImportance.High, DateTime.UtcNow, args));
+        public override void LogMessageHigh(string message, params object[] args) => _buildEngine.LogMessageEvent(new BuildMessageEventArgs(message, null, null, MessageImportance.High, DateTime.UtcNow, args));
 
         /// <inheritdoc cref="ISlnGenLogger.LogMessageLow" />
-        public void LogMessageLow(string message, params object[] args) => _buildEngine.LogMessageEvent(new BuildMessageEventArgs(message, null, null, MessageImportance.Low, DateTime.UtcNow, args));
+        public override void LogMessageLow(string message, params object[] args) => _buildEngine.LogMessageEvent(new BuildMessageEventArgs(message, null, null, MessageImportance.Low, DateTime.UtcNow, args));
 
         /// <inheritdoc cref="ISlnGenLogger.LogMessageNormal" />
-        public void LogMessageNormal(string message, params object[] args) => _buildEngine.LogMessageEvent(new BuildMessageEventArgs(message, null, null, MessageImportance.Normal, DateTime.UtcNow, args));
+        public override void LogMessageNormal(string message, params object[] args) => _buildEngine.LogMessageEvent(new BuildMessageEventArgs(message, null, null, MessageImportance.Normal, DateTime.UtcNow, args));
+
+        public override void LogTelemetry(string eventName, IDictionary<string, string> properties)
+        {
+#if NET472 || NETCOREAPP
+            ((IBuildEngine5)_buildEngine)?.LogTelemetry(eventName, properties);
+#endif
+        }
 
         /// <inheritdoc cref="ISlnGenLogger.LogWarning" />
-        public void LogWarning(string message, string code = null) => _buildEngine.LogWarningEvent(new BuildWarningEventArgs(null, code, null, 0, 0, 0, 0, message, null, null));
+        public override void LogWarning(string message, string code = null) => _buildEngine.LogWarningEvent(new BuildWarningEventArgs(null, code, null, 0, 0, 0, 0, message, null, null));
     }
 }
