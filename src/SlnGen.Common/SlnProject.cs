@@ -1,9 +1,8 @@
-﻿// Copyright (c) Jeff Kluge. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation.
 //
 // Licensed under the MIT license.
 
 using Microsoft.Build.Evaluation;
-using Microsoft.Build.Framework;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -121,11 +120,11 @@ namespace SlnGen.Common
             return new SlnProject(project.FullPath, name, projectGuid, projectTypeGuid, configurations, platforms, isMainProject, isDeployable);
         }
 
-        public static Dictionary<string, Guid> GetCustomProjectTypeGuids(IEnumerable<ITaskItem> items)
+        public static Dictionary<string, Guid> GetCustomProjectTypeGuids(IEnumerable<IMSBuildItem> items)
         {
             Dictionary<string, Guid> projectTypeGuids = new Dictionary<string, Guid>();
 
-            foreach (ITaskItem taskItem in items)
+            foreach (IMSBuildItem taskItem in items)
             {
                 string extension = taskItem.ItemSpec.Trim();
 

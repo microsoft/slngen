@@ -4,25 +4,17 @@
     <IsPackable>false</IsPackable>
     <NoWarn>$(NoWarn);SA0001</NoWarn>
   </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="MSBuild.ProjectCreation" />
-    <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="Shouldly" />
-    <PackageReference Include="xunit" />
-    <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\SlnGen.Build.Tasks\SlnGen.Build.Tasks.csproj" />
+    <ProjectReference Include="..\UnitTests.Common\SlnGen.UnitTests.Common.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <Content Include="..\SlnGen.Build.Tasks\build\*" CopyToOutputDirectory="PreserveNewest" Link="build\%(Filename)%(Extension)" />
     <Content Include="..\SlnGen.Build.Tasks\buildCrossTargeting\*" CopyToOutputDirectory="PreserveNewest" Link="buildCrossTargeting\%(Filename)%(Extension)" />
   </ItemGroup>
-
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>

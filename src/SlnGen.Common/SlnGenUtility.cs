@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeff Kluge. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation.
 //
 // Licensed under the MIT license.
 
@@ -18,7 +18,7 @@ namespace SlnGen.Common
 
         public static readonly char[] Semicolon = { ';' };
 
-        public static void GenerateSolutionFile(
+        public static string GenerateSolutionFile(
             ProjectCollection projectCollection,
             string solutionFileFullPath,
             string projectFileFullPath,
@@ -50,6 +50,8 @@ namespace SlnGen.Common
             solution.AddSolutionItems(solutionItems);
 
             solution.Save(solutionFileFullPath, folders);
+
+            return solutionFileFullPath;
         }
 
         public static void LaunchVisualStudio(string devEnvFullPath, bool useShellExecute, string solutionFileFullPath, ISlnGenLogger logger)
@@ -75,7 +77,7 @@ namespace SlnGen.Common
             {
                 processStartInfo = new ProcessStartInfo
                 {
-                    Arguments = $"/C start \"\" \"devenv.exe\" \"{solutionFileFullPath}\"",
+                    Arguments = $"/C start \"\" \"devenv\" \"{solutionFileFullPath}\"",
                     FileName = Environment.GetEnvironmentVariable("ComSpec"),
                     WindowStyle = ProcessWindowStyle.Hidden,
                 };

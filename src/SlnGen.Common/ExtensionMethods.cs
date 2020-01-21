@@ -1,4 +1,4 @@
-// Copyright (c) Jeff Kluge. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 //
 // Licensed under the MIT license.
 
@@ -40,6 +40,12 @@ namespace SlnGen.Common
         /// Stores the <see cref="Type"/> of <see cref="Microsoft.Build.BackEnd.BuildRequestEntry"/>.
         /// </summary>
         private static readonly Lazy<Type> BuildRequestEntryTypeLazy = new Lazy<Type>(() => BuildManagerAssemblyLazy.Value.GetType("Microsoft.Build.BackEnd.BuildRequestEntry", throwOnError: false));
+
+        /// <inheritdoc cref="String.Contains" />
+        public static bool Contains(this string str, string value, StringComparison comparisonType)
+        {
+            return value.IndexOf(str, comparisonType) >= 0;
+        }
 
         /// <summary>
         /// Gets the value of the given conditioned property in this project.
@@ -99,6 +105,31 @@ namespace SlnGen.Common
 
             // MSBuild always returns String.Empty if the property has no value
             return value == string.Empty ? defaultValue : value;
+        }
+
+        /// <inheritdoc cref="string.IsNullOrWhiteSpace" />
+        public static bool IsNullOrWhitespace(this string value)
+        {
+            return string.IsNullOrWhiteSpace(value);
+        }
+
+        /// <summary>
+        /// Determines whether or not the specified property's value is considered <code>true</code>.
+        /// </summary>
+        /// <param name="project">The <see cref="Project" /> to get the property value from.</param>
+        /// <param name="name">The name of the property to get the value of.</param>
+        /// <param name="defaultValue">An optional default value to use.</param>
+        /// <returns><code>true</code> if the specified property's value is true, otherwise <code>false</code>.</returns>
+        public static bool IsPropertyValueTrue(this Project project, string name, bool defaultValue = false)
+        {
+            string value = project.GetPropertyValue(name);
+
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return defaultValue;
+            }
+
+            return string.Equals(value, bool.TrueString, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>

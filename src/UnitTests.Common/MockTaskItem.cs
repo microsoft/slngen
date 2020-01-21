@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeff Kluge. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation.
 //
 // Licensed under the MIT license.
 
@@ -7,9 +7,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace SlnGen.Build.Tasks.UnitTests
+namespace SlnGen.UnitTests.Common
 {
-    internal class MockTaskItem : Dictionary<string, string>, ITaskItem
+    public class MockTaskItem : Dictionary<string, string>, ITaskItem
     {
         public MockTaskItem()
             : base(StringComparer.OrdinalIgnoreCase)
@@ -41,10 +41,7 @@ namespace SlnGen.Build.Tasks.UnitTests
             }
         }
 
-        public string GetMetadata(string metadataName)
-        {
-            return this[metadataName];
-        }
+        public string GetMetadata(string metadataName) => this[metadataName];
 
         public void RemoveMetadata(string metadataName)
         {
@@ -54,9 +51,6 @@ namespace SlnGen.Build.Tasks.UnitTests
             }
         }
 
-        public void SetMetadata(string metadataName, string metadataValue)
-        {
-            this[metadataName] = metadataValue;
-        }
+        public void SetMetadata(string metadataName, string metadataValue) => this[metadataName] = metadataValue;
     }
 }

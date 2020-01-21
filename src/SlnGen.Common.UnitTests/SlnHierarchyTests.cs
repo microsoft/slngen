@@ -1,16 +1,15 @@
-﻿// Copyright (c) Jeff Kluge. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation.
 //
 // Licensed under the MIT license.
 
 using Shouldly;
-using SlnGen.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Xunit;
 
-namespace SlnGen.Build.Tasks.UnitTests
+namespace SlnGen.Common.UnitTests
 {
     public class SlnHierarchyTests
     {
