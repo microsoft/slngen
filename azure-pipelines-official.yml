@@ -19,9 +19,9 @@ steps:
     zipSources: false
 
 - task: MSBuild@1
-  displayName: 'Build dirs.proj'
+  displayName: 'Build Solution'
   inputs:
-    solution: dirs.proj
+    solution: SlnGen.sln
     platform: '$(BuildPlatform)'
     configuration: '$(BuildConfiguration)'
     msbuildArguments: '"/Property:ArtifactsPath=$(Build.StagingDirectory);SignType=$(SignType);PublicRelease=true" "/BinaryLogger:$(Build.StagingDirectory)\logs\build.binlog"'
