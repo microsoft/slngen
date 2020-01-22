@@ -35,5 +35,5 @@ You can also create a [DOSKEY](https://en.wikipedia.org/wiki/DOSKEY) alias as a 
 > doskey slngen=msbuild /nologo /v:m /t:slngen
 ```
 
-More documentation is available at [jeffkl.github.io/SlnGen](https://jeffkl.github.io/SlnGen).
+More documentation is available at [https://microsoft.github.io/slngen/](https://microsoft.github.io/slngen/).
 
