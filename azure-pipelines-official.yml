@@ -7,6 +7,17 @@ variables:
   BuildPlatform: 'Any CPU'
   SignType: 'Test'
 
+trigger:
+  batch: true
+  branches:
+    include:
+    - 'master'
+    - 'refs/tags/*'
+  paths:
+    exclude:
+    - '*.md'
+pr: none
+
 steps:
 - script: 'echo ##vso[task.setvariable variable=SignType;]Real'
   displayName: 'Set SignType to Real for tagged commits'
