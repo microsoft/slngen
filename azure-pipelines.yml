@@ -3,7 +3,7 @@ resources:
 
 variables:
   BuildConfiguration: 'Debug'
-  BuildPlatform: 'AnyCPU'
+  BuildPlatform: 'Any CPU'
   DotNetCore3Version: '3.0.100'
   SignType: 'Test'
 
