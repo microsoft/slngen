@@ -1,7 +1,12 @@
 resources:
 - repo: self
-pool:
-  vmImage: 'windows-2019'
+
+variables:
+  BuildConfiguration: 'Debug'
+  BuildPlatform: 'AnyCPU'
+  DotNetCore3Version: '3.0.100'
+  SignType: 'Test'
+
 trigger:
   batch: true
   branches:
@@ -10,38 +15,42 @@ trigger:
     - 'refs/tags/*'
   paths:
     exclude:
-    - README.md
+    - '*.md'
 pr:
   branches:
     include:
     - master
   paths:
     exclude:
-    - README.md
+    - '*.md'
 
-steps:
-- script: 'echo ##vso[task.setvariable variable=BuildConfiguration;]Release'
-  displayName: 'Set BuildConfiguration to Release for tagged commits'
-  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
-
-- task: MSBuild@1
-  displayName: 'Build Solution'
-  inputs:
-    solution: 'SlnGen.sln'
-    platform: '$(BuildPlatform)'
-    configuration: '$(BuildConfiguration)'
-
-- task: VSTest@2
-  displayName: 'Run Unit Tests'
-  inputs:
-    testAssemblyVer2: |
-     **\*Tests.dll
-     !**\obj\**
-    platform: '$(BuildPlatform)'
-    configuration: '$(BuildConfiguration)'
-
-- task: PublishPipelineArtifact@0
-  displayName: 'Publish Artifacts'
-  inputs:
-    artifactName: 'drop'
-    targetPath: 'artifacts'
+jobs:
+- job: BuildAndTest
+  displayName: 'Build and Test'
+  pool:
+    vmImage: windows-latest
+  steps:
+  - task: UseDotNet@2
+    displayName: 'Install .NET Core 3.0'
+    inputs:
+      version: '$(DotNetCore3Version)'
+  - task: MSBuild@1
+    displayName: 'Build Solution'
+    inputs:
+      solution: SlnGen.sln
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      msbuildArguments: '"/Property:ArtifactsPath=$(Build.StagingDirectory);SignType=$(SignType);PublicRelease=true" "/BinaryLogger:$(Build.StagingDirectory)\logs\msbuild.binlog"'
+  - task: VSTest@2
+    displayName: 'Run Unit Tests'
+    inputs:
+      testAssemblyVer2: |
+       **\*Tests.dll
+       !**\obj\**
+      runInParallel: false
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: Logs'
+    inputs:
+      PathtoPublish: '$(Build.StagingDirectory)\logs'
+      ArtifactName: logs
+    condition: always()
