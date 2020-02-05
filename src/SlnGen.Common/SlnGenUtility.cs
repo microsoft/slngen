@@ -24,7 +24,10 @@ namespace SlnGen.Common
             string projectFileFullPath,
             IReadOnlyDictionary<string, Guid> customProjectTypeGuids,
             bool folders,
+            bool enableConfigurationAndPlatforms,
             IEnumerable<string> solutionItems,
+            IReadOnlyCollection<string> configurations,
+            IReadOnlyCollection<string> platforms,
             ISlnGenLogger logger)
         {
             if (string.IsNullOrWhiteSpace(solutionFileFullPath))
@@ -43,18 +46,22 @@ namespace SlnGen.Common
                 }
             }
 
-            SlnFile solution = new SlnFile();
+            SlnFile solution = new SlnFile
+            {
+                Configurations = configurations,
+                Platforms = platforms,
+            };
 
             solution.AddProjects(projectCollection, customProjectTypeGuids, projectFileFullPath);
 
             solution.AddSolutionItems(solutionItems);
 
-            solution.Save(solutionFileFullPath, folders);
+            solution.Save(solutionFileFullPath, folders, enableConfigurationAndPlatforms);
 
             return solutionFileFullPath;
         }
 
-        public static void LaunchVisualStudio(string devEnvFullPath, bool useShellExecute, string solutionFileFullPath, ISlnGenLogger logger)
+        public static void LaunchVisualStudio(string devEnvFullPath, bool useShellExecute, string solutionFileFullPath, bool loadProjects, ISlnGenLogger logger)
         {
             ProcessStartInfo processStartInfo;
 
@@ -72,15 +79,26 @@ namespace SlnGen.Common
                     FileName = devEnvFullPath,
                     Arguments = $"\"{solutionFileFullPath}\"",
                 };
+
+                if (!loadProjects)
+                {
+                    processStartInfo.Arguments += " /DoNotLoadProjects";
+                }
             }
-            else if (!useShellExecute)
+            else if (!useShellExecute || !loadProjects)
             {
                 processStartInfo = new ProcessStartInfo
                 {
                     Arguments = $"/C start \"\" \"devenv\" \"{solutionFileFullPath}\"",
                     FileName = Environment.GetEnvironmentVariable("ComSpec"),
+                    UseShellExecute = false,
                     WindowStyle = ProcessWindowStyle.Hidden,
                 };
+
+                if (!loadProjects)
+                {
+                    processStartInfo.Arguments += " /DoNotLoadProjects";
+                }
             }
             else
             {

@@ -13,6 +13,7 @@ using SlnGen.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 
 namespace SlnGen.ConsoleApp
@@ -95,7 +96,7 @@ namespace SlnGen.ConsoleApp
             using (SlnGenTelemetryData telemetryData = new SlnGenTelemetryData
             {
                 DevEnvFullPathSpecified = !_programArguments.DevEnvFullPath.IsNullOrWhitespace(),
-                EntryProjectCount = _programArguments.Projects.Length,
+                EntryProjectCount = _programArguments.Projects?.Length ?? 0,
                 Folders = _programArguments.Folders,
                 LaunchVisualStudio = _programArguments.LaunchVisualStudio,
                 SolutionFileFullPathSpecified = !_programArguments.SolutionFileFullPath.IsNullOrWhitespace(),
@@ -104,27 +105,7 @@ namespace SlnGen.ConsoleApp
                 UseShellExecute = _programArguments.UseShellExecute,
             })
             {
-                _logger.LogMessageHigh("Loading project references...");
-
-                Stopwatch sw = Stopwatch.StartNew();
-
-                IDictionary<string, string> globalProperties = new Dictionary<string, string>
-                {
-                    ["BuildingProject"] = "false",
-                    ["DesignTimeBuild"] = "true",
-                    ["ExcludeRestorePackageImports"] = "true",
-                };
-
-                ICollection<ProjectGraphEntryPoint> entryProjects = _programArguments.GetProjects(_logger).Select(i => new ProjectGraphEntryPoint(i, globalProperties)).ToList();
-
-                _ = new ProjectGraph(entryProjects, _projectCollection, CreateProjectInstance);
-
-                sw.Stop();
-
-                _logger.LogMessageNormal($"Loaded {_projectCollection.LoadedProjects.Count} project(s) in {sw.ElapsedMilliseconds:N2}ms");
-
-                telemetryData.ProjectEvaluationMilliseconds = sw.ElapsedMilliseconds;
-                telemetryData.ProjectEvaluationCount = _projectCollection.LoadedProjects.Count;
+                LoadProjects(telemetryData);
 
                 Project project = _projectCollection.LoadedProjects.First();
 
@@ -139,15 +120,25 @@ namespace SlnGen.ConsoleApp
                 string solutionFileFullPath = SlnGenUtility.GenerateSolutionFile(
                     _projectCollection,
                     solutionFileFullPath: null,
-                    projectFileFullPath: entryProjects.First().ProjectFile,
+                    projectFileFullPath: project.FullPath,
                     customProjectTypeGuids: customProjectTypeGuids,
                     folders: _programArguments.Folders,
+                    enableConfigurationAndPlatforms: true,
                     solutionItems: solutionItems,
+                    _programArguments.GetConfigurations().ToList(),
+                    _programArguments.GetPlatforms().ToList(),
                     logger: _logger);
 
                 if (_programArguments.LaunchVisualStudio)
                 {
-                    SlnGenUtility.LaunchVisualStudio(_programArguments.DevEnvFullPath, _programArguments.UseShellExecute, solutionFileFullPath, _logger);
+                    string devEnvFullPath = _programArguments.DevEnvFullPath;
+
+                    if (!_programArguments.UseShellExecute || !_programArguments.LoadProjects)
+                    {
+                        devEnvFullPath = Path.Combine(Program.VisualStudioInstance.VisualStudioRootPath, "Common7", "IDE", "devenv.exe");
+                    }
+
+                    SlnGenUtility.LaunchVisualStudio(devEnvFullPath, _programArguments.UseShellExecute, solutionFileFullPath, _programArguments.LoadProjects, _logger);
                 }
 
                 return _logger.HasLoggedErrors ? 1 : 0;
@@ -182,6 +173,43 @@ namespace SlnGen.ConsoleApp
             foreach (ILogger logger in ForwardingLogger.ParseLoggerParameters(_programArguments.Loggers))
             {
                 yield return logger;
+            }
+        }
+
+        private void LoadProjects(SlnGenTelemetryData telemetryData)
+        {
+            using (new MSBuildFeatureFlags
+            {
+                MSBuildCacheFileEnumerations = true,
+                MSBuildLoadAllFilesAsReadonly = true,
+                MSBuildSkipEagerWildCardEvaluationRegexes = true,
+                MSBuildUseSimpleProjectRootElementCacheConcurrency = true,
+#if NETFRAMEWORK
+                MSBUILD_EXE_PATH = Program.MSBuildExePath,
+#endif
+            })
+            {
+                _logger.LogMessageHigh("Loading project references...");
+
+                Stopwatch sw = Stopwatch.StartNew();
+
+                IDictionary<string, string> globalProperties = new Dictionary<string, string>
+                {
+                    ["BuildingProject"] = "false",
+                    ["DesignTimeBuild"] = "true",
+                    ["ExcludeRestorePackageImports"] = "true",
+                };
+
+                ICollection<ProjectGraphEntryPoint> entryProjects = _programArguments.GetProjects(_logger).Select(i => new ProjectGraphEntryPoint(i, globalProperties)).ToList();
+
+                _ = new ProjectGraph(entryProjects, _projectCollection, CreateProjectInstance);
+
+                sw.Stop();
+
+                _logger.LogMessageNormal($"Loaded {_projectCollection.LoadedProjects.Count:N0} project(s) in {sw.ElapsedMilliseconds:N2}ms");
+
+                telemetryData.ProjectEvaluationMilliseconds = sw.ElapsedMilliseconds;
+                telemetryData.ProjectEvaluationCount = _projectCollection.LoadedProjects.Count;
             }
         }
     }

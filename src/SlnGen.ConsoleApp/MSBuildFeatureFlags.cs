@@ -6,43 +6,18 @@ using System;
 
 namespace SlnGen.ConsoleApp
 {
-    internal static class MSBuildFeatureFlags
+    internal class MSBuildFeatureFlags : IDisposable
     {
         /// <summary>
         /// Represents a regular expression that matches any file spec that contains a wildcard * or ? and does not end in "proj".
         /// </summary>
         private const string SkipWildcardRegularExpression = @"[*?]+.*(?<!proj)$";
 
-        /// <summary>
-        /// Gets or sets a value indicating if wildcard expansions for the entire process should be cached.
-        /// </summary>
-        /// <remarks>
-        /// More info here: https://github.com/microsoft/msbuild/blob/master/src/Shared/Traits.cs#L55
-        /// </remarks>
-        public static bool EnableCacheFileEnumerations
-        {
-            get => string.Equals(Environment.GetEnvironmentVariable("MSBuildCacheFileEnumerations"), "1");
-            set => Environment.SetEnvironmentVariable("MSBuildCacheFileEnumerations", value ? "1" : null);
-        }
-
-        public static bool EnableSimpleProjectRootElementCache
-        {
-            get => !string.Equals(Environment.GetEnvironmentVariable("MSBuildUseSimpleProjectRootElementCacheConcurrency"), "1");
-            set => Environment.SetEnvironmentVariable("MSBuildUseSimpleProjectRootElementCacheConcurrency", "1");
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating if all projects should be treated as read-only which enables an optimized way of
-        /// reading them.
-        /// </summary>
-        /// <remarks>
-        /// More info here: https://github.com/microsoft/msbuild/blob/master/src/Build/ElementLocation/XmlDocumentWithLocation.cs#L392
-        /// </remarks>
-        public static bool LoadAllFilesAsReadonly
-        {
-            get => string.Equals(Environment.GetEnvironmentVariable("MSBuildLoadAllFilesAsReadonly"), "1");
-            set => Environment.SetEnvironmentVariable("MSBuildLoadAllFilesAsReadonly", value ? "1" : null);
-        }
+        private string _cacheFileEnumerations;
+        private string _loadAllFilesAsReadonly;
+        private string _msbuildExePath;
+        private string _skipEagerWildcardEvaluations;
+        private string _useSimpleProjectRootElementCacheConcurrency;
 
         /// <summary>
         /// Gets or sets the full path to MSBuild that should be used to evaluate projects.
@@ -52,10 +27,50 @@ namespace SlnGen.ConsoleApp
         /// to be found by MSBuild (stuff like $(MSBuildExtensionsPath).
         /// More info here: https://github.com/microsoft/msbuild/blob/master/src/Shared/BuildEnvironmentHelper.cs#L125
         /// </remarks>
-        public static string MSBuildExePath
+        public string MSBUILD_EXE_PATH
         {
-            get => Environment.GetEnvironmentVariable("MSBUILD_EXE_PATH");
-            set => Environment.SetEnvironmentVariable("MSBUILD_EXE_PATH", value);
+            get => Environment.GetEnvironmentVariable(nameof(MSBUILD_EXE_PATH));
+            set
+            {
+                _msbuildExePath = Environment.GetEnvironmentVariable(nameof(MSBUILD_EXE_PATH));
+
+                Environment.SetEnvironmentVariable(nameof(MSBUILD_EXE_PATH), value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating if wildcard expansions for the entire process should be cached.
+        /// </summary>
+        /// <remarks>
+        /// More info here: https://github.com/microsoft/msbuild/blob/master/src/Shared/Traits.cs#L55
+        /// </remarks>
+        public bool MSBuildCacheFileEnumerations
+        {
+            get => string.Equals(Environment.GetEnvironmentVariable(nameof(MSBuildCacheFileEnumerations)), "1");
+            set
+            {
+                _cacheFileEnumerations = Environment.GetEnvironmentVariable(nameof(MSBuildCacheFileEnumerations));
+
+                Environment.SetEnvironmentVariable(nameof(MSBuildCacheFileEnumerations), value ? "1" : null);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating if all projects should be treated as read-only which enables an optimized way of
+        /// reading them.
+        /// </summary>
+        /// <remarks>
+        /// More info here: https://github.com/microsoft/msbuild/blob/master/src/Build/ElementLocation/XmlDocumentWithLocation.cs#L392
+        /// </remarks>
+        public bool MSBuildLoadAllFilesAsReadonly
+        {
+            get => string.Equals(Environment.GetEnvironmentVariable(nameof(MSBuildLoadAllFilesAsReadonly)), "1");
+            set
+            {
+                _loadAllFilesAsReadonly = Environment.GetEnvironmentVariable(nameof(MSBuildLoadAllFilesAsReadonly));
+
+                Environment.SetEnvironmentVariable(nameof(MSBuildLoadAllFilesAsReadonly), value ? "1" : null);
+            }
         }
 
         /// <summary>
@@ -74,10 +89,36 @@ namespace SlnGen.ConsoleApp
         /// <remarks>
         /// More info here: https://github.com/microsoft/msbuild/blob/master/src/Build/Utilities/EngineFileUtilities.cs#L221
         /// </remarks>
-        public static bool SkipEagerWildcardEvaluations
+        public bool MSBuildSkipEagerWildCardEvaluationRegexes
         {
             get => !string.Equals(Environment.GetEnvironmentVariable("MSBuildSkipEagerWildCardEvaluationRegexes"), null);
-            set => Environment.SetEnvironmentVariable("MSBuildSkipEagerWildCardEvaluationRegexes", SkipWildcardRegularExpression);
+            set
+            {
+                _skipEagerWildcardEvaluations = Environment.GetEnvironmentVariable(nameof(MSBuildSkipEagerWildCardEvaluationRegexes));
+
+                Environment.SetEnvironmentVariable(nameof(MSBuildSkipEagerWildCardEvaluationRegexes), SkipWildcardRegularExpression);
+            }
+        }
+
+        public bool MSBuildUseSimpleProjectRootElementCacheConcurrency
+        {
+            get => !string.Equals(Environment.GetEnvironmentVariable(nameof(MSBuildUseSimpleProjectRootElementCacheConcurrency)), "1");
+            set
+            {
+                _useSimpleProjectRootElementCacheConcurrency = Environment.GetEnvironmentVariable(nameof(MSBuildUseSimpleProjectRootElementCacheConcurrency));
+
+                Environment.SetEnvironmentVariable(nameof(MSBuildUseSimpleProjectRootElementCacheConcurrency), "1");
+            }
+        }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            Environment.SetEnvironmentVariable(nameof(MSBuildSkipEagerWildCardEvaluationRegexes), _skipEagerWildcardEvaluations);
+            Environment.SetEnvironmentVariable(nameof(MSBUILD_EXE_PATH), _msbuildExePath);
+            Environment.SetEnvironmentVariable(nameof(MSBuildLoadAllFilesAsReadonly), _loadAllFilesAsReadonly);
+            Environment.SetEnvironmentVariable(nameof(MSBuildUseSimpleProjectRootElementCacheConcurrency), _useSimpleProjectRootElementCacheConcurrency);
+            Environment.SetEnvironmentVariable(nameof(MSBuildCacheFileEnumerations), _cacheFileEnumerations);
         }
     }
 }

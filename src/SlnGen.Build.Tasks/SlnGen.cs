@@ -131,7 +131,10 @@ namespace SlnGen.Build.Tasks
                         ProjectFullPath,
                         SlnProject.GetCustomProjectTypeGuids(CustomProjectTypeGuids.Select(i => new MSBuildTaskItem(i))),
                         Folders,
+                        enableConfigurationAndPlatforms: true,
                         SlnFile.GetSolutionItems(SolutionItems.Select(i => new MSBuildTaskItem(i)), logger),
+                        configurations: null,
+                        platforms: null,
                         logger);
                 }
             }
@@ -142,6 +145,7 @@ namespace SlnGen.Build.Tasks
                     DevEnvFullPath,
                     UseShellExecute,
                     SolutionFileFullPath,
+                    loadProjects: true,
                     logger);
             }
 
