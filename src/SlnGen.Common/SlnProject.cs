@@ -78,6 +78,10 @@ namespace SlnGen.Common
 
         public Guid ProjectTypeGuid { get; }
 
+        public string Platform { get; private set; }
+
+        public string PlatformsValue { get; private set; }
+
         public static SlnProject FromProject(Project project, IReadOnlyDictionary<string, Guid> customProjectTypeGuids, bool isMainProject = false)
         {
             if (project == null)
@@ -117,7 +121,11 @@ namespace SlnGen.Common
 
             bool isDeployable = isDeployableStr.Equals("true", StringComparison.OrdinalIgnoreCase) || (string.IsNullOrWhiteSpace(isDeployableStr) && string.Equals(Path.GetExtension(project.FullPath), ".sfproj", StringComparison.OrdinalIgnoreCase));
 
-            return new SlnProject(project.FullPath, name, projectGuid, projectTypeGuid, configurations, platforms, isMainProject, isDeployable);
+            return new SlnProject(project.FullPath, name, projectGuid, projectTypeGuid, configurations, platforms, isMainProject, isDeployable)
+            {
+                Platform = project.GetPropertyValue("Platform"),
+                PlatformsValue = project.GetPropertyValue("Platforms"),
+            };
         }
 
         public static Dictionary<string, Guid> GetCustomProjectTypeGuids(IEnumerable<IMSBuildItem> items)
@@ -185,20 +193,41 @@ namespace SlnGen.Common
             return
                 !project.GetPropertyValue(SlnConstants.IncludeInSolutionFile).Equals(bool.FalseString, StringComparison.OrdinalIgnoreCase) // Filter out projects that explicitly should not be included
                 &&
-                !project.GetPropertyValue(SlnConstants.IsTraversal).Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase);  // Filter out traversal projects by looking for an IsTraversal property
+                !project.GetPropertyValue(SlnConstants.IsTraversal).Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase) // Filter out traversal projects by looking for an IsTraversal property
+                &&
+                !project.GetPropertyValue(SlnConstants.IsTraversalProject).Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase);  // Filter out traversal projects by looking for an IsTraversal property
         }
 
         private static IEnumerable<string> GetPlatforms(Project project)
         {
-            foreach (string platform in project.GetPossiblePropertyValuesOrDefault("Platform", "Any CPU"))
+            var platforms = project.GetPropertyValue("Platforms");
+
+            if (!platforms.IsNullOrWhitespace())
             {
-                if (string.Equals(platform, "AnyCPU", StringComparison.OrdinalIgnoreCase))
+                foreach (string value in platforms.Split(';'))
                 {
-                    yield return "Any CPU";
+                    if (string.Equals(value, "AnyCPU", StringComparison.OrdinalIgnoreCase))
+                    {
+                        yield return "Any CPU";
+                    }
+                    else
+                    {
+                        yield return value;
+                    }
                 }
-                else
+            }
+            else
+            {
+                foreach (string platform in project.GetPossiblePropertyValuesOrDefault("Platform", "Any CPU"))
                 {
-                    yield return platform;
+                    if (string.Equals(platform, "AnyCPU", StringComparison.OrdinalIgnoreCase))
+                    {
+                        yield return "Any CPU";
+                    }
+                    else
+                    {
+                        yield return platform;
+                    }
                 }
             }
         }

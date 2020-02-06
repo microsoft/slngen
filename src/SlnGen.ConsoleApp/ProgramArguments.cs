@@ -13,7 +13,15 @@ namespace SlnGen.ConsoleApp
 {
     public sealed class ProgramArguments
     {
-        [Option("-bl|--binarylogger <parameters>", CommandOptionType.SingleOrNoValue, Description = @"Serializes all build events to a compressed binary file.
+        /// <summary>
+        /// Characters to use when splitting argument values.
+        /// </summary>
+        private static readonly char[] ArgumentSplitChars = { ';', ',' };
+
+        [Option(
+            "-bl|--binarylogger <parameters>",
+            CommandOptionType.SingleOrNoValue,
+            Description = @"Serializes all build events to a compressed binary file.
 By default the file is in the current directory and named ""slngen.binlog"" and contains the source text of project files, including all imported projects and target files encountered during the build. The optional ProjectImports switch controls this behavior:
 
  ProjectImports=None     - Don't collect the project imports.
@@ -25,7 +33,17 @@ NOTE: The binary logger does not collect non-MSBuild source files such as .cs, .
 Example: -bl:output.binlog;ProjectImports=ZipFile")]
         public (bool HasValue, string Arguments) BinaryLogger { get; set; }
 
-        [Option("-clp|--consoleloggerparameters <parameters>", CommandOptionType.SingleOrNoValue, Description = @"Parameters to console logger. The available parameters are:
+        [Option(
+            "-c|--configuration",
+            CommandOptionType.MultipleValue,
+            ValueName = "values",
+            Description = @"Specifies one or more Configuration values to use when generating the solution.  By default, your projects are read to determine these values but in some cases you may want to specify them.")]
+        public string[] Configuration { get; set; }
+
+        [Option(
+            "-cl|--consolelogger <parameters>",
+            CommandOptionType.SingleOrNoValue,
+            Description = @"Parameters to console logger. The available parameters are:
     PerformanceSummary--Show time spent in tasks, targets and projects.
     Summary--Show error and warning summary at the end.
     NoSummary--Don't show error and warning summary at the end.
@@ -41,13 +59,23 @@ Example: -bl:output.binlog;ProjectImports=ZipFile")]
     --consoleloggerparameters:PerformanceSummary;NoSummary;Verbosity=Minimal")]
         public (bool HasValue, string Arguments) ConsoleLoggerParameters { get; set; }
 
-        [Option("--debug", CommandOptionType.NoValue, Description = "Debug the application", ShowInHelpText = false)]
+        [Option(
+            "--debug",
+            CommandOptionType.NoValue,
+            Description = "Debug the application",
+            ShowInHelpText = false)]
         public bool Debug { get; set; }
 
-        [Option(CommandOptionType.SingleValue, Template = "-d|--devenvfullpath", Description = "Specifies a full path to Visual Studio’s devenv.exe to use when opening the solution file. By default, SlnGen will launch the program associated with the .sln file extension.")]
+        [Option(
+            "-vs|--devenvfullpath",
+            CommandOptionType.SingleValue,
+            Description = "Specifies a full path to Visual Studio’s devenv.exe to use when opening the solution file. By default, SlnGen will launch the program associated with the .sln file extension.")]
         public string DevEnvFullPath { get; set; }
 
-        [Option("-flp|--fileloggerparameters <parameters>", CommandOptionType.SingleOrNoValue, Description = @"Provides any extra parameters for file loggers. The same parameters listed for the console logger are available.
+        [Option(
+            "-fl|--filelogger <parameters>",
+            CommandOptionType.SingleOrNoValue,
+            Description = @"Provides any extra parameters for file loggers. The same parameters listed for the console logger are available.
 Some additional available parameters are:
     LogFile--path to the log file into which the build log will be written.
     Append--determines if the build log will be appended to or overwrite the log file.Setting the switch appends the build log to the log file;
@@ -57,13 +85,33 @@ Some additional available parameters are:
     -fileLoggerParameters:LogFile=MyLog.log;Append;Verbosity=Diagnostic;Encoding=UTF-8")]
         public (bool HasValue, string Arguments) FileLoggerParameters { get; set; }
 
-        [Option("-f|--folders", CommandOptionType.SingleOrNoValue, Description = "Enables the creation of hierarchical solution folders.  Default: false", ValueName = "true|false")]
+        [Option(
+            "--folders",
+            CommandOptionType.SingleOrNoValue,
+            ValueName = "true",
+            Description = "Enables the creation of hierarchical solution folders.  Default: false")]
         public bool Folders { get; set; }
 
-        [Option(CommandOptionType.SingleOrNoValue, Template = "-l|--launch", Description = "Launch Visual Studio after generating the Solution file.  Default: true", ValueName = "true|false")]
+        [Option(
+            "--launch",
+            CommandOptionType.SingleOrNoValue,
+            ValueName = "false",
+            Description = "Launch Visual Studio after generating the Solution file.  Default: true")]
         public bool LaunchVisualStudio { get; set; } = true;
 
-        [Option("--logger", CommandOptionType.MultipleValue, Description = @"Use this logger to log events from SlnGen. To specify multiple loggers, specify each logger separately.
+        [Option(
+            "--loadprojects",
+            CommandOptionType.SingleOrNoValue,
+            ValueName = "false",
+            Description = @"When launching Visual Studio, opens the specified solution without loading any projects.  Default: true
+You must disable shell execute when using this command-line option.
+  --useshellexecute:false")]
+        public bool LoadProjects { get; set; } = true;
+
+        [Option(
+            "--logger",
+            CommandOptionType.MultipleValue,
+            Description = @"Use this logger to log events from SlnGen. To specify multiple loggers, specify each logger separately.
 The <logger> syntax is:
   [<class>,]<assembly>[;<parameters>]
 The <logger class> syntax is:
@@ -76,20 +124,37 @@ Examples:
   -logger:XMLLogger,C:\Loggers\MyLogger.dll;OutputAsHTML")]
         public string[] Loggers { get; set; }
 
-        /// <summary>
-        /// Gets or sets the full path to the project to generate a Visual Studio Solution File for.
-        /// </summary>
-        [Argument(0, "project path", "An optional path to a project.  If not specified, all projects in the current directory will be used.")]
+        [Option(
+            "-p|--platform",
+            CommandOptionType.MultipleValue,
+            ValueName = "values",
+            Description = @"Specifies one or more Platform values to use when generating the solution.  By default, your projects are read to determine these values but in some cases you may want to specify them.")]
+        public string[] Platform { get; set; }
+
+        [Argument(
+            0,
+            Name = "project path",
+            Description = "An optional path to a project.  If not specified, all projects in the current directory will be used.")]
         public string[] Projects { get; set; }
 
-        [Option("-o|--solutionfile", Description = "An optional path to the solution file to generate.  Defaults to the same directory as the project.")]
+        [Option(
+            "-o|--solutionfile <path>",
+            CommandOptionType.SingleValue,
+            Description = "An optional path to the solution file to generate.  Defaults to the same directory as the project.")]
         public string SolutionFileFullPath { get; set; }
 
-        [Option(CommandOptionType.SingleOrNoValue, Template = "-u|--useshellexecute", Description = "Indicates whether or not the Visual Studio solution file should be opened by the registered file extension handler.  Default: true", ValueName = "true|false")]
+        [Option(
+            "-u|--useshellexecute",
+            CommandOptionType.SingleOrNoValue,
+            ValueName = "false",
+            Description = "Indicates whether or not the Visual Studio solution file should be opened by the registered file extension handler.  Default: true")]
         public bool UseShellExecute { get; set; } = true;
 
-        [Option("-v|--verbosity", CommandOptionType.SingleValue, Description = @"Display this amount of information in the event log.
-The available verbosity levels are: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")]
+        [Option(
+            "-v|--verbosity",
+            CommandOptionType.SingleValue,
+            Description = @"Display this amount of information in the event log.  The available verbosity levels are:
+  q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")]
         public string Verbosity { get; set; }
 
         public IEnumerable<string> GetProjects(ISlnGenLogger logger)
@@ -121,6 +186,32 @@ The available verbosity levels are: q[uiet], m[inimal], n[ormal], d[etailed], an
                 logger.LogMessageNormal("Generating solution for project \"{0}\"", projectPath);
 
                 yield return projectPath;
+            }
+        }
+
+        public IEnumerable<string> GetConfigurations()
+        {
+            return SplitValues(Configuration);
+        }
+
+        public IEnumerable<string> GetPlatforms()
+        {
+            return SplitValues(Platform);
+        }
+
+        private IEnumerable<string> SplitValues(string[] values)
+        {
+            if (values == null)
+            {
+                yield break;
+            }
+
+            foreach (string value in values)
+            {
+                foreach (string item in value.Split(ArgumentSplitChars, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    yield return item.Trim();
+                }
             }
         }
 

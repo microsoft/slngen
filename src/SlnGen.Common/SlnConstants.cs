@@ -12,6 +12,8 @@ namespace SlnGen.Common
 
         public const string IsTraversal = nameof(IsTraversal);
 
+        public const string IsTraversalProject = nameof(IsTraversalProject);
+
         public const string ProjectGuid = nameof(ProjectGuid);
 
         public const string ProjectTypeGuid = nameof(ProjectTypeGuid);

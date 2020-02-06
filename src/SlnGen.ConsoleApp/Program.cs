@@ -4,11 +4,14 @@
 
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Build.Locator;
+using SlnGen.Common;
 using System;
+using System.Collections;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace SlnGen.ConsoleApp
 {
@@ -19,17 +22,15 @@ namespace SlnGen.ConsoleApp
     {
         static Program()
         {
-            MSBuildFeatureFlags.EnableCacheFileEnumerations = true;
-            MSBuildFeatureFlags.LoadAllFilesAsReadonly = true;
-            MSBuildFeatureFlags.SkipEagerWildcardEvaluations = true;
-            MSBuildFeatureFlags.EnableSimpleProjectRootElementCache = true;
-
-            VisualStudioInstance instance = MSBuildLocator.RegisterDefaults();
-
-#if NETFRAMEWORK
-            MSBuildFeatureFlags.MSBuildExePath = Path.Combine(instance.MSBuildPath, "MSBuild.exe");
-#endif
+            Configure();
         }
+
+        /// <summary>
+        /// Gets the full path to devenv.exe if one was found.
+        /// </summary>
+        public static VisualStudioInstance VisualStudioInstance { get; private set; }
+
+        public static string MSBuildExePath { get; private set; }
 
         /// <summary>
         /// Executes the programs with the specified arguments.
@@ -54,6 +55,56 @@ namespace SlnGen.ConsoleApp
                     ".NET Core"));
 #endif
             return CommandLineApplication.Execute<ProgramArguments>(args);
+        }
+
+        private static void Configure()
+        {
+            string msbuildToolset = Environment.GetEnvironmentVariable("MSBuildToolset")?.Trim();
+
+            if (!msbuildToolset.IsNullOrWhitespace())
+            {
+                string msbuildToolsPath = Environment.GetEnvironmentVariable($"MSBuildToolsPath_{msbuildToolset}");
+
+                if (!msbuildToolsPath.IsNullOrWhitespace())
+                {
+                    MSBuildLocator.RegisterMSBuildPath(msbuildToolsPath);
+
+#if NETFRAMEWORK
+                    MSBuildExePath = Path.Combine(msbuildToolsPath, "MSBuild.exe");
+#endif
+                    AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
+                    {
+                        AssemblyName assemblyName = new AssemblyName(args.Name);
+
+                        string path = Path.Combine(msbuildToolsPath, $"{assemblyName.Name}.dll");
+
+                        if (!File.Exists(path))
+                        {
+                            path = Path.Combine(msbuildToolsPath, $"{assemblyName.Name}.exe");
+
+                            if (!File.Exists(path))
+                            {
+                                return null;
+                            }
+                        }
+
+                        return Assembly.LoadFrom(path);
+                    };
+                }
+
+                VisualStudioInstance = MSBuildLocator.QueryVisualStudioInstances(new VisualStudioInstanceQueryOptions()
+                {
+                    DiscoveryTypes = DiscoveryType.VisualStudioSetup,
+                }).OrderByDescending(i => i.Version).FirstOrDefault();
+            }
+            else
+            {
+                VisualStudioInstance = MSBuildLocator.RegisterDefaults();
+
+#if NETFRAMEWORK
+                MSBuildExePath = Path.Combine(VisualStudioInstance.MSBuildPath, "MSBuild.exe");
+#endif
+            }
         }
     }
 }

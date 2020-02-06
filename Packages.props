@@ -22,7 +22,7 @@
     <GlobalPackageReference Include="Microsoft.Build.Artifacts" Version="2.0.1" />
     <GlobalPackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" />
     <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.0.28" />
-    <GlobalPackageReference Include="SlnGen" Version="2.2.30" />
+    <GlobalPackageReference Include="SlnGen" Version="2.2.30" Condition="'$(EnableSlnGen)' != 'false'" />
     <GlobalPackageReference Include="StyleCop.Analyzers" Version="1.1.118" />
   </ItemGroup>
 </Project>
