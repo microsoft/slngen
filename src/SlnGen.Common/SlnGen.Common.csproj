@@ -1,18 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net45;net46;net472;netstandard2.0;netcoreapp2.1</TargetFrameworks>
+    <TargetFrameworks>net472;netcoreapp2.1</TargetFrameworks>
     <NoWarn>$(NoWarn);SA0001</NoWarn>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
-    <Reference Include="Microsoft.Build" />
-    <Reference Include="Microsoft.Build.Framework" />
-    <Reference Include="System" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net46' Or '$(TargetFramework)' == 'netstandard2.0'">
-    <PackageReference Include="Microsoft.Build" VersionOverride="15.9.20" ExcludeAssets="Runtime" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net472' Or '$(TargetFramework)' == 'netcoreapp2.1'">
+  <ItemGroup>
     <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" />
   </ItemGroup>
 </Project>

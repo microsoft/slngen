@@ -2,12 +2,8 @@
 //
 // Licensed under the MIT license.
 
-using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
-using Microsoft.Build.Evaluation.Context;
-using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Graph;
 using Microsoft.Build.Logging;
 using SlnGen.Common;
 using System;
@@ -23,13 +19,6 @@ namespace SlnGen.ConsoleApp
     /// </summary>
     public sealed class SolutionFileGenerator : IDisposable
     {
-        private static readonly ProjectLoadSettings DefaultProjectLoadSettings =
-            ProjectLoadSettings.IgnoreEmptyImports
-            | ProjectLoadSettings.IgnoreInvalidImports
-            | ProjectLoadSettings.IgnoreMissingImports
-            | ProjectLoadSettings.DoNotEvaluateElementsWithFalseCondition;
-
-        private static readonly EvaluationContext SharedEvaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
         private readonly ISlnGenLogger _logger;
         private readonly ProgramArguments _programArguments;
         private readonly ProjectCollection _projectCollection;
@@ -73,22 +62,6 @@ namespace SlnGen.ConsoleApp
             (_logger as IDisposable)?.Dispose();
 
             _projectCollection?.Dispose();
-        }
-
-        private ProjectInstance CreateProjectInstance(string projectFullPath, IDictionary<string, string> globalProperties, ProjectCollection projectCollection)
-        {
-            return Project.FromFile(
-                    projectFullPath,
-                    new ProjectOptions
-                    {
-                        EvaluationContext = SharedEvaluationContext,
-                        GlobalProperties = globalProperties,
-                        LoadSettings = DefaultProjectLoadSettings,
-                        ProjectCollection = projectCollection,
-                    })
-                .CreateProjectInstance(
-                    ProjectInstanceSettings.ImmutableWithFastItemLookup,
-                    SharedEvaluationContext);
         }
 
         private int Generate()
@@ -178,39 +151,27 @@ namespace SlnGen.ConsoleApp
 
         private void LoadProjects(SlnGenTelemetryData telemetryData)
         {
-            using (new MSBuildFeatureFlags
+            _logger.LogMessageHigh("Loading project references...");
+
+            Stopwatch sw = Stopwatch.StartNew();
+
+            var projectLoader = MSBuildProjectLoaderFactory.Create(Program.MSBuildExePath, _logger);
+
+            IDictionary<string, string> globalProperties = new Dictionary<string, string>
             {
-                MSBuildCacheFileEnumerations = true,
-                MSBuildLoadAllFilesAsReadonly = true,
-                MSBuildSkipEagerWildCardEvaluationRegexes = true,
-                MSBuildUseSimpleProjectRootElementCacheConcurrency = true,
-#if NETFRAMEWORK
-                MSBUILD_EXE_PATH = Program.MSBuildExePath,
-#endif
-            })
-            {
-                _logger.LogMessageHigh("Loading project references...");
+                ["BuildingProject"] = "false",
+                ["DesignTimeBuild"] = "true",
+                ["ExcludeRestorePackageImports"] = "true",
+            };
 
-                Stopwatch sw = Stopwatch.StartNew();
+            projectLoader.LoadProjects(_projectCollection, globalProperties, _programArguments.GetProjects(_logger));
 
-                IDictionary<string, string> globalProperties = new Dictionary<string, string>
-                {
-                    ["BuildingProject"] = "false",
-                    ["DesignTimeBuild"] = "true",
-                    ["ExcludeRestorePackageImports"] = "true",
-                };
+            sw.Stop();
 
-                ICollection<ProjectGraphEntryPoint> entryProjects = _programArguments.GetProjects(_logger).Select(i => new ProjectGraphEntryPoint(i, globalProperties)).ToList();
+            _logger.LogMessageNormal($"Loaded {_projectCollection.LoadedProjects.Count:N0} project(s) in {sw.ElapsedMilliseconds:N2}ms");
 
-                _ = new ProjectGraph(entryProjects, _projectCollection, CreateProjectInstance);
-
-                sw.Stop();
-
-                _logger.LogMessageNormal($"Loaded {_projectCollection.LoadedProjects.Count:N0} project(s) in {sw.ElapsedMilliseconds:N2}ms");
-
-                telemetryData.ProjectEvaluationMilliseconds = sw.ElapsedMilliseconds;
-                telemetryData.ProjectEvaluationCount = _projectCollection.LoadedProjects.Count;
-            }
+            telemetryData.ProjectEvaluationMilliseconds = sw.ElapsedMilliseconds;
+            telemetryData.ProjectEvaluationCount = _projectCollection.LoadedProjects.Count;
         }
     }
 }

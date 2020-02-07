@@ -19,7 +19,7 @@ namespace SlnGen.Common
         /// </summary>
         /// <param name="message">The error message.</param>
         /// <param name="code">An optional error code.</param>
-        void LogError(string message, string code = null);
+        void LogError(string message, string code = null, string file = null, int lineNumber = 0, int columnNumber = 0);
 
         /// <summary>
         /// Logs a high importance message.

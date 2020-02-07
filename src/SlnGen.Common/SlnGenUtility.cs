@@ -136,27 +136,43 @@ namespace SlnGen.Common
         public static ProjectCollection LoadProjectsAndReferences(
             IDictionary<string, string> globalProperties,
             string toolsVersion,
-            IBuildEngine buildEngine,
             bool collectStats,
+            string msbuildBinPath,
             string projectFullPath,
             IEnumerable<ITaskItem> projectReferences,
             ISlnGenLogger logger)
         {
-            // Create an MSBuildProject loader with the same global properties of the project that requested a solution file
-            MSBuildProjectLoader projectLoader = new MSBuildProjectLoader(globalProperties, toolsVersion, buildEngine, ProjectLoadSettings.IgnoreMissingImports)
+            // Create a ProjectCollection for this thread
+            ProjectCollection projectCollection = new ProjectCollection
             {
-                CollectStats = collectStats,
+                DefaultToolsVersion = toolsVersion,
+                DisableMarkDirty = true, // Not sure but hoping this improves load performance
             };
+
+#if NETFRAMEWORK
+            string msbuildExePath = Path.Combine(msbuildBinPath, "MSBuild.exe");
+#else
+            string msbuildExePath = Path.Combine(msbuildBinPath, "MSBuild.dll");
+#endif
+
+            IMSBuildProjectLoader projectLoader = MSBuildProjectLoaderFactory.Create(msbuildExePath, logger);
+
+            MSBuildProjectLoader msBuildProjectLoader = projectLoader as MSBuildProjectLoader;
+
+            if (msBuildProjectLoader != null)
+            {
+                msBuildProjectLoader.CollectStats = collectStats;
+            }
 
             logger.LogMessageHigh("Loading project references...");
 
-            ProjectCollection projectCollection = projectLoader.LoadProjectsAndReferences(projectReferences.Select(i => i.GetMetadata("FullPath")).Concat(new[] { projectFullPath }));
+            projectLoader.LoadProjects(projectCollection, globalProperties, projectReferences.Select(i => i.GetMetadata("FullPath")).Concat(new[] { projectFullPath }));
 
             logger.LogMessageNormal($"Loaded {projectCollection.LoadedProjects.Count} project(s)");
 
-            if (collectStats)
+            if (collectStats && msBuildProjectLoader != null)
             {
-                LogStatistics(projectLoader, logger);
+                LogStatistics(msBuildProjectLoader, logger);
             }
 
             return projectCollection;

@@ -60,6 +60,11 @@ namespace SlnGen.Build.Tasks
         public bool InheritGlobalProperties { get; set; }
 
         /// <summary>
+        /// The path to the directory containing MSBuild.exe.
+        /// </summary>
+        public string MSBuildBinPath { get; set; }
+
+        /// <summary>
         /// Gets or sets the full path to the project being built.
         /// </summary>
         [Required]
@@ -116,8 +121,8 @@ namespace SlnGen.Build.Tasks
                 ProjectCollection projectCollection = SlnGenUtility.LoadProjectsAndReferences(
                     globalProperties,
                     ToolsVersion,
-                    BuildEngine,
                     CollectStats,
+                    MSBuildBinPath,
                     ProjectFullPath,
                     ProjectReferences,
                     logger);

@@ -172,7 +172,7 @@ namespace SlnGen.ConsoleApp
         }
 
         /// <inheritdoc />
-        public void LogError(string message, string code = null) => OnAnyEventRaised(this, new BuildErrorEventArgs(subcategory: null, code: code, file: "SlnGen", lineNumber: 0, columnNumber: 0, endLineNumber: 0, endColumnNumber: 0, message: message, helpKeyword: null, senderName: null));
+        public void LogError(string message, string code = null, string file = null, int lineNumber = 0, int columnNumber = 0) => OnAnyEventRaised(this, new BuildErrorEventArgs(subcategory: null, code: code, file: file ?? "SlnGen", lineNumber: lineNumber, columnNumber: columnNumber, endLineNumber: 0, endColumnNumber: 0, message: message, helpKeyword: null, senderName: null));
 
         /// <inheritdoc />
         public void LogMessageHigh(string message, params object[] args) => OnAnyEventRaised(this, new BuildMessageEventArgs(message, null, null, MessageImportance.High, DateTime.UtcNow, args));
