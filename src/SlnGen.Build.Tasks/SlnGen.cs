@@ -62,6 +62,7 @@ namespace SlnGen.Build.Tasks
         /// <summary>
         /// The path to the directory containing MSBuild.exe.
         /// </summary>
+        [Required]
         public string MSBuildBinPath { get; set; }
 
         /// <summary>
