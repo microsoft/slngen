@@ -19,6 +19,7 @@
       GlobalProperties="$(SlnGenGlobalProperties)"
       GlobalPropertiesToRemove="$(SlnGenGlobalPropertiesToRemove)"
       InheritGlobalProperties="$([MSBuild]::ValueOrDefault('$(SlnGenInheritGlobalProperties)', 'true'))"
+      MSBuildBinPath="$(MSBuildBinPath)"
       ProjectFullPath="$(MSBuildProjectFullPath)"
       ProjectReferences="@(_MSBuildProjectReferenceExistent)"
       ShouldLaunchVisualStudio="$([MSBuild]::ValueOrDefault('$(SlnGenLaunchVisualStudio)', 'true'))"

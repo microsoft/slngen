@@ -2,6 +2,7 @@
 //
 // Licensed under the MIT license.
 
+using Microsoft.Build.Framework;
 using SlnGen.Common;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,9 @@ namespace SlnGen.UnitTests.Common
 {
     public class TestLogger : SlnGenLoggerBase
     {
-        public List<Tuple<string, string>> Errors { get; } = new List<Tuple<string, string>>();
+        public List<string> ErrorMessages { get; } = new List<string>();
+
+        public List<BuildErrorEventArgs> Errors { get; } = new List<BuildErrorEventArgs>();
 
         public List<string> HighImportanceMessages { get; } = new List<string>();
 
@@ -23,9 +26,11 @@ namespace SlnGen.UnitTests.Common
 
         public List<Tuple<string, string>> Warnings { get; } = new List<Tuple<string, string>>();
 
-        public override void LogError(string message, string code = null)
+        public override void LogError(string message, string code = null, string file = null, int lineNumber = 0, int columnNumber = 0)
         {
-            Errors?.Add(new Tuple<string, string>(message, code));
+            Errors?.Add(new BuildErrorEventArgs(null, code, file, lineNumber, columnNumber, 0, 0, message, null, null));
+
+            ErrorMessages?.Add(message);
 
             base.LogError(message, code);
         }

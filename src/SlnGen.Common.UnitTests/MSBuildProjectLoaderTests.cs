@@ -9,6 +9,7 @@ using Shouldly;
 using SlnGen.UnitTests.Common;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Xunit;
 
@@ -17,14 +18,14 @@ namespace SlnGen.Common.UnitTests
     public class MSBuildProjectLoaderTests : TestBase
     {
         [Fact]
-        public void ArgumentNullException_BuildEngine()
+        public void ArgumentNullException_Logger()
         {
             ArgumentNullException exception = Should.Throw<ArgumentNullException>(() =>
             {
-                _ = new MSBuildProjectLoader(globalProperties: null, toolsVersion: null, buildEngine: null);
+                MSBuildProjectLoader unused = new MSBuildProjectLoader(logger: null);
             });
 
-            exception.ParamName.ShouldBe("buildEngine");
+            exception.ParamName.ShouldBe("logger");
         }
 
         [Fact]
@@ -36,13 +37,15 @@ namespace SlnGen.Common.UnitTests
                 .ItemInclude("ProjectFile", "does not exist")
                 .Save();
 
-            BuildEngine buildEngine = BuildEngine.Create();
+            TestLogger logger = new TestLogger();
 
-            MSBuildProjectLoader loader = new MSBuildProjectLoader(null, ProjectCollection.GlobalProjectCollection.DefaultToolsVersion, buildEngine);
+            MSBuildProjectLoader loader = new MSBuildProjectLoader(logger);
 
-            loader.LoadProjectsAndReferences(new[] { dirsProj.FullPath });
+            ProjectCollection projectCollection = new ProjectCollection();
 
-            buildEngine.Errors.ShouldHaveSingleItem().ShouldStartWith("The project file could not be loaded. Could not find file ");
+            loader.LoadProjects(projectCollection, null, new[] { dirsProj.FullPath });
+
+            logger.ErrorMessages.ShouldHaveSingleItem().ShouldStartWith("The project file could not be loaded. Could not find file ");
         }
 
         [Fact]
@@ -58,42 +61,47 @@ namespace SlnGen.Common.UnitTests
                 .Create(GetTempFileName())
                 .Save();
 
-            BuildEngine buildEngine = BuildEngine.Create();
+            TestLogger logger = new TestLogger();
 
-            MSBuildProjectLoader loader = new MSBuildProjectLoader(expectedGlobalProperties, ProjectCollection.GlobalProjectCollection.DefaultToolsVersion, buildEngine);
+            MSBuildProjectLoader loader = new MSBuildProjectLoader(logger);
 
-            ProjectCollection projectCollection = loader.LoadProjectsAndReferences(new[] { projectA.FullPath });
+            ProjectCollection projectCollection = new ProjectCollection();
 
-            projectCollection.GlobalProperties.ShouldBe(expectedGlobalProperties);
+            loader.LoadProjects(projectCollection, expectedGlobalProperties, new[] { projectA.FullPath });
+
+            Project project = projectCollection.LoadedProjects.ShouldHaveSingleItem();
+
+            project.GlobalProperties.ShouldBe(expectedGlobalProperties);
         }
 
         [Fact]
         public void InvalidProjectsLogGoodInfo()
         {
-            ProjectCreator projectA = ProjectCreator
-                .Create(GetTempFileName())
-                .Import(@"$(Foo)\foo.props")
-                .Save();
+            string projectA = GetTempFileName();
+
+            File.WriteAllText(projectA, "Invalid XML");
 
             ProjectCreator dirsProj = ProjectCreator
                 .Create(GetTempFileName())
                 .Property("IsTraversal", "true")
-                .ItemInclude("ProjectFile", projectA.FullPath)
+                .ItemInclude("ProjectFile", projectA)
                 .Save();
 
-            BuildEngine buildEngine = BuildEngine.Create();
+            TestLogger logger = new TestLogger();
 
-            MSBuildProjectLoader loader = new MSBuildProjectLoader(null, ProjectCollection.GlobalProjectCollection.DefaultToolsVersion, buildEngine);
+            ProjectCollection projectCollection = new ProjectCollection();
 
-            loader.LoadProjectsAndReferences(new[] { dirsProj.FullPath });
+            MSBuildProjectLoader loader = new MSBuildProjectLoader(logger);
 
-            BuildErrorEventArgs errorEventArgs = buildEngine.ErrorEvents.ShouldHaveSingleItem();
+            loader.LoadProjects(projectCollection, null, new[] { dirsProj.FullPath });
 
-            errorEventArgs.Code.ShouldBe("MSB4019");
-            errorEventArgs.ColumnNumber.ShouldBe(3);
-            errorEventArgs.HelpKeyword.ShouldBe("MSBuild.ImportedProjectNotFound");
-            errorEventArgs.LineNumber.ShouldBe(3);
-            errorEventArgs.File.ShouldBe(projectA.FullPath);
+            BuildErrorEventArgs errorEventArgs = logger.Errors.ShouldHaveSingleItem();
+
+            errorEventArgs.Message.ShouldStartWith("The project file could not be loaded. Data at the root level is invalid. Line 1, position 1.");
+            errorEventArgs.Code.ShouldBe("MSB4025");
+            errorEventArgs.ColumnNumber.ShouldBe(1);
+            errorEventArgs.LineNumber.ShouldBe(1);
+            errorEventArgs.File.ShouldBe(projectA);
         }
 
         [Fact]
@@ -108,11 +116,13 @@ namespace SlnGen.Common.UnitTests
                 .ItemProjectReference(projectB)
                 .Save();
 
-            BuildEngine buildEngine = BuildEngine.Create();
+            TestLogger logger = new TestLogger();
 
-            MSBuildProjectLoader loader = new MSBuildProjectLoader(null, ProjectCollection.GlobalProjectCollection.DefaultToolsVersion, buildEngine);
+            ProjectCollection projectCollection = new ProjectCollection();
 
-            ProjectCollection projectCollection = loader.LoadProjectsAndReferences(new[] { projectA.FullPath });
+            MSBuildProjectLoader loader = new MSBuildProjectLoader(logger);
+
+            loader.LoadProjects(projectCollection, null, new[] { projectA.FullPath });
 
             projectCollection.LoadedProjects.Select(i => i.FullPath).ShouldBe(new[] { projectA.FullPath, projectB.FullPath });
         }
@@ -135,11 +145,13 @@ namespace SlnGen.Common.UnitTests
                 .ItemInclude("ProjectFile", projectA.FullPath)
                 .Save();
 
-            BuildEngine buildEngine = BuildEngine.Create();
+            TestLogger logger = new TestLogger();
 
-            MSBuildProjectLoader loader = new MSBuildProjectLoader(null, ProjectCollection.GlobalProjectCollection.DefaultToolsVersion, buildEngine);
+            ProjectCollection projectCollection = new ProjectCollection();
 
-            ProjectCollection projectCollection = loader.LoadProjectsAndReferences(new[] { dirsProj.FullPath });
+            MSBuildProjectLoader loader = new MSBuildProjectLoader(logger);
+
+            loader.LoadProjects(projectCollection, null, new[] { dirsProj.FullPath });
 
             projectCollection.LoadedProjects.Select(i => i.FullPath).ShouldBe(
                 new[] { dirsProj.FullPath, projectA.FullPath, projectB.FullPath },

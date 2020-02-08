@@ -18,7 +18,7 @@ namespace SlnGen.Common
         public bool HasLoggedErrors => _hasLoggedErrors != 0;
 
         /// <inheritdoc />
-        public virtual void LogError(string message, string code = null)
+        public virtual void LogError(string message, string code = null, string file = null, int lineNumber = 0, int columnNumber = 0)
         {
             Interlocked.Exchange(ref _hasLoggedErrors, 1);
         }

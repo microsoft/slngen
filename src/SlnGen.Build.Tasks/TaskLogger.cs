@@ -26,9 +26,9 @@ namespace SlnGen.Build.Tasks
         }
 
         /// <inheritdoc cref="ISlnGenLogger.LogError" />
-        public override void LogError(string message, string code = null)
+        public override void LogError(string message, string code = null, string file = null, int lineNumber = 0, int columnNumber = 0)
         {
-            _buildEngine.LogErrorEvent(new BuildErrorEventArgs(null, code, null, 0, 0, 0, 0, message, null, null));
+            _buildEngine.LogErrorEvent(new BuildErrorEventArgs(null, code, file, lineNumber, columnNumber, 0, 0, message, null, null));
 
             base.LogError(message, code);
         }

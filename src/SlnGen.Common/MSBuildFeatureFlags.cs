@@ -4,7 +4,7 @@
 
 using System;
 
-namespace SlnGen.ConsoleApp
+namespace SlnGen.Common
 {
     internal class MSBuildFeatureFlags : IDisposable
     {
