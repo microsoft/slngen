@@ -2,19 +2,19 @@
 //
 // Licensed under the MIT license.
 
+using Microsoft.Build.Framework;
 using SlnGen.Common;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using Microsoft.Build.Framework;
 
 namespace SlnGen.UnitTests.Common
 {
     public class TestLogger : SlnGenLoggerBase
     {
-        public List<BuildErrorEventArgs> Errors { get; } = new List<BuildErrorEventArgs>();
-
         public List<string> ErrorMessages { get; } = new List<string>();
+
+        public List<BuildErrorEventArgs> Errors { get; } = new List<BuildErrorEventArgs>();
 
         public List<string> HighImportanceMessages { get; } = new List<string>();
 
