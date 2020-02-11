@@ -1,13 +1,10 @@
 ﻿<Project>
   <PropertyGroup>
     <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
+    <DefaultItemExcludes>*log</DefaultItemExcludes>
+    <MSBuildTreatWarningsAsErrors>true</MSBuildTreatWarningsAsErrors>
+    <LangVersion>Latest</LangVersion>
   </PropertyGroup>
-  <ItemGroup>
-    <SlnGenSolutionItem Include="$(MSBuildThisFileDirectory)\*.props" />
-    <SlnGenSolutionItem Include="$(MSBuildThisFileDirectory)\Directory.Build.rsp" />
-    <SlnGenSolutionItem Include="$(MSBuildThisFileDirectory)\*.targets" />
-    <SlnGenSolutionItem Include="$(MSBuildThisFileDirectory)\*.json" />
-    <SlnGenSolutionItem Include="$(MSBuildThisFileDirectory)\NuGet.config" />
-    <SlnGenSolutionItem Include="$(MSBuildThisFileDirectory)\*.md" />
-  </ItemGroup>
+
+  
 </Project>

@@ -1,18 +1,53 @@
 ﻿<Project>
+  <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.52" />
+
   <PropertyGroup>
     <!-- Full symbols so that unit test assertions have more info -->
-    <DebugType Condition=" '$(Configuration)' == 'Debug' ">Full</DebugType>
+    <DebugType Condition="'$(Configuration)' == 'Debug'">Full</DebugType>
+    <NuspecFile Condition="Exists('$(MSBuildProjectDirectory)\$(MSBuildProjectName).nuspec')">$(MSBuildProjectDirectory)\$(MSBuildProjectName).nuspec</NuspecFile>
+    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);SetNuSpecProperties</GenerateNuspecDependsOn>
+    <GeneratePackageOnBuild Condition="'$(IsPackable)' != 'false'">true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Authors>Microsoft</Authors>
+    <Company>Microsoft</Company>
+    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+    <PackageProjectUrl>https://github.com/microsoft/SlnGen</PackageProjectUrl>
+    <PackageLicenseFile>$(MSBuildThisFileDirectory)LICENSE.txt</PackageLicenseFile>
+    <PackageIconPath>$(MSBuildThisFileDirectory)branding\Icon.png</PackageIconPath>
+    <RepositoryUrl>https://github.com/microsoft/SlnGen.git</RepositoryUrl>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\GlobalSuppressions.cs">
-      <Link>GlobalSuppressions.cs</Link>
-    </Compile>
-
-    <AdditionalFiles Include="..\..\stylecop.json">
-      <Visible>False</Visible>
-    </AdditionalFiles>
+    <Compile Include="..\GlobalSuppressions.cs"
+             Link="Shared\GlobalSuppressions.cs" />
+    <AdditionalFiles Include="..\..\stylecop.json"
+                     Visible="false"/>
   </ItemGroup>
 
-  <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.52" />
+  <Target Name="SetNuSpecProperties"
+          Condition="'$(NuspecFile)' != '' And '$(IsPackable)' != 'false'">
+    <PropertyGroup>
+      <NuspecProperties>
+        id=$(PackageId);
+        title=$(Title);
+        description=$(PackageDescription);
+        version=$(PackageVersion);
+        authors=$(Authors);
+        company=$(Company);
+        copyright=$(Copyright);
+        projecturl=$(PackageProjectUrl);
+        repositoryUrl=$(RepositoryUrl);
+        repositoryCommit=$(GitCommitId);
+        licensefile=$(PackageLicenseFile);
+        icon=$(PackageIconPath);
+        tags=$(Tags);
+        developmentDependency=$(DevelopmentDependency);
+        requireLicenseAcceptance=$(PackageRequireLicenseAcceptance);
+        configuration=$(Configuration)
+      </NuspecProperties>
+    </PropertyGroup>
+  </Target>
 </Project>

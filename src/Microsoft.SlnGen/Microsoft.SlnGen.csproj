@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net472;netcoreapp3.1</TargetFrameworks>
+    <AssemblyName>slngen</AssemblyName>
+    <RootNamespace>Microsoft.SlnGen</RootNamespace>
+    <PackageId>Microsoft.SlnGen</PackageId>
+    <CompileDependsOn>GenerateAssemblyVersionInfo;$(CompileDependsOn)</CompileDependsOn>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <NoWarn>$(NoWarn);SA0001</NoWarn>
+    <Prefer32Bit>true</Prefer32Bit>
+    <ServerGarbageCollection Condition="'$(TargetFramework)' == 'netcoreapp3.1'">true</ServerGarbageCollection>
+    <IsTool>true</IsTool>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Title>Microsoft SlnGen</Title>
+    <Description>Package that contains a tool for generating Visual Studio solution files.</Description>
+    <Tags>SlnGen SLN Solution Visual Studio</Tags>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" />
+    <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.Build.Locator" />
+    <PackageReference Include="Microsoft.Build.Runtime" IncludeAssets="None" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.VisualStudio.Telemetry" Condition="'$(TargetFramework)' == 'net472'" />
+    <PackageReference Include="Microsoft.Win32.Registry" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net472\MSBuild.exe" Private="false" Condition="'$(TargetFramework)' == 'net472'" />
+    <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\netcoreapp2.1\MSBuild.dll" Private="false" Condition="'$(TargetFramework)' == 'netcoreapp3.1'" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" Condition="'$(TargetFramework)' == 'net472'" />
+    <None Include="Microsoft.SlnGen.nuspec" />
+    <None Include="Tasks\Microsoft.SlnGen.targets" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Strings.Designer.cs" DesignTime="True" AutoGen="true" DependentUpon="Strings.resx" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Strings.resx" Generator="ResXFileCodeGenerator" LastGenOutput="Strings.Designer.cs" />
+  </ItemGroup>
+</Project>
