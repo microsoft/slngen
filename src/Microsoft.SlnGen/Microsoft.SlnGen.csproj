@@ -36,7 +36,6 @@
     <None Include="App.config" Condition="'$(TargetFramework)' == 'net472'" />
     <None Include="Microsoft.SlnGen.nuspec" />
     <None Include="Tasks\Microsoft.SlnGen.targets" />
-    <None Include="DotnetToolSettings.xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Strings.Designer.cs" DesignTime="True" AutoGen="true" DependentUpon="Strings.resx" />
