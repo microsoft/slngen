@@ -2,6 +2,7 @@
 //
 // Licensed under the MIT license.
 
+using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Utilities.ProjectCreation;
@@ -16,7 +17,9 @@ namespace Microsoft.SlnGen.UnitTests
 {
     public sealed class SlnGenTests : TestBase
     {
+#if NETFRAMEWORK
         [Fact]
+#endif
         public void ProjectReferencesDeterminedInCrossTargetingBuild()
         {
             Dictionary<string, string> globalProperties = new Dictionary<string, string>
@@ -31,8 +34,8 @@ namespace Microsoft.SlnGen.UnitTests
                 .Save();
             ProjectCreator
                 .Create(Path.Combine(TestRootPath, "Directory.Build.targets"))
-                .Import(Path.Combine(Environment.CurrentDirectory, "build", "Microsoft.Build.SlnGen.targets"), condition: "'$(IsCrossTargetingBuild)' != 'true'")
-                .Import(Path.Combine(Environment.CurrentDirectory, "buildCrossTargeting", "Microsoft.Build.SlnGen.targets"), condition: "'$(IsCrossTargetingBuild)' == 'true'")
+                .Import(Path.Combine(Environment.CurrentDirectory, "build", "Microsoft.SlnGen.targets"), condition: "'$(IsCrossTargetingBuild)' != 'true'")
+                .Import(Path.Combine(Environment.CurrentDirectory, "buildMultiTargeting", "Microsoft.SlnGen.targets"), condition: "'$(IsCrossTargetingBuild)' == 'true'")
                 .Save();
 
             ProjectCreator projectA = ProjectCreator.Templates
@@ -62,7 +65,7 @@ namespace Microsoft.SlnGen.UnitTests
                 .ItemProjectReference(projectC)
                 .Save();
 
-            ProjectCreator
+            ProjectCreator mainProject = ProjectCreator
                 .Create(
                     Path.Combine(TestRootPath, "ProjectE", "ProjectE.csproj"),
                     sdk: "Microsoft.NET.Sdk",
@@ -70,7 +73,7 @@ namespace Microsoft.SlnGen.UnitTests
                     projectFileOptions: NewProjectFileOptions.None)
                 .PropertyGroup()
                 .Property("TargetFrameworks", "net46;netcoreapp2.0")
-                .Property("SlnGenAssemblyFile", Path.Combine(Environment.CurrentDirectory, "SlnGen.Build.Tasks.dll"))
+                .Property("SlnGenAssemblyFile", Path.Combine(Environment.CurrentDirectory, "slngen.exe"))
                 .ItemProjectReference(projectA, condition: "'$(TargetFramework)' == 'netcoreapp2.0'")
                 .ItemProjectReference(projectB, condition: "'$(TargetFramework)' == 'net46'")
                 .ItemProjectReference(projectC, condition: "'$(TargetFramework)' == 'net46'")
@@ -80,24 +83,26 @@ namespace Microsoft.SlnGen.UnitTests
 
             result.ShouldBeTrue(buildOutput.GetConsoleLog());
 
-            KeyValuePair<string, TargetResult> targetOutput = targetOutputs.ShouldHaveSingleItem();
+            string expectedSolutionFilePath = Path.ChangeExtension(mainProject.FullPath, ".sln");
 
-            targetOutput.Key.ShouldBe("SlnGen");
+            File.Exists(expectedSolutionFilePath).ShouldBeTrue();
 
-            targetOutput.Value.Items
-                .Select(i => i.GetMetadata("OriginalItemSpec"))
-                .ShouldBe(
-                    new[]
-                    {
-                        projectA.FullPath,
-                        projectB.FullPath,
-                        projectC.FullPath,
-                        projectD.FullPath,
-                    },
-                    ignoreOrder: true);
+            SolutionFile solutionFile = SolutionFile.Parse(expectedSolutionFilePath);
+
+            solutionFile.ProjectsInOrder.Select(i => i.AbsolutePath).ShouldBe(new string[]
+            {
+                projectA,
+                projectB,
+                projectC,
+                projectD,
+                mainProject,
+            });
         }
 
+#if NETFRAMEWORK
+
         [Fact]
+#endif
         public void SingleProject()
         {
             Dictionary<string, string> globalProperties = new Dictionary<string, string>
@@ -113,11 +118,7 @@ namespace Microsoft.SlnGen.UnitTests
                 .Save();
             ProjectCreator
                 .Create(Path.Combine(TestRootPath, "Directory.Build.targets"))
-#if NETFRAMEWORK
                 .Property("SlnGenAssemblyFile", Path.Combine(Environment.CurrentDirectory, "slngen.exe"))
-#else
-                .Property("SlnGenAssemblyFile", Path.Combine(Environment.CurrentDirectory, "slngen.dll"))
-#endif
                 .Import(Path.Combine(Environment.CurrentDirectory, "build", "Microsoft.SlnGen.targets"), condition: "'$(IsCrossTargetingBuild)' != 'true'")
                 .Import(Path.Combine(Environment.CurrentDirectory, "buildMultiTargeting", "Microsoft.SlnGen.targets"), condition: "'$(IsCrossTargetingBuild)' == 'true'")
                 .Save();

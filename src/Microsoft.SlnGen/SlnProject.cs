@@ -64,9 +64,9 @@ namespace Microsoft.SlnGen
         };
 
         /// <summary>
-        /// Gets a list of Configuration values for this project.
+        /// Gets or sets a list of Configuration values for this project.
         /// </summary>
-        public IReadOnlyList<string> Configurations { get; set; }
+        public IReadOnlyList<string> Configurations { get; set; } = Array.Empty<string>();
 
         /// <summary>
         /// Gets or sets the full path to the project file.
@@ -96,7 +96,7 @@ namespace Microsoft.SlnGen
         /// <summary>
         /// Gets or sets a list of Platform values for this project.
         /// </summary>
-        public IReadOnlyList<string> Platforms { get; set; }
+        public IReadOnlyList<string> Platforms { get; set; } = Array.Empty<string>();
 
         /// <summary>
         /// Gets or sets a GUID representing the project.
