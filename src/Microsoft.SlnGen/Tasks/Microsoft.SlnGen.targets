@@ -1,0 +1,30 @@
+﻿<!--
+  Copyright (c) Microsoft Corporation.
+
+  Licensed under the MIT license.
+-->
+<Project>
+  <Import Project="$(CustomBeforeSlnGenTargets)" Condition="'$(CustomBeforeSlnGenTargets)' != '' and Exists('$(CustomBeforeSlnGenTargets)')" />
+
+  <UsingTask TaskName="Microsoft.SlnGen.Tasks.ExecuteSlnGen" AssemblyFile="$(SlnGenAssemblyFile)" Condition="'$(SlnGenAssemblyFile)' != ''" />
+  <UsingTask TaskName="Microsoft.SlnGen.Tasks.ExecuteSlnGen" AssemblyFile="$(MSBuildThisFileDirectory)..\tools\net472\slngen.exe" Condition="'$(SlnGenAssemblyFile)' == '' And '$(MSBuildRuntimeType)' == 'Full'" />
+
+  <UsingTask TaskName="Microsoft.SlnGen.Tasks.ErrorFromResources" AssemblyFile="$(SlnGenAssemblyFile)" Condition="'$(SlnGenAssemblyFile)' != ''" />
+  <UsingTask TaskName="Microsoft.SlnGen.Tasks.ErrorFromResources" AssemblyFile="$(MSBuildThisFileDirectory)..\tools\net472\slngen.exe" Condition="'$(SlnGenAssemblyFile)' == '' And '$(MSBuildRuntimeType)' == 'Full'" />
+  <UsingTask TaskName="Microsoft.SlnGen.Tasks.ErrorFromResources" AssemblyFile="$(MSBuildThisFileDirectory)..\tools\netcoreapp3.1\any\slngen.dll" Condition="'$(SlnGenAssemblyFile)' == '' And '$(MSBuildRuntimeType)' == 'Core'" />
+
+  <Target Name="SlnGen" DependsOnTargets="$(SlnGenDependsOn)">
+    <Microsoft.SlnGen.Tasks.ErrorFromResources Name="Error_DotNetCoreRunGlobalTool"
+                                               Condition="'$(MSBuildRuntimeType)' == 'Core'" />
+
+    <Microsoft.SlnGen.Tasks.ExecuteSlnGen
+      BuildingSolutionFile="$([MSBuild]::ValueOrDefault('$(BuildingSolutionFile)', 'false'))"
+      GlobalProperties="$(SlnGenGlobalProperties)"
+      GlobalPropertiesToRemove="$(SlnGenGlobalPropertiesToRemove)"
+      InheritGlobalProperties="$([MSBuild]::ValueOrDefault('$(SlnGenInheritGlobalProperties)', 'true'))"
+      MSBuildBinPath="$(MSBuildBinPath)"
+      ProjectFullPath="$(MSBuildProjectFullPath)" />
+  </Target>
+
+  <Import Project="$(CustomAfterSlnGenTargets)" Condition="'$(CustomAfterSlnGenTargets)' != '' and Exists('$(CustomAfterSlnGenTargets)')"/>
+</Project>
