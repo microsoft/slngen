@@ -12,7 +12,8 @@
     <NoWarn>$(NoWarn);SA0001</NoWarn>
     <Prefer32Bit>true</Prefer32Bit>
     <ServerGarbageCollection Condition="'$(TargetFramework)' == 'netcoreapp3.1'">true</ServerGarbageCollection>
-    <IsTool>true</IsTool>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <ArtifactsPath>$(BaseArtifactsPath)\$(MSBuildProjectName)</ArtifactsPath>
   </PropertyGroup>
   <PropertyGroup>
     <Title>Microsoft SlnGen</Title>

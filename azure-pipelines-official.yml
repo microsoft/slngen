@@ -1,10 +1,10 @@
-pool:
-  name: VSEng-MicroBuildVS2019
-  demands: msbuild
+resources:
+- repo: self
 
 variables:
   BuildConfiguration: 'Debug'
   BuildPlatform: 'Any CPU'
+  DotNetCore3Version: '3.1.100'
   SignType: 'Test'
 
 trigger:
@@ -16,36 +16,47 @@ trigger:
   paths:
     exclude:
     - '*.md'
+
 pr: none
 
-steps:
-- script: 'echo ##vso[task.setvariable variable=SignType;]Real'
-  displayName: 'Set SignType to Real for tagged commits'
-  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
+jobs:
+- job: BuildAndTest
+  displayName: 'Build and Test'
+  pool:
+    name: VSEng-MicroBuildVS2019
+  steps:
+  - task: UseDotNet@2
+    displayName: 'Install .NET Core 3.1'
+    inputs:
+      version: '$(DotNetCore3Version)'
 
-- task: ms-vseng.MicroBuildTasks.30666190-6959-11e5-9f96-f56098202fef.MicroBuildSigningPlugin@1
-  displayName: 'Install Signing Plugin'
-  inputs:
-    signType: '$(SignType)'
-    zipSources: false
+  - script: 'echo ##vso[task.setvariable variable=SignType;]Real'
+    displayName: 'Set SignType to Real for tagged commits'
+    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
 
-- task: MSBuild@1
-  displayName: 'Build Solution'
-  inputs:
-    solution: SlnGen.sln
-    platform: '$(BuildPlatform)'
-    configuration: '$(BuildConfiguration)'
-    msbuildArguments: '"/Property:ArtifactsPath=$(Build.StagingDirectory);SignType=$(SignType);PublicRelease=true" "/BinaryLogger:$(Build.StagingDirectory)\logs\build.binlog"'
+  - task: ms-vseng.MicroBuildTasks.30666190-6959-11e5-9f96-f56098202fef.MicroBuildSigningPlugin@1
+    displayName: 'Install Signing Plugin'
+    inputs:
+      signType: '$(SignType)'
+      zipSources: false
 
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact: Logs'
-  inputs:
-    PathtoPublish: '$(Build.StagingDirectory)\logs'
-    ArtifactName: logs
-  condition: failed()
+  - task: MSBuild@1
+    displayName: 'Build Solution'
+    inputs:
+      solution: SlnGen.sln
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      msbuildArguments: '"/BinaryLogger:logs\msbuild.binlog"'
 
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact: $(BuildConfiguration)'
-  inputs:
-    PathtoPublish: '$(Build.StagingDirectory)\$(BuildConfiguration)'
-    ArtifactName: '$(BuildConfiguration)'
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: Logs'
+    inputs:
+      PathtoPublish: 'logs'
+      ArtifactName: Logs
+    condition: failed()
+
+  - task: PublishPipelineArtifact@1
+    displayName: 'Publish Artifact: Artifacts'
+    inputs:
+      artifactName: 'Artifacts'
+      targetPath: 'artifacts'

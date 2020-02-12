@@ -12,7 +12,6 @@ trigger:
   branches:
     include:
     - 'master'
-    - 'refs/tags/*'
   paths:
     exclude:
     - '*.md'
@@ -34,13 +33,15 @@ jobs:
     displayName: 'Install .NET Core 3.1'
     inputs:
       version: '$(DotNetCore3Version)'
+
   - task: MSBuild@1
     displayName: 'Build Solution'
     inputs:
       solution: SlnGen.sln
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
-      msbuildArguments: '"/Property:ArtifactsPath=$(Build.StagingDirectory);SignType=$(SignType);PublicRelease=true" "/BinaryLogger:$(Build.StagingDirectory)\logs\msbuild.binlog"'
+      msbuildArguments: '"/BinaryLogger:logs\msbuild.binlog"'
+
   - task: VSTest@2
     displayName: 'Run Unit Tests'
     inputs:
@@ -48,9 +49,10 @@ jobs:
        **\*Tests.dll
        !**\obj\**
       runInParallel: false
+
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: Logs'
     inputs:
-      PathtoPublish: '$(Build.StagingDirectory)\logs'
-      ArtifactName: logs
-    condition: always()
+      PathtoPublish: 'logs'
+      ArtifactName: Logs
+    condition: failed()
