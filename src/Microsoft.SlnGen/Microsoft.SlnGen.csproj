@@ -27,6 +27,7 @@
     <PackageReference Include="Microsoft.Build.Runtime" IncludeAssets="None" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" />
     <PackageReference Include="Microsoft.VisualStudio.Telemetry" Condition="'$(TargetFramework)' == 'net472'" />
+    <PackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" />
     <PackageReference Include="Microsoft.Win32.Registry" />
   </ItemGroup>
   <ItemGroup>
@@ -43,5 +44,8 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Update="Strings.resx" Generator="ResXFileCodeGenerator" LastGenOutput="Strings.Designer.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <FilesToSign Include="$(TargetPath)" Authenticode="Microsoft400" StrongName="StrongName" />
   </ItemGroup>
 </Project>

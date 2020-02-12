@@ -5,5 +5,7 @@
     <MSBuildTreatWarningsAsErrors>true</MSBuildTreatWarningsAsErrors>
     <LangVersion>Latest</LangVersion>
     <BaseArtifactsPath>$(MSBuildThisFileDirectory)artifacts</BaseArtifactsPath>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)key.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 </Project>
