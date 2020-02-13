@@ -40,7 +40,7 @@ jobs:
       solution: SlnGen.sln
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
-      msbuildArguments: '"/BinaryLogger:logs\msbuild.binlog"'
+      msbuildArguments: '"/BinaryLogger:$(Build.SourcesDirectory)\artifacts\msbuild.binlog"'
 
   - task: VSTest@2
     displayName: 'Run Unit Tests'
@@ -51,8 +51,8 @@ jobs:
       runInParallel: false
 
   - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifact: Logs'
+    displayName: 'Publish Artifacts'
     inputs:
-      PathtoPublish: 'logs'
-      ArtifactName: Logs
-    condition: failed()
+      PathtoPublish: 'artifacts'
+      ArtifactName: artifacts
+    condition: always()
