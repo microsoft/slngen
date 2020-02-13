@@ -40,7 +40,7 @@ jobs:
       solution: SlnGen.sln
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
-      msbuildArguments: '"/BinaryLogger:logs\msbuild.binlog"'
+      msbuildArguments: '"/BinaryLogger:$(Build.SourcesDirectory)logs\msbuild.binlog"'
 
   - task: VSTest@2
     displayName: 'Run Unit Tests'
