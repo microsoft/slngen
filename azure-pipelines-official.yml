@@ -46,14 +46,14 @@ jobs:
       solution: SlnGen.sln
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
-      msbuildArguments: '"/BinaryLogger:logs\msbuild.binlog"'
+      msbuildArguments: '"/BinaryLogger:$(Build.SourcesDirectory)\logs\msbuild.binlog"'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: Logs'
     inputs:
       PathtoPublish: 'logs'
       ArtifactName: Logs
-    condition: failed()
+    condition: always()
 
   - task: PublishPipelineArtifact@1
     displayName: 'Publish Artifact: Artifacts'
