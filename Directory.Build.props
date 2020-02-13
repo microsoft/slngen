@@ -5,7 +5,12 @@
     <MSBuildTreatWarningsAsErrors>true</MSBuildTreatWarningsAsErrors>
     <LangVersion>Latest</LangVersion>
     <BaseArtifactsPath>$(MSBuildThisFileDirectory)artifacts</BaseArtifactsPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(SignType)' != ''">
+    <DefineConstants>$(DefineConstants);SIGNTYPE_$(SignType.ToUpperInvariant())</DefineConstants>
+    <DelaySign>true</DelaySign>
     <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)key.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)MicrosoftCorporation.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 </Project>
