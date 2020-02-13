@@ -1,6 +1,6 @@
 # SlnGen
 
-[![Build Status](https://jeffkl.visualstudio.com/Public/_apis/build/status/SlnGen?branchName=master)](https://jeffkl.visualstudio.com/Public/_build/latest?definitionId=16&branchName=master)
+[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/microsoft.slngen%20CI?branchName=master)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=740&branchName=master)
 [![NuGet package](https://img.shields.io/nuget/v/SlnGen.svg)](https://nuget.org/packages/SlnGen)
 [![NuGet downloads](https://img.shields.io/nuget/dt/SlnGen.svg)](https://nuget.org/packages/SlnGen)
 
