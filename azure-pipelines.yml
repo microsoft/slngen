@@ -55,4 +55,4 @@ jobs:
     inputs:
       PathtoPublish: 'logs'
       ArtifactName: Logs
-    condition: failed()
+    condition: always()
