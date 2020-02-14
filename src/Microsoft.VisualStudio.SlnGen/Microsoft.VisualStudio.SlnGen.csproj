@@ -8,9 +8,7 @@
     <DevelopmentDependency>true</DevelopmentDependency>
     <DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
     <NoPackageAnalysis>true</NoPackageAnalysis>
-    <NoWarn>$(NoWarn);SA0001</NoWarn>
     <Prefer32Bit>true</Prefer32Bit>
-    <ServerGarbageCollection Condition="'$(TargetFramework)' == 'netcoreapp3.1'">true</ServerGarbageCollection>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <ArtifactsPath>$(BaseArtifactsPath)\$(MSBuildProjectName)</ArtifactsPath>
   </PropertyGroup>

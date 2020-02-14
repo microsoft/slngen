@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AssemblyName>slngen</AssemblyName>
+    <PackageId>$(MSBuildProjectName)</PackageId>
+    <RootNamespace>Microsoft.VisualStudio.SlnGen</RootNamespace>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>slngen</ToolCommandName>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
+    <ArtifactsPath>$(BaseArtifactsPath)\$(MSBuildProjectName)</ArtifactsPath>
+    <SharedProjectExcludes>..\Microsoft.VisualStudio.SlnGen\obj\**;..\Microsoft.VisualStudio.SlnGen\bin\**;..\Microsoft.VisualStudio.SlnGen\**\.*\**;..\Microsoft.VisualStudio.SlnGen\Tasks\**</SharedProjectExcludes>
+    <DefaultArtifactsSource>bin\$([MSBuild]::ValueOrDefault($(Configuration), 'Debug'))\</DefaultArtifactsSource>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" />
+    <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.Build.Locator" />
+    <PackageReference Include="Microsoft.Build.Runtime" IncludeAssets="None" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" />
+    <PackageReference Include="Microsoft.Win32.Registry" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\netcoreapp2.1\MSBuild.dll" Private="false" Condition="'$(TargetFramework)' == 'netcoreapp3.1'" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Microsoft.VisualStudio.SlnGen\**\*$(DefaultLanguageSourceExtension)" Exclude="$(SharedProjectExcludes)" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource  Include="..\Microsoft.VisualStudio.SlnGen\**\*.resx" Exclude="$(SharedProjectExcludes)" Condition=" '$(EnableDefaultEmbeddedResourceItems)' == 'true' " />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(PackageLicensePath)" Pack="true" PackagePath="$(PackageLicenseFile)" />
+  </ItemGroup>
+</Project>
