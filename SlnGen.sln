@@ -12,7 +12,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Directory.Build.props = Directory.Build.props
 		Directory.Build.rsp = Directory.Build.rsp
 		Directory.Build.targets = Directory.Build.targets
-		key.snk = key.snk
 		LICENSE.txt = LICENSE.txt
 		NuGet.config = NuGet.config
 		Packages.props = Packages.props
@@ -21,9 +20,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		version.json = version.json
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.SlnGen", "src\Microsoft.SlnGen\Microsoft.SlnGen.csproj", "{C8D336E5-9E65-4D34-BA9A-DB58936947CF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.VisualStudio.SlnGen", "src\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj", "{C8D336E5-9E65-4D34-BA9A-DB58936947CF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.SlnGen.UnitTests", "src\Microsoft.SlnGen.UnitTests\Microsoft.SlnGen.UnitTests.csproj", "{E7E0C8DA-3265-480C-BBAB-165C94C3BE09}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.VisualStudio.SlnGen.UnitTests", "src\Microsoft.VisualStudio.SlnGen.UnitTests\Microsoft.VisualStudio.SlnGen.UnitTests.csproj", "{E7E0C8DA-3265-480C-BBAB-165C94C3BE09}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -12,14 +12,14 @@ SlnGen is a Visual Studio solution file generator.  Visual Studio solutions gene
 Install the package to an individual project (not recommended):
 
 ```
- Install-Package SlnGen
+ Install-Package Microsoft.VisualStudio.SlnGen
 ```
 
 Or add it your [Directory.Build.props](https://docs.microsoft.com/en-us/visualstudio/msbuild/customize-your-build#directorybuildprops-example):
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="SlnGen" Version="2.0.0" />
+  <PackageReference Include="Microsoft.VisualStudio.SlnGen" Version="<Latest Version>" />
 </ItemGroup>
 ```
 
