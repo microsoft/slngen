@@ -2,9 +2,11 @@ resources:
 - repo: self
 
 variables:
+  ArtifactsDirectoryName: 'artifacts'
+  BinaryLoggerArgs: '"/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   BuildConfiguration: 'Debug'
   BuildPlatform: 'Any CPU'
-  DotNetCore3Version: '3.1.100'
+  DotNetCoreVersion: '3.1.100'
   SignType: 'Test'
 
 trigger:
@@ -12,6 +14,7 @@ trigger:
   branches:
     include:
     - 'master'
+    - 'rel/*'
   paths:
     exclude:
     - '*.md'
@@ -19,6 +22,7 @@ pr:
   branches:
     include:
     - master
+    - 'rel/*'
   paths:
     exclude:
     - '*.md'
@@ -30,9 +34,9 @@ jobs:
     vmImage: windows-latest
   steps:
   - task: UseDotNet@2
-    displayName: 'Install .NET Core 3.1'
+    displayName: 'Install .NET Core $(DotNetCoreVersion)'
     inputs:
-      version: '$(DotNetCore3Version)'
+      version: '$(DotNetCoreVersion)'
 
   - task: MSBuild@1
     displayName: 'Build Solution'
@@ -40,7 +44,7 @@ jobs:
       solution: SlnGen.sln
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
-      msbuildArguments: '"/BinaryLogger:$(Build.SourcesDirectory)\artifacts\msbuild.binlog"'
+      msbuildArguments: '$(BinaryLoggerArgs)'
 
   - task: VSTest@2
     displayName: 'Run Unit Tests'
@@ -53,6 +57,6 @@ jobs:
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifacts'
     inputs:
-      PathtoPublish: 'artifacts'
-      ArtifactName: artifacts
+      PathtoPublish: '$(ArtifactsDirectoryName)'
+      ArtifactName: $(ArtifactsDirectoryName)
     condition: always()
