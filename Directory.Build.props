@@ -3,6 +3,7 @@
     <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
     <DefaultItemExcludes>*log</DefaultItemExcludes>
     <MSBuildTreatWarningsAsErrors>true</MSBuildTreatWarningsAsErrors>
+    <NoWarn>$(NoWarn);SA0001</NoWarn>
     <LangVersion>Latest</LangVersion>
     <BaseArtifactsPath>$(MSBuildThisFileDirectory)artifacts</BaseArtifactsPath>
   </PropertyGroup>

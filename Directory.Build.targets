@@ -13,7 +13,8 @@
     <Company>Microsoft</Company>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <PackageProjectUrl>https://github.com/microsoft/SlnGen</PackageProjectUrl>
-    <PackageLicenseFile>$(MSBuildThisFileDirectory)LICENSE.txt</PackageLicenseFile>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageLicensePath>$(MSBuildThisFileDirectory)$(PackageLicenseFile)</PackageLicensePath>
     <PackageIconPath>$(MSBuildThisFileDirectory)branding\Icon.png</PackageIconPath>
     <RepositoryUrl>https://github.com/microsoft/SlnGen.git</RepositoryUrl>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -41,6 +42,7 @@
         repositoryUrl=$(RepositoryUrl);
         repositoryCommit=$(GitCommitId);
         licensefile=$(PackageLicenseFile);
+        licensepath=$(PackageLicensePath);;
         icon=$(PackageIconPath);
         tags=$(Tags);
         developmentDependency=$(DevelopmentDependency);

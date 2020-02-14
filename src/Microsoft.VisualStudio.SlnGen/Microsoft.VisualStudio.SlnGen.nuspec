@@ -12,7 +12,7 @@
     <title>$title$</title>
     <authors>$authors$</authors>
     <copyright>$copyright$</copyright>
-    <license type="file">LICENSE.txt</license>
+    <license type="file">$licensefile$</license>
     <projectUrl>$projectUrl$</projectUrl>
     <icon>images\Icon.png</icon>
     <developmentDependency>$developmentDependency$</developmentDependency>
@@ -27,7 +27,7 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="$licensefile$" target="" />
+    <file src="$licensepath$" target="$licensefile$" />
     <file src="$icon$" target="images\" />
     <file src="Tasks\Microsoft.VisualStudio.SlnGen.targets" target="build\" />
     <file src="Tasks\Microsoft.VisualStudio.SlnGen.targets" target="buildMultiTargeting\" />
