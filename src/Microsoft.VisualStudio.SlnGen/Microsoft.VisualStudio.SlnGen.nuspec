@@ -20,7 +20,6 @@
     <repository type="git" url="$repositoryUrl$" branch="" commit="$repositoryCommit$" />
     <tags>$tags$</tags>
     <packageTypes>
-      <packageType name="DotnetTool" />
       <packageType name="Dependency" />
     </packageTypes>
     <dependencies>
