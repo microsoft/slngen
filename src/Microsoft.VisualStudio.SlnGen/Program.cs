@@ -22,6 +22,11 @@ namespace Microsoft.VisualStudio.SlnGen
     /// </summary>
     public sealed partial class Program
     {
+        private int _customProjectTypeGuidCount;
+        private int _projectEvaluationCount;
+        private long _projectEvaluationMilliseconds;
+        private int _solutionItemCount;
+
         public static IConsole Console { get; set; } = new PhysicalConsole();
 
         /// <summary>
@@ -95,11 +100,10 @@ namespace Microsoft.VisualStudio.SlnGen
                 maxNodeCount: 1,
                 onlyLogCriticalEvents: false,
                 loadProjectsReadOnly: true))
-            using (TelemetryData telemetryData = new TelemetryData(this))
             {
-                LoadProjects(projectCollection, telemetryData, logger);
+                LoadProjects(projectCollection, logger);
 
-                GenerateSolutionFile(projectCollection.LoadedProjects.Where(i => !i.GlobalProperties.ContainsKey("TargetFramework")), telemetryData, logger);
+                GenerateSolutionFile(projectCollection.LoadedProjects.Where(i => !i.GlobalProperties.ContainsKey("TargetFramework")), logger);
 
                 if (LaunchVisualStudio)
                 {
@@ -112,10 +116,12 @@ namespace Microsoft.VisualStudio.SlnGen
 
                     VisualStudioLauncher.Launch(SolutionFileFullPath, UseShellExecute, ShouldLoadProjectsInVisualStudio, devEnvFullPath, logger);
                 }
+
+                LogTelemetry(logger);
             }
         }
 
-        private void GenerateSolutionFile(IEnumerable<Project> projects, TelemetryData telemetryData, ISlnGenLogger logger)
+        private void GenerateSolutionFile(IEnumerable<Project> projects, ISlnGenLogger logger)
         {
             Project project = projects.First();
 
@@ -123,9 +129,9 @@ namespace Microsoft.VisualStudio.SlnGen
 
             IReadOnlyCollection<string> solutionItems = SlnProject.GetSolutionItems(project, logger).ToList();
 
-            telemetryData.CustomProjectTypeGuidCount = customProjectTypeGuids.Count;
+            _customProjectTypeGuidCount = customProjectTypeGuids.Count;
 
-            telemetryData.SolutionItemCount = solutionItems.Count;
+            _solutionItemCount = solutionItems.Count;
 
             if (SolutionFileFullPath.IsNullOrWhiteSpace())
             {
@@ -197,9 +203,12 @@ namespace Microsoft.VisualStudio.SlnGen
                 [MSBuildPropertyNames.ExcludeRestorePackageImports] = bool.TrueString,
             };
 
-            foreach (KeyValuePair<string, string> item in Property.SelectMany(i => i.SplitProperties()))
+            if (Property != null)
             {
-                globalProperties[item.Key] = item.Value;
+                foreach (KeyValuePair<string, string> item in Property.SelectMany(i => i.SplitProperties()))
+                {
+                    globalProperties[item.Key] = item.Value;
+                }
             }
 
             return globalProperties;
@@ -236,7 +245,7 @@ namespace Microsoft.VisualStudio.SlnGen
             }
         }
 
-        private void LoadProjects(ProjectCollection projectCollection, TelemetryData telemetryData, ISlnGenLogger logger)
+        private void LoadProjects(ProjectCollection projectCollection, ISlnGenLogger logger)
         {
             List<string> entryProjects = GetEntryProjectPaths(logger).ToList();
 
@@ -266,8 +275,8 @@ namespace Microsoft.VisualStudio.SlnGen
 
             logger.LogMessageNormal($"Loaded {projectCollection.LoadedProjects.Count:N0} project(s) in {sw.ElapsedMilliseconds:N0}ms");
 
-            telemetryData.ProjectEvaluationMilliseconds = sw.ElapsedMilliseconds;
-            telemetryData.ProjectEvaluationCount = projectCollection.LoadedProjects.Count;
+            _projectEvaluationMilliseconds = sw.ElapsedMilliseconds;
+            _projectEvaluationCount = projectCollection.LoadedProjects.Count;
         }
 
         private void LogStatistics(LegacyProjectLoader projectLoader, ISlnGenLogger logger)
@@ -278,6 +287,26 @@ namespace Microsoft.VisualStudio.SlnGen
             {
                 logger.LogMessageLow($"  {Math.Round(item.Value.TotalMilliseconds, 0)} ms  {item.Key}", MessageImportance.Low);
             }
+        }
+
+        private void LogTelemetry(ISlnGenLogger logger)
+        {
+            logger.LogTelemetry("SlnGen", new Dictionary<string, string>
+            {
+                ["CustomProjectTypeGuidCount"] = _customProjectTypeGuidCount.ToString(),
+                ["DevEnvFullPathSpecified"] = (!DevEnvFullPath.IsNullOrWhiteSpace()).ToString(),
+                ["EntryProjectCount"] = Projects?.Length.ToString(),
+                ["Folders"] = Folders.ToString(),
+                ["IsCoreXT"] = IsCoreXT.ToString(),
+                ["LaunchVisualStudio"] = LaunchVisualStudio.ToString(),
+                ["ProjectEvaluationCount"] = _projectEvaluationCount.ToString(),
+                ["ProjectEvaluationMilliseconds"] = _projectEvaluationMilliseconds.ToString(),
+                ["SolutionFileFullPathSpecified"] = (!SolutionFileFullPath.IsNullOrWhiteSpace()).ToString(),
+                ["SolutionItemCount"] = _solutionItemCount.ToString(),
+                ["UseBinaryLogger"] = BinaryLogger.HasValue.ToString(),
+                ["UseFileLogger"] = FileLoggerParameters.HasValue.ToString(),
+                ["UseShellExecute"] = UseShellExecute.ToString(),
+            });
         }
     }
 }
