@@ -56,3 +56,21 @@ jobs:
       PathtoPublish: '$(ArtifactsDirectoryName)'
       ArtifactName: $(ArtifactsDirectoryName)
     condition: always()
+
+- deployment: 'NuGet'
+  displayName: 'Publish NuGet Packages'
+  pool:
+    vmImage: 'windows-latest'
+  environment: 'SlnGen-NuGet'
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
+  strategy:
+    runOnce:
+      deploy:
+        steps:
+        - task: NuGetCommand@2
+          displayName: 'Push NuGet Package'
+          inputs:
+            command: 'push'
+            packagesToPush: '$(Pipeline.Workspace)/$(ArtifactsDirectoryName)/**/*.nupkg'
+            nuGetFeedType: 'external'
+            publishFeedCredentials: 'NuGet-1ES-Full'
