@@ -7,18 +7,15 @@
   <Import Project="$(CustomBeforeSlnGenTargets)"
           Condition="'$(CustomBeforeSlnGenTargets)' != '' and Exists('$(CustomBeforeSlnGenTargets)')" />
 
-  <UsingTask TaskName="Microsoft.VisualStudio.SlnGen.Tasks.ExecuteSlnGen"
-             AssemblyFile="$(SlnGenAssemblyFile)"
-             Condition="'$(SlnGenAssemblyFile)' != ''" />
-  <UsingTask TaskName="Microsoft.VisualStudio.SlnGen.Tasks.ExecuteSlnGen"
-             AssemblyFile="$(MSBuildThisFileDirectory)..\tools\net472\slngen.exe"
-             Condition="'$(SlnGenAssemblyFile)' == '' And '$(MSBuildRuntimeType)' == 'Full'" />
+  <UsingTask TaskName="Microsoft.VisualStudio.SlnGen.Tasks.SlnGenToolTask"
+             AssemblyFile="$([MSBuild]::ValueOrDefault('$(SlnGenAssemblyFile)', '$(MSBuildThisFileDirectory)..\tools\net472\slngen.exe'))" />
 
   <Target Name="SlnGen"
           Condition="'$(MSBuildRuntimeType)' == 'Full'"
           DependsOnTargets="$(SlnGenDependsOn)">
-    <Microsoft.VisualStudio.SlnGen.Tasks.ExecuteSlnGen
+    <Microsoft.VisualStudio.SlnGen.Tasks.SlnGenToolTask
       BuildingSolutionFile="$([MSBuild]::ValueOrDefault('$(BuildingSolutionFile)', 'false'))"
+      Debug="$([MSBuild]::ValueOrDefault('$(SlnGenDebug)', 'true'))"
       GlobalProperties="$(SlnGenGlobalProperties)"
       GlobalPropertiesToRemove="$(SlnGenGlobalPropertiesToRemove)"
       InheritGlobalProperties="$([MSBuild]::ValueOrDefault('$(SlnGenInheritGlobalProperties)', 'true'))"
