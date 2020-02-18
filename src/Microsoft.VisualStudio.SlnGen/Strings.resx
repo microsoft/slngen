@@ -117,12 +117,12 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="CopyrightMessage" xml:space="preserve">
-    <value>SlnGen version {0} for {1}
-Copyright (c) Microsoft Corporation.  Licensed under the MIT license.
-</value>
-  </data>
   <data name="Error_DotNetCoreRunGlobalTool" xml:space="preserve">
     <value>SlnGen on .NET Core must be installed as a global tool instead of run as an MSBuild target.  Please run "dotnet tool install --global Microsoft.Build.SlnGen" to get SlnGen for .NET Core.</value>
+  </data>
+  <data name="Message_Logo" xml:space="preserve">
+    <value>{0} version {1} for {2}
+Copyright (c) Microsoft Corporation.  Licensed under the MIT license.
+</value>
   </data>
 </root>

@@ -11,7 +11,7 @@
   <PropertyGroup>
     <Authors>Microsoft</Authors>
     <Company>Microsoft</Company>
-    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+    <Copyright>Copyright (c) Microsoft Corporation.  Licensed under the MIT license.</Copyright>
     <PackageProjectUrl>https://github.com/microsoft/SlnGen</PackageProjectUrl>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageLicensePath>$(MSBuildThisFileDirectory)$(PackageLicenseFile)</PackageLicensePath>
