@@ -3,6 +3,7 @@
     <OutputType>Exe</OutputType>
     <TargetFrameworks>net472;netcoreapp3.1</TargetFrameworks>
     <AssemblyName>slngen</AssemblyName>
+    <AssemblyTitle>SlnGen</AssemblyTitle>
     <PackageId>$(MSBuildProjectName)</PackageId>
     <CompileDependsOn>GenerateAssemblyVersionInfo;$(CompileDependsOn)</CompileDependsOn>
     <DevelopmentDependency>true</DevelopmentDependency>

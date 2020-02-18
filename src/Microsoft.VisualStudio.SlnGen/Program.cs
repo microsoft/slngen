@@ -21,6 +21,8 @@ namespace Microsoft.VisualStudio.SlnGen
     /// </summary>
     public sealed partial class Program
     {
+        public static IConsole Console { get; set; } = new PhysicalConsole();
+
         /// <summary>
         /// Executes the programs with the specified arguments.
         /// </summary>
@@ -28,17 +30,37 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <returns>zero if the program executed successfully, otherwise non-zero.</returns>
         public static int Main(string[] args)
         {
-            Console.WriteLine(
-                string.Format(
-                    CultureInfo.CurrentCulture,
-                    Strings.CopyrightMessage,
-                    ThisAssembly.AssemblyInformationalVersion,
+            bool nologo = false;
+
+            for (int i = 0; i < args.Length; i++)
+            {
+                if (args[i].Equals("/?"))
+                {
+                    args[i] = "--help";
+                }
+
+                if (args[i].Equals("/nologo", StringComparison.OrdinalIgnoreCase) || args[i].Equals("--nologo", StringComparison.OrdinalIgnoreCase))
+                {
+                    nologo = true;
+                }
+            }
+
+            if (!nologo)
+            {
+                Console.WriteLine(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.Message_Logo,
+                        ThisAssembly.AssemblyTitle,
+                        ThisAssembly.AssemblyInformationalVersion,
 #if NETFRAMEWORK
-                    ".NET Framework"));
+                        ".NET Framework"));
 #else
-                    ".NET Core"));
+                        ".NET Core"));
 #endif
-            return CommandLineApplication.Execute<Program>(args);
+            }
+
+            return CommandLineApplication.Execute<Program>(Console, args);
         }
 
         public void OnExecute()

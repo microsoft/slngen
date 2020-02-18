@@ -61,22 +61,22 @@ namespace Microsoft.VisualStudio.SlnGen {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to SlnGen version {0} for {1}
-        ///Copyright (c) Microsoft Corporation.  Licensed under the MIT license.
-        ///.
-        /// </summary>
-        internal static string CopyrightMessage {
-            get {
-                return ResourceManager.GetString("CopyrightMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to SlnGen on .NET Core must be installed as a global tool instead of run as an MSBuild target.  Please run &quot;dotnet tool install --global Microsoft.Build.SlnGen&quot; to get SlnGen for .NET Core..
         /// </summary>
         internal static string Error_DotNetCoreRunGlobalTool {
             get {
                 return ResourceManager.GetString("Error_DotNetCoreRunGlobalTool", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} version {1} for {2}
+        ///Copyright (c) Microsoft Corporation.  Licensed under the MIT license.
+        ///.
+        /// </summary>
+        internal static string Message_Logo {
+            get {
+                return ResourceManager.GetString("Message_Logo", resourceCulture);
             }
         }
     }

@@ -117,18 +117,6 @@ Some additional available parameters are:
         public bool LaunchVisualStudio { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets a value indicating whether Visual Studio should load projects.
-        /// </summary>
-        [Option(
-            "--loadprojects",
-            CommandOptionType.SingleOrNoValue,
-            ValueName = "false",
-            Description = @"When launching Visual Studio, opens the specified solution without loading any projects.  Default: true
-You must disable shell execute when using this command-line option.
-  --useshellexecute:false")]
-        public bool ShouldLoadProjectsInVisualStudio { get; set; } = true;
-
-        /// <summary>
         /// Gets or sets the logger parameters.
         /// </summary>
         [Option(
@@ -146,6 +134,15 @@ Examples:
   -logger:XMLLogger,MyLogger,Version=1.0.2,Culture=neutral
   -logger:XMLLogger,C:\Loggers\MyLogger.dll;OutputAsHTML")]
         public string[] Loggers { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the logo should be displayed.
+        /// </summary>
+        [Option(
+            "--nologo",
+            CommandOptionType.NoValue,
+            Description = "Do not display the startup banner and copyright message.")]
+        public bool NoLogo { get; set; }
 
         /// <summary>
         /// Gets or sets the platforms to use when generating the solution.
@@ -166,6 +163,18 @@ Examples:
             Name = "project path",
             Description = "An optional path to a project.  If not specified, all projects in the current directory will be used.")]
         public string[] Projects { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether Visual Studio should load projects.
+        /// </summary>
+        [Option(
+            "--loadprojects",
+            CommandOptionType.SingleOrNoValue,
+            ValueName = "false",
+            Description = @"When launching Visual Studio, opens the specified solution without loading any projects.  Default: true
+You must disable shell execute when using this command-line option.
+  --useshellexecute:false")]
+        public bool ShouldLoadProjectsInVisualStudio { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the full path to the solution file to generate.
