@@ -1,8 +1,8 @@
 # SlnGen
 
 [![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/microsoft.slngen%20CI?branchName=master)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=740&branchName=master)
-[![NuGet package](https://img.shields.io/nuget/v/SlnGen.svg)](https://nuget.org/packages/SlnGen)
-[![NuGet downloads](https://img.shields.io/nuget/dt/SlnGen.svg)](https://nuget.org/packages/SlnGen)
+[![NuGet package](https://img.shields.io/nuget/v/Microsoft.VisualStudio.SlnGen.svg)](https://nuget.org/packages/Microsoft.VisualStudio.SlnGen)
+[![NuGet downloads](https://img.shields.io/nuget/dt/Microsoft.VisualStudio.SlnGen.svg)](https://nuget.org/packages/Microsoft.VisualStudio.SlnGen)
 
 ## Overview
 SlnGen is a Visual Studio solution file generator.  Visual Studio solutions generally do not scale well for large project trees.  They are scoped views of a set of projects.  Enterprise-level builds use custom logic like traversal to convey how they should be built by a hosted build environment.  Maintaining Visual Studio solutions becomes hard because you have to keep them in sync with the other build logic.  Instead, SlnGen reads the project references of a given project to create a Visual Studio solution on demand.  For example, you can run it against a unit test project and be presented with a Visual Studio solution containing the unit test project and all of its project references.  You can also run SlnGen against a traversal project in a rooted folder to open a Visual Studio solution containing that view of your project tree.
