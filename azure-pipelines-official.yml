@@ -21,56 +21,62 @@ trigger:
 
 pr: none
 
-jobs:
-- job: Build
+stages:
+- stage:
   displayName: 'Build'
-  pool:
-    name: VSEng-MicroBuildVS2019
-  steps:
-  - script: 'echo ##vso[task.setvariable variable=SignType;]Real'
-    displayName: 'Set SignType to Real for tagged commits'
-    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
+  jobs:
+  - job: Build
+    displayName: 'Build'
+    pool:
+      name: VSEng-MicroBuildVS2019
+    steps:
+    - script: 'echo ##vso[task.setvariable variable=SignType;]Real'
+      displayName: 'Set SignType to Real for tagged commits'
+      condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
 
-  - task: UseDotNet@2
-    displayName: 'Install .NET Core $(DotNetCoreVersion)'
-    inputs:
-      version: '$(DotNetCoreVersion)'
+    - task: UseDotNet@2
+      displayName: 'Install .NET Core $(DotNetCoreVersion)'
+      inputs:
+        version: '$(DotNetCoreVersion)'
 
-  - task: MicroBuildSigningPlugin@1
-    displayName: 'Install MicroBuild Signing Plugin'
-    inputs:
-      signType: '$(SignType)'
-      zipSources: false
+    - task: MicroBuildSigningPlugin@1
+      displayName: 'Install MicroBuild Signing Plugin'
+      inputs:
+        signType: '$(SignType)'
+        zipSources: false
 
-  - task: MSBuild@1
-    displayName: 'Build Solution'
-    inputs:
-      solution: SlnGen.sln
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      msbuildArguments: '$(BinaryLoggerArgs)'
+    - task: MSBuild@1
+      displayName: 'Build Solution'
+      inputs:
+        solution: SlnGen.sln
+        platform: '$(BuildPlatform)'
+        configuration: '$(BuildConfiguration)'
+        msbuildArguments: '$(BinaryLoggerArgs)'
 
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifacts'
-    inputs:
-      PathtoPublish: '$(ArtifactsDirectoryName)'
-      ArtifactName: $(ArtifactsDirectoryName)
-    condition: always()
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifacts'
+      inputs:
+        PathtoPublish: '$(ArtifactsDirectoryName)'
+        ArtifactName: $(ArtifactsDirectoryName)
+      condition: always()
 
-- deployment: 'NuGet'
-  displayName: 'Publish NuGet Packages'
-  pool:
-    vmImage: 'windows-latest'
-  environment: 'SlnGen-NuGet'
+- stage:
+  displayName: 'Deploy'
   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
-  strategy:
-    runOnce:
-      deploy:
-        steps:
-        - task: NuGetCommand@2
-          displayName: 'Push NuGet Package'
-          inputs:
-            command: 'push'
-            packagesToPush: '$(Pipeline.Workspace)/$(ArtifactsDirectoryName)/**/*.nupkg'
-            nuGetFeedType: 'external'
-            publishFeedCredentials: 'NuGet-1ES-Full'
+  jobs:
+  - deployment: 'NuGet'
+    displayName: 'Publish NuGet Packages'
+    pool:
+      vmImage: 'windows-latest'
+    environment: 'SlnGen-NuGet'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: NuGetCommand@2
+            displayName: 'Push NuGet Package'
+            inputs:
+              command: 'push'
+              packagesToPush: '$(Pipeline.Workspace)/$(ArtifactsDirectoryName)/**/*.nupkg'
+              nuGetFeedType: 'external'
+              publishFeedCredentials: 'NuGet-1ES-Full'
