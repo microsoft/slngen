@@ -27,9 +27,13 @@ namespace Microsoft.VisualStudio.SlnGen
 
         public const string ProjectTypeGuid = nameof(ProjectTypeGuid);
 
+        public const string SlnGenDebug = nameof(SlnGenDebug);
+
         public const string SlnGenDevEnvFullPath = nameof(SlnGenDevEnvFullPath);
 
         public const string SlnGenFolders = nameof(SlnGenFolders);
+
+        public const string SlnGenGlobalProperties = nameof(SlnGenGlobalProperties);
 
         public const string SlnGenIsDeployable = nameof(SlnGenIsDeployable);
 

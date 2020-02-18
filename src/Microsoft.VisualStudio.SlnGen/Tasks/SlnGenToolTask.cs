@@ -12,7 +12,7 @@ using System.Reflection;
 
 namespace Microsoft.VisualStudio.SlnGen.Tasks
 {
-    public sealed class ExecuteSlnGen : ToolTask
+    public sealed class SlnGenToolTask : ToolTask
     {
         /// <summary>
         /// Stores the <see cref="Assembly"/> containing the type <see cref="BuildManager"/>.
@@ -44,9 +44,9 @@ namespace Microsoft.VisualStudio.SlnGen.Tasks
         private readonly Lazy<ProjectInstance> _projectInstanceLazy;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ExecuteSlnGen"/> class.
+        /// Initializes a new instance of the <see cref="SlnGenToolTask"/> class.
         /// </summary>
-        public ExecuteSlnGen()
+        public SlnGenToolTask()
             : base(Strings.ResourceManager)
         {
             _projectInstanceLazy = new Lazy<ProjectInstance>(GetProjectInstance);
@@ -59,6 +59,11 @@ namespace Microsoft.VisualStudio.SlnGen.Tasks
         /// </summary>
         [Required]
         public bool BuildingSolutionFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to launch SlnGen under the debugger.
+        /// </summary>
+        public bool Debug { get; set; }
 
         /// <summary>
         /// Gets or sets a value containing global properties to set when evaluation projects.
@@ -87,70 +92,34 @@ namespace Microsoft.VisualStudio.SlnGen.Tasks
         [Required]
         public string ProjectFullPath { get; set; }
 
+        /// <inheritdoc />
+        protected override MessageImportance StandardOutputLoggingImportance => MessageImportance.High;
+
+        /// <inheritdoc />
         protected override string ToolName => "slngen";
 
+        /// <inheritdoc />
         protected override string GenerateCommandLineCommands()
         {
-            ISlnGenLogger logger = new TaskLogger(BuildEngine);
-
-            /*
-            if (BuildingSolutionFile)
-            {
-                if (!File.Exists(SolutionFileFullPath))
-                {
-                    Log.LogError($"Could not find part of the path '{SolutionFileFullPath}'.");
-                }
-            }
-            else
-            {
-                IDictionary<string, string> globalProperties = GetGlobalProperties();
-
-                // Load up the full project closure
-                ProjectCollection projectCollection = SlnGenUtility.LoadProjectsAndReferences(
-                    globalProperties,
-                    ToolsVersion,
-                    CollectStats,
-                    MSBuildBinPath,
-                    ProjectFullPath,
-                    ProjectReferences,
-                    logger);
-
-                // Return if loading projects logged any errors
-                if (!Log.HasLoggedErrors)
-                {
-                    SlnGenUtility.GenerateSolutionFile(
-                        projectCollection,
-                        SolutionFileFullPath,
-                        ProjectFullPath,
-                        SlnProject.GetCustomProjectTypeGuids(CustomProjectTypeGuids.Select(i => new MSBuildTaskItem(i))),
-                        Folders,
-                        enableConfigurationAndPlatforms: true,
-                        SlnFile.GetSolutionItems(SolutionItems.Select(i => new MSBuildTaskItem(i)), logger),
-                        configurations: null,
-                        platforms: null,
-                        logger);
-                }
-            }
-
-            if (!Log.HasLoggedErrors && ShouldLaunchVisualStudio)
-            {
-                SlnGenUtility.LaunchVisualStudio(
-                    DevEnvFullPath,
-                    UseShellExecute,
-                    SolutionFileFullPath,
-                    loadProjects: true,
-                    logger);
-            }
-            */
+            IDictionary<string, string> globalProperties = GetGlobalProperties();
 
             CommandLineBuilder commandLineBuilder = new CommandLineBuilder();
 
+            commandLineBuilder.AppendSwitch("--nologo");
+            commandLineBuilder.AppendSwitch("--verbosity:Normal");
+            commandLineBuilder.AppendSwitch("--consolelogger:NoSummary;ForceNoAlign;DisableConsoleColor");
             commandLineBuilder.AppendSwitchIfNotNull("--devenvfullpath:", GetPropertyValue(MSBuildPropertyNames.SlnGenDevEnvFullPath));
             commandLineBuilder.AppendSwitchIfNotNull("--folders:", GetPropertyValue(MSBuildPropertyNames.SlnGenFolders));
             commandLineBuilder.AppendSwitchIfNotNull("--launch:", GetPropertyValue(MSBuildPropertyNames.SlnGenLaunchVisualStudio));
             commandLineBuilder.AppendSwitchIfNotNull("--loadprojects:", GetPropertyValue(MSBuildPropertyNames.SlnGenLoadProjects));
             commandLineBuilder.AppendSwitchIfNotNull("--solutionfile:", GetPropertyValue(MSBuildPropertyNames.SlnGenSolutionFileFullPath));
             commandLineBuilder.AppendSwitchIfNotNull("--useshellexecute:", GetPropertyValue(MSBuildPropertyNames.SlnGenUseShellExecute));
+            commandLineBuilder.AppendSwitchIfNotNull("--property:", globalProperties.Count == 0 ? null : string.Join(";", globalProperties.Select(i => $"{i.Key}={i.Value}")));
+
+            if (string.Equals(GetPropertyValue(MSBuildPropertyNames.SlnGenDebug), bool.TrueString, StringComparison.OrdinalIgnoreCase))
+            {
+                commandLineBuilder.AppendSwitch("--debug");
+            }
 
             commandLineBuilder.AppendFileNameIfNotNull(ProjectFullPath);
 
@@ -159,6 +128,19 @@ namespace Microsoft.VisualStudio.SlnGen.Tasks
 
         /// <inheritdoc />
         protected override string GenerateFullPathToTool() => Assembly.GetExecutingAssembly().Location;
+
+        /// <inheritdoc />
+        protected override bool ValidateParameters()
+        {
+            if (BuildingSolutionFile)
+            {
+                Log.LogError("You must specify the path of a project or directory containing just a project in order to generate a solution.");
+
+                return false;
+            }
+
+            return base.ValidateParameters();
+        }
 
         private IDictionary<string, string> GetGlobalProperties()
         {
@@ -182,16 +164,6 @@ namespace Microsoft.VisualStudio.SlnGen.Tasks
             foreach (KeyValuePair<string, string> globalProperty in GlobalProperties.SplitProperties())
             {
                 globalProperties[globalProperty.Key] = globalProperty.Value;
-            }
-
-            if (globalProperties.Count > 0)
-            {
-                Log.LogMessageFromText("Global Properties:", MessageImportance.Low);
-
-                foreach (KeyValuePair<string, string> globalProperty in globalProperties)
-                {
-                    Log.LogMessage(MessageImportance.Low, "  {0} = {1}", globalProperty.Key, globalProperty.Value);
-                }
             }
 
             return globalProperties;

@@ -13,6 +13,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.VisualStudio.SlnGen
 {
@@ -30,7 +31,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <returns>zero if the program executed successfully, otherwise non-zero.</returns>
         public static int Main(string[] args)
         {
-            bool nologo = false;
+            bool noLogo = false;
 
             for (int i = 0; i < args.Length; i++)
             {
@@ -41,11 +42,27 @@ namespace Microsoft.VisualStudio.SlnGen
 
                 if (args[i].Equals("/nologo", StringComparison.OrdinalIgnoreCase) || args[i].Equals("--nologo", StringComparison.OrdinalIgnoreCase))
                 {
-                    nologo = true;
+                    noLogo = true;
+                }
+
+                // Translate / to - or -- for Windows users
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    if (args[i][0] == '/')
+                    {
+                        if (args[i].Length == 2 || (i >= 3 && args.Length > i && args[i].Length >= 3 && args[i][2] == ':'))
+                        {
+                            args[i] = $"-{args[i].Substring(1)}";
+                        }
+                        else
+                        {
+                            args[i] = $"--{args[i].Substring(1)}";
+                        }
+                    }
                 }
             }
 
-            if (!nologo)
+            if (!noLogo)
             {
                 Console.WriteLine(
                     string.Format(
@@ -171,6 +188,23 @@ namespace Microsoft.VisualStudio.SlnGen
             }
         }
 
+        private IDictionary<string, string> GetGlobalProperties()
+        {
+            IDictionary<string, string> globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [MSBuildPropertyNames.BuildingProject] = bool.FalseString,
+                [MSBuildPropertyNames.DesignTimeBuild] = bool.TrueString,
+                [MSBuildPropertyNames.ExcludeRestorePackageImports] = bool.TrueString,
+            };
+
+            foreach (KeyValuePair<string, string> item in Property.SelectMany(i => i.SplitProperties()))
+            {
+                globalProperties[item.Key] = item.Value;
+            }
+
+            return globalProperties;
+        }
+
         private IEnumerable<ILogger> GetLoggers()
         {
             LoggerVerbosity verbosity = ForwardingLogger.ParseLoggerVerbosity(Verbosity);
@@ -212,12 +246,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
             IProjectLoader projectLoader = ProjectLoaderFactory.Create(MSBuildExePath, logger);
 
-            IDictionary<string, string> globalProperties = new Dictionary<string, string>
-            {
-                [MSBuildPropertyNames.BuildingProject] = bool.FalseString,
-                [MSBuildPropertyNames.DesignTimeBuild] = bool.TrueString,
-                [MSBuildPropertyNames.ExcludeRestorePackageImports] = bool.TrueString,
-            };
+            IDictionary<string, string> globalProperties = GetGlobalProperties();
 
             using (new MSBuildFeatureFlags
             {

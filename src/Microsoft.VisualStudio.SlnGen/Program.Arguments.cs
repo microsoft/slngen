@@ -148,7 +148,7 @@ Examples:
         /// Gets or sets the platforms to use when generating the solution.
         /// </summary>
         [Option(
-            "-p|--platform",
+            "--platform",
             CommandOptionType.MultipleValue,
             ValueName = "values",
             Description = @"Specifies one or more Platform values to use when generating the solution.  By default, your projects are read to determine these values but in some cases you may want to specify them.",
@@ -163,6 +163,18 @@ Examples:
             Name = "project path",
             Description = "An optional path to a project.  If not specified, all projects in the current directory will be used.")]
         public string[] Projects { get; set; }
+
+        /// <summary>
+        /// Gets or sets the platforms to use when generating the solution.
+        /// </summary>
+        [Option(
+            "-p|--property",
+            CommandOptionType.MultipleValue,
+            ValueName = "name=value[;]",
+            Description = @"Set or override these project-level properties. <name> is the property name, and <value> is the property value. Use a semicolon or a comma to separate multiple properties, or specify each property separately.
+  Example:
+    --property:WarningLevel=2;MyProperty=true")]
+        public string[] Property { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether Visual Studio should load projects.
