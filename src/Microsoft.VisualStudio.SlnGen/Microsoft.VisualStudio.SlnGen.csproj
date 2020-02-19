@@ -24,6 +24,7 @@
     <PackageReference Include="Microsoft.Build.Locator" />
     <PackageReference Include="Microsoft.Build.Runtime" IncludeAssets="None" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" />
     <PackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" />
     <PackageReference Include="Microsoft.Win32.Registry" />
   </ItemGroup>

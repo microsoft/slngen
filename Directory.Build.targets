@@ -18,6 +18,9 @@
     <PackageIconPath>$(MSBuildThisFileDirectory)branding\Icon.png</PackageIconPath>
     <RepositoryUrl>https://github.com/microsoft/SlnGen.git</RepositoryUrl>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
 
   <ItemGroup>
