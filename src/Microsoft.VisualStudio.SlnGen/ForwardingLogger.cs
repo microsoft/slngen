@@ -36,7 +36,9 @@ namespace Microsoft.VisualStudio.SlnGen
 
         private readonly IReadOnlyCollection<ILogger> _loggers;
 
-        private IEventSource2 _eventSource;
+        private readonly bool _noWarn;
+
+        private IEventSource _eventSource;
 
         private int _hasLoggedErrors;
 
@@ -44,12 +46,15 @@ namespace Microsoft.VisualStudio.SlnGen
         /// Initializes a new instance of the <see cref="ForwardingLogger"/> class.
         /// </summary>
         /// <param name="loggers">A <see cref="IEnumerable{ILogger}" /> to forward logging events to.</param>
-        public ForwardingLogger(IEnumerable<ILogger> loggers)
+        /// <param name="noWarn">Indicates whether or not all warnings should be suppressed.</param>
+        public ForwardingLogger(IEnumerable<ILogger> loggers, bool noWarn)
         {
             if (loggers == null)
             {
                 throw new ArgumentNullException(nameof(loggers));
             }
+
+            _noWarn = noWarn;
 
             _loggers = loggers.ToList();
         }
@@ -156,10 +161,14 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <inheritdoc />
         public void Initialize(IEventSource eventSource)
         {
-            _eventSource = (IEventSource2)eventSource;
+            _eventSource = eventSource;
 
             _eventSource.AnyEventRaised += OnAnyEventRaised;
-            _eventSource.TelemetryLogged += OnTelemetryLogged;
+
+            if (eventSource is IEventSource2 eventSource2)
+            {
+                eventSource2.TelemetryLogged += OnTelemetryLogged;
+            }
 
             foreach (ILogger logger in _loggers)
             {
@@ -198,11 +207,20 @@ namespace Microsoft.VisualStudio.SlnGen
             }
 
             _eventSource.AnyEventRaised -= OnAnyEventRaised;
-            _eventSource.TelemetryLogged -= OnTelemetryLogged;
+
+            if (_eventSource is IEventSource2 eventSource2)
+            {
+                eventSource2.TelemetryLogged -= OnTelemetryLogged;
+            }
         }
 
         private void OnAnyEventRaised(object sender, BuildEventArgs e)
         {
+            if (_noWarn && e is BuildWarningEventArgs)
+            {
+                return;
+            }
+
             if (_hasLoggedErrors == 0 && e is BuildErrorEventArgs)
             {
                 Interlocked.Exchange(ref _hasLoggedErrors, 1);

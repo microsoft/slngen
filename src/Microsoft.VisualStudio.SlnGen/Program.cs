@@ -87,7 +87,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
         public void OnExecute()
         {
-            ForwardingLogger logger = new ForwardingLogger(GetLoggers());
+            ForwardingLogger logger = new ForwardingLogger(GetLoggers(), NoWarn);
 
             using (ProjectCollection projectCollection = new ProjectCollection(
                 globalProperties: null,
