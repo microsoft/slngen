@@ -21,7 +21,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             exitCode.ShouldBe(0, console.Output);
 
-            console.Output.ShouldContain("Usage: slngen", console.Output);
+            console.Output.ShouldContain("Usage: ", console.Output);
         }
 
         [Theory]
@@ -37,7 +37,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             exitCode.ShouldBe(0, console.Output);
 
-            console.OutputLines.First().ShouldStartWith("Usage: slngen", console.Output);
+            console.OutputLines.First().ShouldStartWith("Usage: ", console.Output);
         }
     }
 }
