@@ -23,59 +23,62 @@ namespace Microsoft.VisualStudio.SlnGen
                 Debugger.Launch();
             }
 
-            string msbuildToolset = Environment.GetEnvironmentVariable("MSBuildToolset")?.Trim();
-
-            if (!msbuildToolset.IsNullOrWhiteSpace())
+            if (MSBuildLocator.CanRegister)
             {
-                IsCoreXT = true;
+                string msbuildToolset = Environment.GetEnvironmentVariable("MSBuildToolset")?.Trim();
 
-                string msbuildToolsPath = Environment.GetEnvironmentVariable($"MSBuildToolsPath_{msbuildToolset}");
-
-                if (!msbuildToolsPath.IsNullOrWhiteSpace())
+                if (!msbuildToolset.IsNullOrWhiteSpace())
                 {
-                    MSBuildLocator.RegisterMSBuildPath(msbuildToolsPath);
+                    IsCoreXT = true;
 
-                    MSBuildBinPath = msbuildToolsPath;
+                    string msbuildToolsPath = Environment.GetEnvironmentVariable($"MSBuildToolsPath_{msbuildToolset}");
 
-                    VisualStudioInstance = MSBuildLocator.QueryVisualStudioInstances(new VisualStudioInstanceQueryOptions
+                    if (!msbuildToolsPath.IsNullOrWhiteSpace())
                     {
-                        DiscoveryTypes = DiscoveryType.VisualStudioSetup,
-                    }).OrderByDescending(i => i.Version).FirstOrDefault();
+                        MSBuildLocator.RegisterMSBuildPath(msbuildToolsPath);
+
+                        MSBuildBinPath = msbuildToolsPath;
+
+                        VisualStudioInstance = MSBuildLocator.QueryVisualStudioInstances(new VisualStudioInstanceQueryOptions
+                        {
+                            DiscoveryTypes = DiscoveryType.VisualStudioSetup,
+                        }).OrderByDescending(i => i.Version).FirstOrDefault();
+                    }
                 }
-            }
-            else
-            {
-                VisualStudioInstance = MSBuildLocator.RegisterDefaults();
+                else
+                {
+                    VisualStudioInstance = MSBuildLocator.RegisterDefaults();
 
-                MSBuildBinPath = VisualStudioInstance.MSBuildPath;
-            }
+                    MSBuildBinPath = VisualStudioInstance.MSBuildPath;
+                }
 
-            if (!MSBuildBinPath.IsNullOrWhiteSpace())
-            {
+                if (!MSBuildBinPath.IsNullOrWhiteSpace())
+                {
 #if NETFRAMEWORK
-                MSBuildExePath = Path.Combine(MSBuildBinPath, "MSBuild.exe");
+                    MSBuildExePath = Path.Combine(MSBuildBinPath, "MSBuild.exe");
 #else
-                MSBuildExePath = Path.Combine(MSBuildBinPath, "MSBuild.dll");
+                    MSBuildExePath = Path.Combine(MSBuildBinPath, "MSBuild.dll");
 #endif
 
-                AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
-                {
-                    AssemblyName assemblyName = new AssemblyName(args.Name);
-
-                    string path = Path.Combine(MSBuildBinPath, $"{assemblyName.Name}.dll");
-
-                    if (!File.Exists(path))
+                    AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
                     {
-                        path = Path.Combine(MSBuildBinPath, $"{assemblyName.Name}.exe");
+                        AssemblyName assemblyName = new AssemblyName(args.Name);
+
+                        string path = Path.Combine(MSBuildBinPath, $"{assemblyName.Name}.dll");
 
                         if (!File.Exists(path))
                         {
-                            return null;
-                        }
-                    }
+                            path = Path.Combine(MSBuildBinPath, $"{assemblyName.Name}.exe");
 
-                    return Assembly.LoadFrom(path);
-                };
+                            if (!File.Exists(path))
+                            {
+                                return null;
+                            }
+                        }
+
+                        return Assembly.LoadFrom(path);
+                    };
+                }
             }
         }
 

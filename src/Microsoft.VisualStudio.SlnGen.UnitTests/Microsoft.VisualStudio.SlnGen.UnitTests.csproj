@@ -12,9 +12,10 @@
     <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj" />
+    <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj" Condition="'$(TargetFramework)' == 'net472'" />
+    <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen.Tool\Microsoft.VisualStudio.SlnGen.Tool.csproj" Condition="'$(TargetFramework)' == 'netcoreapp3.1'" />
   </ItemGroup>
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
     <Content Include="..\Microsoft.VisualStudio.SlnGen\Tasks\*.targets" Link="build\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\Microsoft.VisualStudio.SlnGen\Tasks\*.Targets" Link="buildMultiTargeting\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
