@@ -145,6 +145,15 @@ Examples:
         public bool NoLogo { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether or not warning messages should be suppressed..
+        /// </summary>
+        [Option(
+            "--nowarn",
+            CommandOptionType.NoValue,
+            Description = @"Suppress all warning messages")]
+        public bool NoWarn { get; set; }
+
+        /// <summary>
         /// Gets or sets the platforms to use when generating the solution.
         /// </summary>
         [Option(
