@@ -5,7 +5,10 @@
     <NoWarn>$(NoWarn);SA1600</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" />
+    <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Microsoft.Win32.Registry" />
     <PackageReference Include="MSBuild.ProjectCreation" />
     <PackageReference Include="Shouldly" />
     <PackageReference Include="xunit" />

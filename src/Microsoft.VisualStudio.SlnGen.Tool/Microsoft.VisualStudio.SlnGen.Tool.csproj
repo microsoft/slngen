@@ -33,7 +33,4 @@
   <ItemGroup>
     <EmbeddedResource  Include="..\Microsoft.VisualStudio.SlnGen\**\*.resx" Exclude="$(SharedProjectExcludes)" Condition=" '$(EnableDefaultEmbeddedResourceItems)' == 'true' " />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="$(PackageLicensePath)" Pack="true" PackagePath="$(PackageLicenseFile)" />
-  </ItemGroup>
 </Project>

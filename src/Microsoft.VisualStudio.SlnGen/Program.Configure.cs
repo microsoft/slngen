@@ -2,6 +2,7 @@
 //
 // Licensed under the MIT license.
 
+using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Build.Locator;
 using System;
 using System.Diagnostics;
@@ -47,9 +48,16 @@ namespace Microsoft.VisualStudio.SlnGen
                 }
                 else
                 {
-                    VisualStudioInstance = MSBuildLocator.RegisterDefaults();
+                    try
+                    {
+                        VisualStudioInstance = MSBuildLocator.RegisterDefaults();
 
-                    MSBuildBinPath = VisualStudioInstance.MSBuildPath;
+                        MSBuildBinPath = VisualStudioInstance.MSBuildPath;
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Failed to register MSBuild instance: {0}", e);
+                    }
                 }
 
                 if (!MSBuildBinPath.IsNullOrWhiteSpace())

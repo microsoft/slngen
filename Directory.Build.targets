@@ -4,8 +4,6 @@
   <PropertyGroup>
     <!-- Full symbols so that unit test assertions have more info -->
     <DebugType Condition="'$(Configuration)' == 'Debug'">Full</DebugType>
-    <NuspecFile Condition="Exists('$(MSBuildProjectDirectory)\$(MSBuildProjectName).nuspec')">$(MSBuildProjectDirectory)\$(MSBuildProjectName).nuspec</NuspecFile>
-    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);SetNuSpecProperties</GenerateNuspecDependsOn>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -15,7 +13,8 @@
     <PackageProjectUrl>https://github.com/microsoft/SlnGen</PackageProjectUrl>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageLicensePath>$(MSBuildThisFileDirectory)$(PackageLicenseFile)</PackageLicensePath>
-    <PackageIconPath>$(MSBuildThisFileDirectory)branding\Icon.png</PackageIconPath>
+    <PackageIcon>Icon.png</PackageIcon>
+    <PackageIconPath>$(MSBuildThisFileDirectory)branding\$(PackageIcon)</PackageIconPath>
     <RepositoryUrl>https://github.com/microsoft/SlnGen.git</RepositoryUrl>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <IncludeSymbols>true</IncludeSymbols>
@@ -30,28 +29,24 @@
                      Visible="false"/>
   </ItemGroup>
 
-  <Target Name="SetNuSpecProperties"
-          Condition="'$(NuspecFile)' != '' And '$(IsPackable)' != 'false'">
-    <PropertyGroup>
-      <NuspecProperties>
-        id=$(PackageId);
-        title=$(Title);
-        description=$(PackageDescription);
-        version=$(PackageVersion);
-        authors=$(Authors);
-        company=$(Company);
-        copyright=$(Copyright);
-        projecturl=$(PackageProjectUrl);
-        repositoryUrl=$(RepositoryUrl);
-        repositoryCommit=$(GitCommitId);
-        licensefile=$(PackageLicenseFile);
-        licensepath=$(PackageLicensePath);;
-        icon=$(PackageIconPath);
-        tags=$(Tags);
-        developmentDependency=$(DevelopmentDependency);
-        requireLicenseAcceptance=$(PackageRequireLicenseAcceptance);
-        configuration=$(Configuration)
-      </NuspecProperties>
-    </PropertyGroup>
+  <ItemGroup Condition="'$(IsPackable)' == 'true'">
+    <None Include="$(PackageIconPath)"
+          Pack="true"
+          PackagePath="\"
+          Visible="false" />
+
+    <None Include="$(PackageLicensePath)"
+          Pack="true"
+          PackagePath="$(PackageLicenseFile)"
+          Visible="false" />
+  </ItemGroup>
+
+  <Target Name="IncludeReferenceCopyLocalPathsInBuildOutputInPackage"
+          Condition="'$(IncludeReferenceCopyLocalPathsInBuildOutputInPackage)' == 'true'"
+          BeforeTargets="_GetBuildOutputFilesWithTfm"
+          DependsOnTargets="ResolveReferences">
+    <ItemGroup>
+      <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('AssetType', 'runtime'))" />
+    </ItemGroup>
   </Target>
 </Project>

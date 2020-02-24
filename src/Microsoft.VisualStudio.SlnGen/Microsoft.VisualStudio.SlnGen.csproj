@@ -12,29 +12,31 @@
     <Prefer32Bit>true</Prefer32Bit>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <ArtifactsPath>$(BaseArtifactsPath)\$(MSBuildProjectName)</ArtifactsPath>
+    <IsTool>true</IsTool>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.config</AllowedOutputExtensionsInPackageBuildOutputFolder>
+    <IncludeReferenceCopyLocalPathsInBuildOutputInPackage>true</IncludeReferenceCopyLocalPathsInBuildOutputInPackage>
   </PropertyGroup>
   <PropertyGroup>
     <Title>Microsoft SlnGen</Title>
     <Description>Package that contains a tool for generating Visual Studio solution files.</Description>
-    <Tags>SlnGen SLN Solution Visual Studio</Tags>
+    <PackageTags>SlnGen SLN Solution Visual Studio</PackageTags>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="McMaster.Extensions.CommandLineUtils" />
-    <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" />
-    <PackageReference Include="Microsoft.Build.Locator" />
-    <PackageReference Include="Microsoft.Build.Runtime" IncludeAssets="None" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" />
-    <PackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" />
-    <PackageReference Include="Microsoft.Win32.Registry" />
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Build.Locator" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Build.Runtime" IncludeAssets="None" GeneratePathProperty="true" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Win32.Registry" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net472\MSBuild.exe" Private="false" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="Microsoft.VisualStudio.SlnGen.nuspec" />
-    <None Include="Tasks\Microsoft.VisualStudio.SlnGen.targets" />
+    <None Include="Tasks\Microsoft.VisualStudio.SlnGen.targets" Pack="true" PackagePath="build\;buildMultiTargeting\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Strings.Designer.cs" DesignTime="True" AutoGen="true" DependentUpon="Strings.resx" />
