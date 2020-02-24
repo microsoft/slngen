@@ -149,7 +149,11 @@ namespace Microsoft.VisualStudio.SlnGen
                 }
             }
 
-            SlnFile solution = new SlnFile();
+            SlnFile solution = new SlnFile
+            {
+                Platforms = Platform ?? Array.Empty<string>(),
+                Configurations = Configuration ?? Array.Empty<string>(),
+            };
 
             solution.AddProjects(projects, customProjectTypeGuids, project.FullPath);
 

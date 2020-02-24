@@ -36,8 +36,7 @@ Example: -bl:output.binlog;ProjectImports=ZipFile")]
             "-c|--configuration",
             CommandOptionType.MultipleValue,
             ValueName = "values",
-            Description = @"Specifies one or more Configuration values to use when generating the solution.  By default, your projects are read to determine these values but in some cases you may want to specify them.",
-            ShowInHelpText = false)]
+            Description = @"Specifies one or more Configuration values to use when generating the solution.")]
         public string[] Configuration { get; set; }
 
         /// <summary>
@@ -160,8 +159,7 @@ Examples:
             "--platform",
             CommandOptionType.MultipleValue,
             ValueName = "values",
-            Description = @"Specifies one or more Platform values to use when generating the solution.  By default, your projects are read to determine these values but in some cases you may want to specify them.",
-            ShowInHelpText = false)]
+            Description = @"Specifies one or more Platform values to use when generating the solution.")]
         public string[] Platform { get; set; }
 
         /// <summary>
