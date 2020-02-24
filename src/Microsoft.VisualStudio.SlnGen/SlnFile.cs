@@ -53,12 +53,12 @@ namespace Microsoft.VisualStudio.SlnGen
         }
 
         /// <summary>
-        /// A <see cref="IReadOnlyCollection{String}" /> of Configuration values to use.
+        /// Gets or sets a <see cref="IReadOnlyCollection{String}" /> of Configuration values to use.
         /// </summary>
         public IReadOnlyCollection<string> Configurations { get; set; }
 
         /// <summary>
-        /// A <see cref="IReadOnlyCollection{String}" /> of Platform values to use.
+        /// Gets or sets a <see cref="IReadOnlyCollection{String}" /> of Platform values to use.
         /// </summary>
         public IReadOnlyCollection<string> Platforms { get; set; }
 
@@ -172,17 +172,17 @@ namespace Microsoft.VisualStudio.SlnGen
 
             writer.WriteLine("	GlobalSection(SolutionConfigurationPlatforms) = preSolution");
 
-            HashSet<string> allPlatforms = Platforms != null && Platforms.Any()
-                ? new HashSet<string>(Platforms)
-                : new HashSet<string>(_projects.SelectMany(i => i.Platforms).Select(i => i.ToSolutionPlatform()).Where(i => !i.IsNullOrWhiteSpace() && !string.Equals(i, "Win32", StringComparison.OrdinalIgnoreCase)).OrderBy(i => i), StringComparer.OrdinalIgnoreCase);
+            HashSet<string> solutionPlatforms = Platforms != null && Platforms.Any()
+                ? new HashSet<string>(GetValidSolutionPlatforms(Platforms), StringComparer.OrdinalIgnoreCase)
+                : new HashSet<string>(GetValidSolutionPlatforms(_projects.SelectMany(i => i.Platforms)), StringComparer.OrdinalIgnoreCase);
 
-            HashSet<string> allConfigurations = Configurations != null && Configurations.Any()
-                ? new HashSet<string>(Configurations)
+            HashSet<string> solutionConfigurations = Configurations != null && Configurations.Any()
+                ? new HashSet<string>(Configurations, StringComparer.OrdinalIgnoreCase)
                 : new HashSet<string>(_projects.SelectMany(i => i.Configurations).Where(i => !i.IsNullOrWhiteSpace()), StringComparer.OrdinalIgnoreCase);
 
-            foreach (string configuration in allConfigurations)
+            foreach (string configuration in solutionConfigurations)
             {
-                foreach (string platform in allPlatforms)
+                foreach (string platform in solutionPlatforms)
                 {
                     if (!string.IsNullOrWhiteSpace(configuration) && !string.IsNullOrWhiteSpace(platform))
                     {
@@ -199,9 +199,9 @@ namespace Microsoft.VisualStudio.SlnGen
             {
                 string projectGuid = project.ProjectGuid.ToSolutionString();
 
-                foreach (string configuration in allConfigurations)
+                foreach (string configuration in solutionConfigurations)
                 {
-                    foreach (string platform in allPlatforms)
+                    foreach (string platform in solutionPlatforms)
                     {
                         var foundPlatform = TryGetProjectSolutionPlatform(platform, project, out string projectSolutionPlatform, out string projectBuildPlatform);
 
@@ -238,6 +238,12 @@ namespace Microsoft.VisualStudio.SlnGen
             projectSolutionPlatform = null;
             projectBuildPlatform = null;
 
+            bool containsWin32 = false;
+            bool containsX64 = false;
+            bool containsAmd64 = false;
+            bool containsX86 = false;
+            bool containsAnyCPU = false;
+
             foreach (string projectPlatform in project.Platforms)
             {
                 if (string.Equals(projectPlatform, solutionPlatform, StringComparison.OrdinalIgnoreCase) || string.Equals(projectPlatform.ToSolutionPlatform(), solutionPlatform, StringComparison.OrdinalIgnoreCase))
@@ -249,11 +255,91 @@ namespace Microsoft.VisualStudio.SlnGen
                     return true;
                 }
 
-                if (string.Equals(solutionPlatform, "x86", StringComparison.OrdinalIgnoreCase) && string.Equals(projectPlatform, "Win32", StringComparison.OrdinalIgnoreCase))
+                switch (projectPlatform.ToLowerInvariant())
                 {
-                    projectSolutionPlatform = projectPlatform;
+                    case "anycpu":
+                    case "any cpu":
+                        containsAnyCPU = true;
+                        break;
 
-                    projectBuildPlatform = "x86";
+                    case "x64":
+                        containsX64 = true;
+                        break;
+
+                    case "x86":
+                        containsX86 = true;
+                        break;
+
+                    case "amd64":
+                        containsAmd64 = true;
+                        break;
+
+                    case "win32":
+                        containsWin32 = true;
+                        break;
+                }
+            }
+
+            if (string.Equals(solutionPlatform, "Any CPU", StringComparison.OrdinalIgnoreCase))
+            {
+                if (containsX64)
+                {
+                    projectSolutionPlatform = projectBuildPlatform = "x64";
+
+                    return true;
+                }
+
+                if (containsX86)
+                {
+                    projectSolutionPlatform = projectBuildPlatform = "x86";
+
+                    return true;
+                }
+
+                if (containsAmd64)
+                {
+                    projectSolutionPlatform = projectBuildPlatform = "amd64";
+
+                    return true;
+                }
+
+                if (containsWin32)
+                {
+                    projectSolutionPlatform = projectBuildPlatform = "Win32";
+
+                    return true;
+                }
+            }
+
+            if (string.Equals(solutionPlatform, "x86", StringComparison.OrdinalIgnoreCase))
+            {
+                if (containsWin32)
+                {
+                    projectSolutionPlatform = projectBuildPlatform = "Win32";
+
+                    return true;
+                }
+
+                if (containsAnyCPU)
+                {
+                    projectSolutionPlatform = projectBuildPlatform = "Any CPU";
+
+                    return true;
+                }
+            }
+
+            if (string.Equals(solutionPlatform, "x64", StringComparison.OrdinalIgnoreCase))
+            {
+                if (containsAmd64)
+                {
+                    projectSolutionPlatform = projectBuildPlatform = "amd64";
+
+                    return true;
+                }
+
+                if (containsAnyCPU)
+                {
+                    projectSolutionPlatform = projectBuildPlatform = "Any CPU";
 
                     return true;
                 }
@@ -262,6 +348,28 @@ namespace Microsoft.VisualStudio.SlnGen
             projectSolutionPlatform = project.Platforms.First().ToSolutionPlatform();
 
             return false;
+        }
+
+        private IEnumerable<string> GetValidSolutionPlatforms(IEnumerable<string> platforms)
+        {
+            List<string> values = platforms
+                .Select(i => i.ToSolutionPlatform())
+                .Where(platform =>
+                {
+                    switch (platform.ToLowerInvariant())
+                    {
+                        case "any cpu":
+                        case "x64":
+                        case "x86":
+                            return true;
+
+                        default:
+                            return false;
+                    }
+                }).OrderBy(i => i)
+                .ToList();
+
+            return values.Any() ? values : new List<string> { "Any CPU" };
         }
     }
 }
