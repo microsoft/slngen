@@ -155,6 +155,16 @@ namespace Microsoft.VisualStudio.SlnGen
                 Configurations = Configuration ?? Array.Empty<string>(),
             };
 
+            if (SlnFile.TryParseExistingSolution(SolutionFileFullPath, out Guid solutionGuid, out IReadOnlyDictionary<string, Guid> projectGuidsByPath))
+            {
+                logger.LogMessageNormal("Updating existing solution file and reusing Visual Studio cache");
+
+                solution.SolutionGuid = solutionGuid;
+                solution.ExistingProjectGuids = projectGuidsByPath;
+
+                ShouldLoadProjectsInVisualStudio = true;
+            }
+
             solution.AddProjects(projects, customProjectTypeGuids, project.FullPath);
 
             solution.AddSolutionItems(solutionItems);
