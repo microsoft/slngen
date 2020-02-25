@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <GlobalPackageReference Include="Microsoft.Build.Artifacts" Version="2.0.17" />
+    <GlobalPackageReference Include="Microsoft.Build.Artifacts" Version="2.0.20" />
     <GlobalPackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" />
     <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.0.28" />
     <GlobalPackageReference Include="StyleCop.Analyzers" Version="1.1.118" />
