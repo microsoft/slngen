@@ -152,22 +152,28 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <summary>
         /// Splits the specified values.
         /// </summary>
-        /// <param name="values">An array of strings containing comma or semicolon delimited values.</param>
-        /// <returns>An <see cref="IEnumerable{String}" /> containing the split values.</returns>
-        public static IEnumerable<string> SplitValues(this string[] values)
+        /// <param name="source">An <see cref="IEnumerable{T}" /> containing comma or semicolon delimited values.</param>
+        /// <returns>An <see cref="IReadOnlyCollection{String}" /> containing the split values.</returns>
+        public static IReadOnlyCollection<string> SplitValues(this IEnumerable<string> source)
         {
-            if (values == null)
+            if (source == null)
             {
-                yield break;
+                return Array.Empty<string>();
             }
 
-            foreach (string value in values)
+            HashSet<string> values = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (string item in source)
             {
-                foreach (string item in value.Split(ArgumentSplitChars, StringSplitOptions.RemoveEmptyEntries))
+                foreach (string value in item.Split(ArgumentSplitChars, StringSplitOptions.RemoveEmptyEntries)
+                    .Where(i => !string.IsNullOrWhiteSpace(i))
+                    .Select(i => i.Trim()))
                 {
-                    yield return item.Trim();
+                    values.Add(value.Trim());
                 }
             }
+
+            return values;
         }
 
         /// <summary>

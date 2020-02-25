@@ -3,6 +3,7 @@
 // Licensed under the MIT license.
 
 using McMaster.Extensions.CommandLineUtils;
+using System.Collections.Generic;
 
 namespace Microsoft.VisualStudio.SlnGen
 {
@@ -223,5 +224,17 @@ You must disable shell execute when using this command-line option.
             Description = @"Display this amount of information in the event log.  The available verbosity levels are:
   q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")]
         public string Verbosity { get; set; }
+
+        /// <summary>
+        /// Gets the Configuration values based on what was specified as command-line arguments.
+        /// </summary>
+        /// <returns>An <see cref="IReadOnlyCollection{T}" /> containing the unique values for Configuration.</returns>
+        public IReadOnlyCollection<string> GetConfigurations() => Configuration.SplitValues();
+
+        /// <summary>
+        /// Gets the Platform values based on what was specified as command-line arguments.
+        /// </summary>
+        /// <returns>An <see cref="IReadOnlyCollection{T}" /> containing the unique values for Platform.</returns>
+        public IReadOnlyCollection<string> GetPlatforms() => Platform.SplitValues();
     }
 }

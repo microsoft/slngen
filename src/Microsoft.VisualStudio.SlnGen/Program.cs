@@ -151,8 +151,8 @@ namespace Microsoft.VisualStudio.SlnGen
 
             SlnFile solution = new SlnFile
             {
-                Platforms = Platform ?? Array.Empty<string>(),
-                Configurations = Configuration ?? Array.Empty<string>(),
+                Platforms = GetPlatforms(),
+                Configurations = GetConfigurations(),
             };
 
             if (SlnFile.TryParseExistingSolution(SolutionFileFullPath, out Guid solutionGuid, out IReadOnlyDictionary<string, Guid> projectGuidsByPath))

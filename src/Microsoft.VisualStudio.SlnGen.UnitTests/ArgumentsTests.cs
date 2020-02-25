@@ -24,6 +24,24 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             console.Output.ShouldContain("Usage: ", console.Output);
         }
 
+        [Fact]
+        public void GetConfigurations()
+        {
+            new Program
+            {
+                Configuration = new[] { "One", "Two;Three,one,Four", "four" },
+            }.GetConfigurations().ShouldBe(new[] { "One", "Two", "Three", "Four" });
+        }
+
+        [Fact]
+        public void GetPlatforms()
+        {
+            new Program
+            {
+                Platform = new[] { "Five", "Six;Seven,five,Eight", "eight" },
+            }.GetPlatforms().ShouldBe(new[] { "Five", "Six", "Seven", "Eight" });
+        }
+
         [Theory]
         [InlineData("--nologo")]
         [InlineData("/nologo")]
