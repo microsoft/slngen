@@ -203,6 +203,46 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             ValidateSolutionPlatformAndConfiguration(projectD, solutionFile, "Debug", "Razzle", expectedIncludeInBuild: false);
         }
 
+        [Fact]
+        public void ExistingSolutionIsReused()
+        {
+            string path = GetTempFileName();
+
+            Guid projectGuid = Guid.Parse("7BE5A5CA-169D-4955-AB4D-EDDE662F4AE5");
+
+            SlnProject project = new SlnProject
+            {
+                FullPath = GetTempFileName(),
+                Name = "Project",
+                ProjectGuid = Guid.NewGuid(),
+                ProjectTypeGuid = Guid.NewGuid(),
+                IsMainProject = true,
+            };
+
+            SlnFile slnFile = new SlnFile
+            {
+                ExistingProjectGuids = new Dictionary<string, Guid>
+                {
+                    [project.FullPath] = projectGuid,
+                },
+                SolutionGuid = Guid.NewGuid(),
+            };
+
+            slnFile.AddProjects(new[] { project });
+
+            slnFile.Save(path, useFolders: false);
+
+            SlnFile.TryParseExistingSolution(path, out Guid solutionGuid, out _).ShouldBeTrue();
+
+            solutionGuid.ShouldBe(slnFile.SolutionGuid);
+
+            SolutionFile solutionFile = SolutionFile.Parse(path);
+
+            ProjectInSolution projectInSolution = solutionFile.ProjectsInOrder.ShouldHaveSingleItem();
+
+            projectInSolution.ProjectGuid.ShouldBe(projectGuid.ToString("B").ToUpperInvariant());
+        }
+
         [Fact(Skip = "Disabling for now, will fix platforms and configurations in future commit")]
         public void LotsOfProjects()
         {
@@ -313,6 +353,55 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             };
 
             ValidateProjectInSolution(projectA);
+        }
+
+        [Fact]
+        public void TryParseExistingSolution()
+        {
+            FileInfo solutionFilePath = new FileInfo(GetTempFileName());
+
+            FileInfo projectFilePath = new FileInfo(Path.Combine(solutionFilePath.DirectoryName, @"src\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj"));
+
+            Directory.CreateDirectory(projectFilePath.DirectoryName);
+
+            File.WriteAllText(projectFilePath.FullName, "<Project />");
+
+            File.WriteAllText(
+                solutionFilePath.FullName,
+                @"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29011.400
+MinimumVisualStudioVersion = 10.0.40219.1
+Project(""{9A19103F-16F7-4668-BE54-9A1E7A4F7556}"") = ""Microsoft.VisualStudio.SlnGen"", ""src\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj"", ""{C8D336E5-9E65-4D34-BA9A-DB58936947CF}""
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C8D336E5-9E65-4D34-BA9A-DB58936947CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8D336E5-9E65-4D34-BA9A-DB58936947CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8D336E5-9E65-4D34-BA9A-DB58936947CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8D336E5-9E65-4D34-BA9A-DB58936947CF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CFFC4187-96EE-4465-B5B3-0BAFD3C14BB6}
+	EndGlobalSection
+EndGlobal
+");
+            SlnFile.TryParseExistingSolution(solutionFilePath.FullName, out Guid solutionGuid, out IReadOnlyDictionary<string, Guid> projectGuidsByPath).ShouldBeTrue();
+
+            solutionGuid.ShouldBe(Guid.Parse("CFFC4187-96EE-4465-B5B3-0BAFD3C14BB6"));
+
+            projectGuidsByPath.ShouldBe(new List<KeyValuePair<string, Guid>>
+            {
+                new KeyValuePair<string, Guid>(projectFilePath.FullName, Guid.Parse("{C8D336E5-9E65-4D34-BA9A-DB58936947CF}")),
+            });
         }
 
         [Fact]
