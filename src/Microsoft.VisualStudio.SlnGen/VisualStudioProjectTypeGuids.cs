@@ -60,6 +60,11 @@ namespace Microsoft.VisualStudio.SlnGen
         public const string NuProj = "FF286327-C783-4F7A-AB73-9BCBAD0D4460";
 
         /// <summary>
+        /// Scope SDK projects (.scopeproj).
+        /// </summary>
+        public const string ScopeProject = "202899A3-C531-4771-9089-0213D66978AE";
+
+        /// <summary>
         /// Visual Studio solution folder.
         /// </summary>
         public const string SolutionFolder = "2150E333-8FDC-42A3-9474-1A3956D46DE8";

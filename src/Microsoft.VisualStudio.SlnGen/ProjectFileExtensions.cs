@@ -55,6 +55,11 @@ namespace Microsoft.VisualStudio.SlnGen
         public const string NuProj = ".nuproj";
 
         /// <summary>
+        /// Scope SDK projects (.scopeproj).
+        /// </summary>
+        public const string Scope = ".scopeproj";
+
+        /// <summary>
         /// Visual Basic projects (.vbproj).
         /// </summary>
         public const string VisualBasic = ".vbproj";
