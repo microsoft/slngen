@@ -53,14 +53,15 @@ namespace Microsoft.VisualStudio.SlnGen
         public static readonly IReadOnlyDictionary<string, Guid> KnownProjectTypeGuids = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase)
         {
             [ProjectFileExtensions.AzureSdk] = new Guid(VisualStudioProjectTypeGuids.AzureSdk),
+            [ProjectFileExtensions.AzureServiceFabric] = new Guid(VisualStudioProjectTypeGuids.AzureServiceFabric),
+            [ProjectFileExtensions.Cpp] = new Guid(VisualStudioProjectTypeGuids.Cpp),
             [ProjectFileExtensions.FSharp] = new Guid(VisualStudioProjectTypeGuids.FSharp),
+            [ProjectFileExtensions.JSharp] = new Guid(VisualStudioProjectTypeGuids.JSharp),
+            [ProjectFileExtensions.LegacyCpp] = new Guid(VisualStudioProjectTypeGuids.Cpp),
             [ProjectFileExtensions.Native] = new Guid(VisualStudioProjectTypeGuids.Cpp),
             [ProjectFileExtensions.NuProj] = new Guid(VisualStudioProjectTypeGuids.NuProj),
-            [ProjectFileExtensions.LegacyCpp] = new Guid(VisualStudioProjectTypeGuids.Cpp),
-            [ProjectFileExtensions.Cpp] = new Guid(VisualStudioProjectTypeGuids.Cpp),
-            [ProjectFileExtensions.JSharp] = new Guid(VisualStudioProjectTypeGuids.JSharp),
+            [ProjectFileExtensions.Scope] = new Guid(VisualStudioProjectTypeGuids.ScopeProject),
             [ProjectFileExtensions.Wix] = new Guid(VisualStudioProjectTypeGuids.Wix),
-            [ProjectFileExtensions.AzureServiceFabric] = new Guid(VisualStudioProjectTypeGuids.AzureServiceFabric),
         };
 
         /// <summary>

@@ -82,6 +82,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         [InlineData(ProjectFileExtensions.FSharp)]
         [InlineData(ProjectFileExtensions.Wix)]
         [InlineData(ProjectFileExtensions.AzureServiceFabric)]
+        [InlineData(ProjectFileExtensions.Scope)]
         public void GetProjectTypeGuidLegacyProject(string extension)
         {
             SlnProject actualProject = CreateAndValidateProject(extension: extension);
