@@ -65,18 +65,20 @@ namespace Microsoft.VisualStudio.SlnGen
         {
             HashSet<string> values = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            string propertyValue = project.GetPropertyValue(name);
-
-            // add the actual properties first
-            if (!string.IsNullOrEmpty(propertyValue))
-            {
-                values.Add(propertyValue);
-            }
-
-            // filter those that were already in the Properties
             foreach (string conditionPropertyValue in project.GetConditionedPropertyValuesOrDefault(name, string.Empty))
             {
                 values.Add(conditionPropertyValue);
+            }
+
+            if (!values.Any())
+            {
+                string propertyValue = project.GetPropertyValue(name);
+
+                // add the actual properties first
+                if (!string.IsNullOrEmpty(propertyValue))
+                {
+                    values.Add(propertyValue);
+                }
             }
 
             return values.Any() ? values : (defaultValue?.Split(',') ?? Enumerable.Empty<string>());
