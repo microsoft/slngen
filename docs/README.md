@@ -22,13 +22,13 @@ Tool 'microsoft.visualstudio.slngen.tool' (version '3.0.37') was successfully in
 ## Command-Line Reference
 
 ```cmd
-slngen [options] [project]
+slngen [switches] [project]
 ```
 
 ### Arguments
 | Argument | Description |
 |----------|-------------|
-|`project`| An optional path to a project to generate a solution file for.  If you don't specify a project file, SlnGen searches the current working directory for a file name extension that ends in proj and uses that file. |
+| <code>project</code> | An optional path to a project to generate a solution file for.  If you don't specify a project file, SlnGen searches the current working directory for a file name extension that ends in proj and uses that file. |
 
 ### Switches
 
