@@ -2,30 +2,18 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net472</TargetFramework>
-    <AssemblyName>slngen</AssemblyName>
-    <AssemblyTitle>SlnGen</AssemblyTitle>
-    <PackageId>$(MSBuildProjectName)</PackageId>
-    <CompileDependsOn>GenerateAssemblyVersionInfo;$(CompileDependsOn)</CompileDependsOn>
-    <DevelopmentDependency>true</DevelopmentDependency>
-    <DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
-    <NoPackageAnalysis>true</NoPackageAnalysis>
-    <Prefer32Bit>true</Prefer32Bit>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <ArtifactsPath>$(BaseArtifactsPath)\$(MSBuildProjectName)</ArtifactsPath>
-    <IsTool>true</IsTool>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.config</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <IncludeReferenceCopyLocalPathsInBuildOutputInPackage>true</IncludeReferenceCopyLocalPathsInBuildOutputInPackage>
+    <IsTool>true</IsTool>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
-  <PropertyGroup>
-    <Title>Microsoft SlnGen</Title>
-    <Description>Package that contains a tool for generating Visual Studio solution files.</Description>
-    <PackageTags>SlnGen SLN Solution Visual Studio</PackageTags>
-  </PropertyGroup>
+  <Import Project="Shared.props" />
   <ItemGroup>
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Build.Locator" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Build.Runtime" IncludeAssets="None" GeneratePathProperty="true" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Build.Runtime" ExcludeAssets="Runtime" IncludeAssets="None" PrivateAssets="All" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" PrivateAssets="All" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
     <PackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" PrivateAssets="All" />
@@ -36,6 +24,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="Shared.props" />
     <None Include="Tasks\Microsoft.VisualStudio.SlnGen.targets" Pack="true" PackagePath="build\;buildMultiTargeting\" />
   </ItemGroup>
   <ItemGroup>
@@ -43,8 +32,5 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Update="Strings.resx" Generator="ResXFileCodeGenerator" LastGenOutput="Strings.Designer.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <FilesToSign Include="$(TargetPath)" Authenticode="Microsoft400" StrongName="StrongName" />
   </ItemGroup>
 </Project>

@@ -2,23 +2,17 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <AssemblyName>slngen</AssemblyName>
-    <PackageId>$(MSBuildProjectName)</PackageId>
-    <RootNamespace>Microsoft.VisualStudio.SlnGen</RootNamespace>
     <PackAsTool>true</PackAsTool>
-    <ToolCommandName>slngen</ToolCommandName>
     <ServerGarbageCollection>true</ServerGarbageCollection>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
-    <ArtifactsPath>$(BaseArtifactsPath)\$(MSBuildProjectName)</ArtifactsPath>
     <SharedProjectExcludes>..\Microsoft.VisualStudio.SlnGen\obj\**;..\Microsoft.VisualStudio.SlnGen\bin\**;..\Microsoft.VisualStudio.SlnGen\**\.*\**;..\Microsoft.VisualStudio.SlnGen\Tasks\**</SharedProjectExcludes>
-    <DefaultArtifactsSource>bin\$([MSBuild]::ValueOrDefault($(Configuration), 'Debug'))\</DefaultArtifactsSource>
+    <ToolCommandName>slngen</ToolCommandName>
   </PropertyGroup>
+  <Import Project="..\Microsoft.VisualStudio.SlnGen\Shared.props" />
   <ItemGroup>
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" />
     <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" />
     <PackageReference Include="Microsoft.Build.Locator" />
-    <PackageReference Include="Microsoft.Build.Runtime" IncludeAssets="None" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.Build.Runtime" ExcludeAssets="Runtime" IncludeAssets="None" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" />
     <PackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" />
@@ -33,4 +27,7 @@
   <ItemGroup>
     <EmbeddedResource  Include="..\Microsoft.VisualStudio.SlnGen\**\*.resx" Exclude="$(SharedProjectExcludes)" Condition=" '$(EnableDefaultEmbeddedResourceItems)' == 'true' " />
   </ItemGroup>
+   <ItemGroup>
+     <None Include="..\Microsoft.VisualStudio.SlnGen\Shared.props" Link="%(Filename)%(Extension)" />
+   </ItemGroup>
 </Project>
