@@ -5,8 +5,10 @@ Enterprise-level builds use custom logic like traversal to convey how they shoul
 
 SlnGen reads the project references of a given project to create a Visual Studio solution on demand.  For example, you can run it against a unit test project and be presented with a Visual Studio solution containing the unit test project and all of its project references.  You can also run SlnGen against a traversal project in a rooted folder to open a Visual Studio solution containing that view of your project tree.
 
-# Getting Started (.NET Core Global Tool)
-SlnGen can be installed as a .NET Core global tool.  To do this, please install .NET Core 3.0 or above and run the following command:
+# Getting Started
+Download and install Visual studio 2019 version 16.4. See [Installation guide](https://docs.microsoft.com/en-us/visualstudio/install/update-visual-studio?view=vs-2019)
+
+SlnGen can be installed as a .NET Core global tool.  To do this, please [install .NET Core 3.0](https://dotnet.microsoft.com/download/dotnet-core/3.0) or above and run the following command:
 
 ```cmd
 dotnet tool install --global Microsoft.VisualStudio.SlnGen.Tool
@@ -69,6 +71,7 @@ C:\Projects\src\ProjectA.UnitTests>MSBuild.exe /Target:SlnGen /Verbosity:Minimal
   Generating Visual Studio solution "C:\Projects\src\ProjectA.UnitTests\ProjectA.UnitTests.sln"...
 ```
 By default, Visual Studio is launched and opens your generated solution file.
+
 
 ## MSBuild Property Reference
 The following properties only apply when using SlnGen as an MSBuild target.
