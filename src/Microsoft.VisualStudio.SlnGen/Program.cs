@@ -30,6 +30,8 @@ namespace Microsoft.VisualStudio.SlnGen
 
         public static IConsole Console { get; set; } = new PhysicalConsole();
 
+        public static bool RedirectConsoleLogger { get; set; }
+
         /// <summary>
         /// Executes the programs with the specified arguments.
         /// </summary>
@@ -86,7 +88,7 @@ namespace Microsoft.VisualStudio.SlnGen
             return CommandLineApplication.Execute<Program>(Console, args);
         }
 
-        public void OnExecute()
+        public int OnExecute()
         {
             ForwardingLogger logger = new ForwardingLogger(GetLoggers(), NoWarn);
 
@@ -104,25 +106,29 @@ namespace Microsoft.VisualStudio.SlnGen
             {
                 LoadProjects(projectCollection, logger);
 
-                if (!logger.HasLoggedErrors)
+                if (logger.HasLoggedErrors)
                 {
-                    GenerateSolutionFile(projectCollection.LoadedProjects.Where(i => !i.GlobalProperties.ContainsKey("TargetFramework")), logger);
+                    return 1;
+                }
 
-                    if (LaunchVisualStudio)
+                GenerateSolutionFile(projectCollection.LoadedProjects.Where(i => !i.GlobalProperties.ContainsKey("TargetFramework")), logger);
+
+                if (LaunchVisualStudio)
+                {
+                    string devEnvFullPath = DevEnvFullPath;
+
+                    if (!UseShellExecute || !ShouldLoadProjectsInVisualStudio)
                     {
-                        string devEnvFullPath = DevEnvFullPath;
-
-                        if (!UseShellExecute || !ShouldLoadProjectsInVisualStudio)
-                        {
-                            devEnvFullPath = Path.Combine(Program.VisualStudioInstance.VisualStudioRootPath, "Common7", "IDE", "devenv.exe");
-                        }
-
-                        VisualStudioLauncher.Launch(SolutionFileFullPath, UseShellExecute, ShouldLoadProjectsInVisualStudio, devEnvFullPath, logger);
+                        devEnvFullPath = Path.Combine(Program.VisualStudioInstance.VisualStudioRootPath, "Common7", "IDE", "devenv.exe");
                     }
+
+                    VisualStudioLauncher.Launch(SolutionFileFullPath, UseShellExecute, ShouldLoadProjectsInVisualStudio, devEnvFullPath, logger);
                 }
 
                 LogTelemetry(logger);
             }
+
+            return 0;
         }
 
         private void GenerateSolutionFile(IEnumerable<Project> projects, ISlnGenLogger logger)
@@ -242,10 +248,20 @@ namespace Microsoft.VisualStudio.SlnGen
         {
             LoggerVerbosity verbosity = ForwardingLogger.ParseLoggerVerbosity(Verbosity);
 
-            yield return new ConsoleLogger(verbosity)
+            if (RedirectConsoleLogger)
             {
-                Parameters = ConsoleLoggerParameters.Arguments.IsNullOrWhiteSpace() ? "ForceNoAlign=true;Summary" : ConsoleLoggerParameters.Arguments,
-            };
+                yield return new ConsoleLogger(verbosity, message => Console.Write(message), color => { }, () => { })
+                {
+                    Parameters = ConsoleLoggerParameters.Arguments.IsNullOrWhiteSpace() ? "ForceNoAlign=true;Summary" : ConsoleLoggerParameters.Arguments,
+                };
+            }
+            else
+            {
+                yield return new ConsoleLogger(verbosity)
+                {
+                    Parameters = ConsoleLoggerParameters.Arguments.IsNullOrWhiteSpace() ? "ForceNoAlign=true;Summary" : ConsoleLoggerParameters.Arguments,
+                };
+            }
 
             if (FileLoggerParameters.HasValue)
             {

@@ -3,6 +3,7 @@
 // Licensed under the MIT license.
 
 using Shouldly;
+using System.IO;
 using System.Linq;
 using Xunit;
 
@@ -40,6 +41,22 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             {
                 Platform = new[] { "Five", "Six;Seven,five,Eight", "eight" },
             }.GetPlatforms().ShouldBe(new[] { "Five", "Six", "Seven", "Eight" });
+        }
+
+        [Fact]
+        public void MissingProjectFileLogsErrorAndFails()
+        {
+            TestConsole console = new TestConsole();
+
+            Program.Console = console;
+
+            Program.RedirectConsoleLogger = true;
+
+            int exitCode = Program.Main(new[] { "foo" });
+
+            exitCode.ShouldBe(1, console.Output);
+
+            console.Output.ShouldContain($"Project file \"{Path.GetFullPath("foo")}\" does not exist", console.Output);
         }
 
         [Theory]
