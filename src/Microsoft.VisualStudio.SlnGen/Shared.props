@@ -1,0 +1,22 @@
+﻿<Project>
+  <PropertyGroup>
+    <AssemblyName>slngen</AssemblyName>
+    <AssemblyTitle>SlnGen</AssemblyTitle>
+    <RootNamespace>Microsoft.VisualStudio.SlnGen</RootNamespace>
+    <ArtifactsPath>$(BaseArtifactsPath)\$(MSBuildProjectName)</ArtifactsPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PackageId>$(MSBuildProjectName)</PackageId>
+    <Title>Microsoft SlnGen</Title>
+    <Description>Package that contains a tool for generating Visual Studio solution files.</Description>
+    <PackageTags>SlnGen SLN Solution Visual Studio</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <DevelopmentDependency>true</DevelopmentDependency>
+  </PropertyGroup>
+  <ItemGroup>
+    <FilesToSign Include="$(TargetPath)" Authenticode="Microsoft400" StrongName="StrongName" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.VisualStudio.SlnGen.UnitTests" />
+  </ItemGroup>
+</Project>

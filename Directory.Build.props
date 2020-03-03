@@ -1,5 +1,6 @@
 ﻿<Project>
   <PropertyGroup>
+    <EnableCentralPackageVersions>true</EnableCentralPackageVersions>
     <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
     <DefaultItemExcludes>*log</DefaultItemExcludes>
     <MSBuildTreatWarningsAsErrors>true</MSBuildTreatWarningsAsErrors>
