@@ -4,6 +4,7 @@
 
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Build.Evaluation;
+using Microsoft.Build.Exceptions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 using Microsoft.VisualStudio.SlnGen.ProjectLoading;
@@ -28,6 +29,8 @@ namespace Microsoft.VisualStudio.SlnGen
         private int _solutionItemCount;
 
         public static IConsole Console { get; set; } = new PhysicalConsole();
+
+        public static bool RedirectConsoleLogger { get; set; }
 
         /// <summary>
         /// Executes the programs with the specified arguments.
@@ -85,7 +88,7 @@ namespace Microsoft.VisualStudio.SlnGen
             return CommandLineApplication.Execute<Program>(Console, args);
         }
 
-        public void OnExecute()
+        public int OnExecute()
         {
             ForwardingLogger logger = new ForwardingLogger(GetLoggers(), NoWarn);
 
@@ -103,6 +106,11 @@ namespace Microsoft.VisualStudio.SlnGen
             {
                 LoadProjects(projectCollection, logger);
 
+                if (logger.HasLoggedErrors)
+                {
+                    return 1;
+                }
+
                 GenerateSolutionFile(projectCollection.LoadedProjects.Where(i => !i.GlobalProperties.ContainsKey("TargetFramework")), logger);
 
                 if (LaunchVisualStudio)
@@ -119,6 +127,8 @@ namespace Microsoft.VisualStudio.SlnGen
 
                 LogTelemetry(logger);
             }
+
+            return 0;
         }
 
         private void GenerateSolutionFile(IEnumerable<Project> projects, ISlnGenLogger logger)
@@ -202,6 +212,12 @@ namespace Microsoft.VisualStudio.SlnGen
 
             foreach (string projectPath in Projects.Select(Path.GetFullPath))
             {
+                if (!File.Exists(projectPath))
+                {
+                    logger.LogError(string.Format("Project file \"{0}\" does not exist", projectPath));
+                    continue;
+                }
+
                 logger.LogMessageNormal("Generating solution for project \"{0}\"", projectPath);
 
                 yield return projectPath;
@@ -232,10 +248,20 @@ namespace Microsoft.VisualStudio.SlnGen
         {
             LoggerVerbosity verbosity = ForwardingLogger.ParseLoggerVerbosity(Verbosity);
 
-            yield return new ConsoleLogger(verbosity)
+            if (RedirectConsoleLogger)
             {
-                Parameters = ConsoleLoggerParameters.Arguments.IsNullOrWhiteSpace() ? "ForceNoAlign=true;Summary" : ConsoleLoggerParameters.Arguments,
-            };
+                yield return new ConsoleLogger(verbosity, message => Console.Write(message), color => { }, () => { })
+                {
+                    Parameters = ConsoleLoggerParameters.Arguments.IsNullOrWhiteSpace() ? "ForceNoAlign=true;Summary" : ConsoleLoggerParameters.Arguments,
+                };
+            }
+            else
+            {
+                yield return new ConsoleLogger(verbosity)
+                {
+                    Parameters = ConsoleLoggerParameters.Arguments.IsNullOrWhiteSpace() ? "ForceNoAlign=true;Summary" : ConsoleLoggerParameters.Arguments,
+                };
+            }
 
             if (FileLoggerParameters.HasValue)
             {
@@ -263,6 +289,11 @@ namespace Microsoft.VisualStudio.SlnGen
         {
             List<string> entryProjects = GetEntryProjectPaths(logger).ToList();
 
+            if (logger.HasLoggedErrors)
+            {
+                return;
+            }
+
             logger.LogMessageHigh("Loading project references...");
 
             Stopwatch sw = Stopwatch.StartNew();
@@ -282,7 +313,19 @@ namespace Microsoft.VisualStudio.SlnGen
 #endif
             })
             {
-                projectLoader.LoadProjects(entryProjects, projectCollection, globalProperties);
+                try
+                {
+                    projectLoader.LoadProjects(entryProjects, projectCollection, globalProperties);
+                }
+                catch (InvalidProjectFileException)
+                {
+                    return;
+                }
+                catch (Exception e)
+                {
+                    logger.LogError(e.ToString());
+                    return;
+                }
             }
 
             sw.Stop();
