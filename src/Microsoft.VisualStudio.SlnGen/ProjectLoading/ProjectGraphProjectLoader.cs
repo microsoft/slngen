@@ -2,6 +2,7 @@
 //
 // Licensed under the MIT license.
 
+#if !NET46
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Evaluation.Context;
@@ -61,3 +62,4 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
         }
     }
 }
+#endif

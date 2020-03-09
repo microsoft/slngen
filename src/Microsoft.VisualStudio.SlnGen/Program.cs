@@ -101,8 +101,13 @@ namespace Microsoft.VisualStudio.SlnGen
                 remoteLoggers: null,
                 toolsetDefinitionLocations: ToolsetDefinitionLocations.Default,
                 maxNodeCount: 1,
+#if NET46
+                onlyLogCriticalEvents: false))
+#else
+
                 onlyLogCriticalEvents: false,
                 loadProjectsReadOnly: true))
+#endif
             {
                 LoadProjects(projectCollection, logger);
 

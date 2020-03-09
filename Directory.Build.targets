@@ -46,7 +46,19 @@
           BeforeTargets="_GetBuildOutputFilesWithTfm"
           DependsOnTargets="ResolveReferences">
     <ItemGroup>
-      <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('AssetType', 'runtime'))" />
+      <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('AssetType', 'runtime'))"
+                            TargetPath="$(TargetFramework)\%(Filename)%(Extension)" />
+
+      <BuiltProjectOutputGroupOutput Update="@(BuiltProjectOutputGroupOutput)"
+                                     TargetPath="$(TargetFramework)\%(Filename)%(Extension)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="Foo"
+          AfterTargets="_WalkEachTargetPerFramework">
+    <ItemGroup>
+      <_TargetPathsToSymbols Update="@(_TargetPathsToSymbols)"
+                             TargetPath="%(TargetFramework)%(Filename)%(Extension)" />
     </ItemGroup>
   </Target>
 
