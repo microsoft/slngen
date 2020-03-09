@@ -19,6 +19,7 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
         /// <returns>An <see cref="IProjectLoader" /> object that can be used to load MSBuild projects.</returns>
         public static IProjectLoader Create(string msbuildExePath, ISlnGenLogger logger)
         {
+#if !NET46
             FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(msbuildExePath);
 
             // MSBuild 16.4 and above use the Static Graph API
@@ -26,6 +27,7 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
             {
                 return new ProjectGraphProjectLoader(msbuildExePath);
             }
+#endif
 
             return new LegacyProjectLoader(logger);
         }
