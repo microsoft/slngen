@@ -54,11 +54,11 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="Foo"
+  <Target Name="UpdateSymbolsPackagePath"
           AfterTargets="_WalkEachTargetPerFramework">
     <ItemGroup>
       <_TargetPathsToSymbols Update="@(_TargetPathsToSymbols)"
-                             TargetPath="%(TargetFramework)%(Filename)%(Extension)" />
+                             TargetPath="%(TargetFramework)\%(Filename)%(Extension)" />
     </ItemGroup>
   </Target>
 
