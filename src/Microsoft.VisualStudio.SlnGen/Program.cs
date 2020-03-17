@@ -90,13 +90,23 @@ namespace Microsoft.VisualStudio.SlnGen
 
         public int OnExecute()
         {
-            ForwardingLogger logger = new ForwardingLogger(GetLoggers(), NoWarn);
+            LoggerVerbosity verbosity = ForwardingLogger.ParseLoggerVerbosity(Verbosity);
+
+            ConsoleForwardingLogger consoleLogger = new ConsoleForwardingLogger(ConsoleLoggerParameters, NoWarn, RedirectConsoleLogger ? Console : null)
+            {
+                Verbosity = verbosity,
+            };
+
+            ForwardingLogger forwardingLogger = new ForwardingLogger(GetLoggers(consoleLogger), NoWarn)
+            {
+                Verbosity = verbosity,
+            };
 
             using (ProjectCollection projectCollection = new ProjectCollection(
                 globalProperties: null,
                 loggers: new ILogger[]
                 {
-                    logger,
+                    forwardingLogger,
                 },
                 remoteLoggers: null,
                 toolsetDefinitionLocations: ToolsetDefinitionLocations.Default,
@@ -104,19 +114,20 @@ namespace Microsoft.VisualStudio.SlnGen
 #if NET46
                 onlyLogCriticalEvents: false))
 #else
-
                 onlyLogCriticalEvents: false,
                 loadProjectsReadOnly: true))
 #endif
             {
-                LoadProjects(projectCollection, logger);
+                forwardingLogger.LogMessageLow("Command Line Arguments: {0}", Environment.CommandLine);
 
-                if (logger.HasLoggedErrors)
+                LoadProjects(projectCollection, forwardingLogger);
+
+                if (forwardingLogger.HasLoggedErrors)
                 {
                     return 1;
                 }
 
-                GenerateSolutionFile(projectCollection.LoadedProjects.Where(i => !i.GlobalProperties.ContainsKey("TargetFramework")), logger);
+                GenerateSolutionFile(projectCollection.LoadedProjects.Where(i => !i.GlobalProperties.ContainsKey("TargetFramework")), forwardingLogger);
 
                 if (LaunchVisualStudio)
                 {
@@ -127,10 +138,10 @@ namespace Microsoft.VisualStudio.SlnGen
                         devEnvFullPath = Path.Combine(Program.VisualStudioInstance.VisualStudioRootPath, "Common7", "IDE", "devenv.exe");
                     }
 
-                    VisualStudioLauncher.Launch(SolutionFileFullPath, UseShellExecute, ShouldLoadProjectsInVisualStudio, devEnvFullPath, logger);
+                    VisualStudioLauncher.Launch(SolutionFileFullPath, UseShellExecute, ShouldLoadProjectsInVisualStudio, devEnvFullPath, forwardingLogger);
                 }
 
-                LogTelemetry(logger);
+                LogTelemetry(forwardingLogger);
             }
 
             return 0;
@@ -249,30 +260,18 @@ namespace Microsoft.VisualStudio.SlnGen
             return globalProperties;
         }
 
-        private IEnumerable<ILogger> GetLoggers()
+        private IEnumerable<ILogger> GetLoggers(ConsoleForwardingLogger consoleLogger)
         {
-            LoggerVerbosity verbosity = ForwardingLogger.ParseLoggerVerbosity(Verbosity);
-
-            if (RedirectConsoleLogger)
+            if (consoleLogger != null)
             {
-                yield return new ConsoleLogger(verbosity, message => Console.Write(message), color => { }, () => { })
-                {
-                    Parameters = ConsoleLoggerParameters.Arguments.IsNullOrWhiteSpace() ? "ForceNoAlign=true;Summary" : ConsoleLoggerParameters.Arguments,
-                };
-            }
-            else
-            {
-                yield return new ConsoleLogger(verbosity)
-                {
-                    Parameters = ConsoleLoggerParameters.Arguments.IsNullOrWhiteSpace() ? "ForceNoAlign=true;Summary" : ConsoleLoggerParameters.Arguments,
-                };
+                yield return consoleLogger;
             }
 
             if (FileLoggerParameters.HasValue)
             {
                 yield return new FileLogger
                 {
-                    Parameters = FileLoggerParameters.Arguments.IsNullOrWhiteSpace() ? "LogFile=slngen.log;Verbosity=Detailed" : FileLoggerParameters.Arguments,
+                    Parameters = FileLoggerParameters.Arguments.IsNullOrWhiteSpace() ? "LogFile=slngen.log;Verbosity=Detailed" : $"LogFile=slngen.log;{FileLoggerParameters.Arguments}",
                 };
             }
 
@@ -339,16 +338,6 @@ namespace Microsoft.VisualStudio.SlnGen
 
             _projectEvaluationMilliseconds = sw.ElapsedMilliseconds;
             _projectEvaluationCount = projectCollection.LoadedProjects.Count;
-        }
-
-        private void LogStatistics(LegacyProjectLoader projectLoader, ISlnGenLogger logger)
-        {
-            logger.LogMessageLow("SlnGen Project Evaluation Performance Summary:");
-
-            foreach (KeyValuePair<string, TimeSpan> item in projectLoader.Statistics.ProjectLoadTimes.OrderByDescending(i => i.Value))
-            {
-                logger.LogMessageLow($"  {Math.Round(item.Value.TotalMilliseconds, 0)} ms  {item.Key}", MessageImportance.Low);
-            }
         }
 
         private void LogTelemetry(ISlnGenLogger logger)

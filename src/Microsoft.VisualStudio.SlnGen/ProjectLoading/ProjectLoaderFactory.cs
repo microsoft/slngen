@@ -2,7 +2,12 @@
 //
 // Licensed under the MIT license.
 
+using Microsoft.Build.Evaluation.Context;
+using Microsoft.Build.Execution;
+using Microsoft.Build.Framework;
+using System.Collections;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
 {
@@ -11,6 +16,11 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
     /// </summary>
     internal static class ProjectLoaderFactory
     {
+        /// <summary>
+        /// Gets a shared <see cref="EvaluationContext" /> object to use.
+        /// </summary>
+        public static readonly EvaluationContext SharedEvaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
+
         /// <summary>
         /// Creates an appropriate instance of a class that implements <see cref="IProjectLoader" />.
         /// </summary>
@@ -25,11 +35,41 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
             // MSBuild 16.4 and above use the Static Graph API
             if (fileVersionInfo.FileMajorPart >= 16 && fileVersionInfo.FileMinorPart >= 4)
             {
-                return new ProjectGraphProjectLoader(msbuildExePath);
+                return new ProjectGraphProjectLoader(logger, msbuildExePath);
             }
 #endif
 
             return new LegacyProjectLoader(logger);
+        }
+
+        /// <summary>
+        /// Logs a <see cref="ProjectStartedEventArgs" /> object for the specified project.
+        /// </summary>
+        /// <param name="logger">An <see cref="ISlnGenLogger" /> to use.</param>
+        /// <param name="projectInstance">The <see cref="ProjectInstance" /> of the project.</param>
+        internal static void LogProjectStartedEvent(ISlnGenLogger logger, ProjectInstance projectInstance)
+        {
+            if (!logger.IsDiagnostic)
+            {
+                return;
+            }
+
+            int projectId = logger.NextProjectId;
+
+            logger.LogEvent(new ProjectStartedEventArgs(
+                projectId: projectId,
+                message: $"Project \"{projectInstance.FullPath}\"",
+                helpKeyword: null,
+                projectFile: projectInstance.FullPath,
+                targetNames: null,
+                properties: projectInstance.Properties.Select(i => new DictionaryEntry(i.Name, i.EvaluatedValue)),
+                items: projectInstance.Items.Select(i => new DictionaryEntry(i.ItemType, new ProjectItemWrapper(i))),
+                parentBuildEventContext: BuildEventContext.Invalid,
+                globalProperties: projectInstance.GlobalProperties,
+                toolsVersion: null)
+            {
+                BuildEventContext = new BuildEventContext(BuildEventContext.InvalidSubmissionId, BuildEventContext.InvalidNodeId, projectInstance.EvaluationId, projectId, projectId, BuildEventContext.InvalidTargetId, BuildEventContext.InvalidTaskId),
+            });
         }
     }
 }

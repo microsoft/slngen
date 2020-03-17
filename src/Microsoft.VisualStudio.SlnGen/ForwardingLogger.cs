@@ -39,8 +39,8 @@ namespace Microsoft.VisualStudio.SlnGen
         private readonly bool _noWarn;
 
         private IEventSource _eventSource;
-
         private int _hasLoggedErrors;
+        private int _projectId = 0;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ForwardingLogger"/> class.
@@ -57,6 +57,8 @@ namespace Microsoft.VisualStudio.SlnGen
             _noWarn = noWarn;
 
             _loggers = loggers.ToList();
+
+            IsDiagnostic = _loggers.Any(i => i.Verbosity == LoggerVerbosity.Diagnostic);
         }
 
         private delegate void ProcessBinaryLoggerDelegate(string[] parameters, ArrayList loggers, ref LoggerVerbosity verbosity);
@@ -70,6 +72,17 @@ namespace Microsoft.VisualStudio.SlnGen
 
         /// <inheritdoc />
         public bool HasLoggedErrors => _hasLoggedErrors != 0;
+
+        /// <inheritdoc />
+        public bool IsDiagnostic { get; }
+
+        /// <summary>
+        /// Gets the loggers.
+        /// </summary>
+        public IReadOnlyCollection<ILogger> Loggers => _loggers;
+
+        /// <inheritdoc />
+        public int NextProjectId => Interlocked.Increment(ref _projectId);
 
         /// <inheritdoc />
         public string Parameters { get; set; }
@@ -175,31 +188,37 @@ namespace Microsoft.VisualStudio.SlnGen
                 logger.Initialize(this);
             }
 
-            OnAnyEventRaised(this, new BuildStartedEventArgs("Build Started", null, environmentOfBuild: Environment.GetEnvironmentVariables().Cast<DictionaryEntry>().OrderBy(i => (string)i.Key).ToDictionary(i => (string)i.Key, i => (string)i.Value)));
+            Dispatch(new BuildStartedEventArgs("Build Started", null, environmentOfBuild: Environment.GetEnvironmentVariables().Cast<DictionaryEntry>().OrderBy(i => (string)i.Key).ToDictionary(i => (string)i.Key, i => (string)i.Value)));
         }
 
         /// <inheritdoc />
-        public void LogError(string message, string code = null, string file = null, int lineNumber = 0, int columnNumber = 0) => OnAnyEventRaised(this, new BuildErrorEventArgs(subcategory: null, code: code, file: file ?? "SlnGen", lineNumber: lineNumber, columnNumber: columnNumber, endLineNumber: 0, endColumnNumber: 0, message: message, helpKeyword: null, senderName: null));
+        public void LogError(string message, string code = null, string file = null, int lineNumber = 0, int columnNumber = 0) => Dispatch(new BuildErrorEventArgs(subcategory: null, code: code, file: file ?? "SlnGen", lineNumber: lineNumber, columnNumber: columnNumber, endLineNumber: 0, endColumnNumber: 0, message: message, helpKeyword: null, senderName: null));
 
         /// <inheritdoc />
-        public void LogMessageHigh(string message, params object[] args) => OnAnyEventRaised(this, new BuildMessageEventArgs(message, null, null, MessageImportance.High, DateTime.UtcNow, args));
+        public void LogEvent(BuildEventArgs eventArgs)
+        {
+            Dispatch(eventArgs);
+        }
 
         /// <inheritdoc />
-        public void LogMessageLow(string message, params object[] args) => OnAnyEventRaised(this, new BuildMessageEventArgs(message, null, null, MessageImportance.Low, DateTime.UtcNow, args));
+        public void LogMessageHigh(string message, params object[] args) => Dispatch(new BuildMessageEventArgs(message, null, null, MessageImportance.High, DateTime.UtcNow, args));
 
         /// <inheritdoc />
-        public void LogMessageNormal(string message, params object[] args) => OnAnyEventRaised(this, new BuildMessageEventArgs(message, null, null, MessageImportance.Normal, DateTime.UtcNow, args));
+        public void LogMessageLow(string message, params object[] args) => Dispatch(new BuildMessageEventArgs(message, null, null, MessageImportance.Low, DateTime.UtcNow, args));
+
+        /// <inheritdoc />
+        public void LogMessageNormal(string message, params object[] args) => Dispatch(new BuildMessageEventArgs(message, null, null, MessageImportance.Normal, DateTime.UtcNow, args));
 
         /// <inheritdoc />
         public void LogTelemetry(string eventName, IDictionary<string, string> properties) => OnTelemetryLogged(this, new TelemetryEventArgs { EventName = eventName, Properties = properties });
 
         /// <inheritdoc />
-        public void LogWarning(string message, string code = null, string file = null, int lineNumber = 0, int columnNumber = 0) => OnAnyEventRaised(this, new BuildWarningEventArgs(subcategory: null, code: code, file: file ?? "SlnGen", lineNumber: lineNumber, columnNumber: columnNumber, endLineNumber: 0, endColumnNumber: 0, message: message, helpKeyword: null, senderName: null));
+        public void LogWarning(string message, string code = null, string file = null, int lineNumber = 0, int columnNumber = 0) => Dispatch(new BuildWarningEventArgs(subcategory: null, code: code, file: file ?? "SlnGen", lineNumber: lineNumber, columnNumber: columnNumber, endLineNumber: 0, endColumnNumber: 0, message: message, helpKeyword: null, senderName: null));
 
         /// <inheritdoc />
         public void Shutdown()
         {
-            OnAnyEventRaised(this, new BuildFinishedEventArgs(HasLoggedErrors ? "Failed" : "Success", null, !HasLoggedErrors));
+            Dispatch(new BuildFinishedEventArgs(HasLoggedErrors ? "Failed" : "Success", null, !HasLoggedErrors));
 
             foreach (ILogger logger in _loggers)
             {
@@ -214,7 +233,7 @@ namespace Microsoft.VisualStudio.SlnGen
             }
         }
 
-        private void OnAnyEventRaised(object sender, BuildEventArgs e)
+        private new void Dispatch(BuildEventArgs e)
         {
             if (_noWarn && e is BuildWarningEventArgs)
             {
@@ -226,6 +245,16 @@ namespace Microsoft.VisualStudio.SlnGen
                 Interlocked.Exchange(ref _hasLoggedErrors, 1);
             }
 
+            if (e.BuildEventContext == null)
+            {
+                e.BuildEventContext = BuildEventContext.Invalid;
+            }
+
+            base.Dispatch(e);
+        }
+
+        private void OnAnyEventRaised(object sender, BuildEventArgs e)
+        {
             Dispatch(e);
         }
 
