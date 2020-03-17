@@ -4,6 +4,7 @@
 
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
+using Microsoft.Build.Execution;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -127,6 +128,8 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
             try
             {
                 project = new Project(fullPath, globalProperties, toolsVersion, projectCollection, DefaultProjectLoadSettings);
+
+                ProjectLoaderFactory.LogProjectStartedEvent(_logger, project.CreateProjectInstance(ProjectInstanceSettings.ImmutableWithFastItemLookup, ProjectLoaderFactory.SharedEvaluationContext));
             }
             catch (InvalidProjectFileException e)
             {

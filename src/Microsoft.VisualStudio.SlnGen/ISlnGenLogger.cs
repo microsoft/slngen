@@ -2,6 +2,7 @@
 //
 // Licensed under the MIT license.
 
+using Microsoft.Build.Framework;
 using System.Collections.Generic;
 
 namespace Microsoft.VisualStudio.SlnGen
@@ -17,6 +18,16 @@ namespace Microsoft.VisualStudio.SlnGen
         bool HasLoggedErrors { get; }
 
         /// <summary>
+        /// Gets a value indicating whether the logger is in diagnostic mode so more information should be logged.
+        /// </summary>
+        bool IsDiagnostic { get; }
+
+        /// <summary>
+        /// Gets the next project ID.
+        /// </summary>
+        int NextProjectId { get; }
+
+        /// <summary>
         /// Logs an error.
         /// </summary>
         /// <param name="message">The error message.</param>
@@ -25,6 +36,12 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <param name="lineNumber">An optional line number.</param>
         /// <param name="columnNumber">An optional column number.</param>
         void LogError(string message, string code = null, string file = null, int lineNumber = 0, int columnNumber = 0);
+
+        /// <summary>
+        /// Logs a build event.
+        /// </summary>
+        /// <param name="eventArgs">The <see cref="BuildEventArgs" /> object representing the event.</param>
+        void LogEvent(BuildEventArgs eventArgs);
 
         /// <summary>
         /// Logs a high importance message.

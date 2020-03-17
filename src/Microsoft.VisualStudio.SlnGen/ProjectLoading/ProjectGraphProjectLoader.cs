@@ -3,9 +3,9 @@
 // Licensed under the MIT license.
 
 #if !NET46
+
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
-using Microsoft.Build.Evaluation.Context;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
 using System.Collections.Generic;
@@ -24,17 +24,16 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
             | ProjectLoadSettings.IgnoreMissingImports
             | ProjectLoadSettings.DoNotEvaluateElementsWithFalseCondition;
 
-        private static readonly EvaluationContext SharedEvaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
-
-        private readonly string _msbuildExePath;
+        private readonly ISlnGenLogger _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProjectGraphProjectLoader"/> class.
         /// </summary>
+        /// <param name="logger">An <see cref="ISlnGenLogger" /> to use for logging.</param>
         /// <param name="msbuildExePath">The full path to MSBuild.exe.</param>
-        public ProjectGraphProjectLoader(string msbuildExePath)
+        public ProjectGraphProjectLoader(ISlnGenLogger logger, string msbuildExePath)
         {
-            _msbuildExePath = msbuildExePath;
+            _logger = logger;
         }
 
         /// <inheritdoc />
@@ -47,19 +46,24 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
 
         private ProjectInstance CreateProjectInstance(string projectFullPath, IDictionary<string, string> globalProperties, ProjectCollection projectCollection)
         {
-            return Project.FromFile(
+            ProjectInstance projectInstance = Project.FromFile(
                     projectFullPath,
                     new ProjectOptions
                     {
-                        EvaluationContext = SharedEvaluationContext,
+                        EvaluationContext = ProjectLoaderFactory.SharedEvaluationContext,
                         GlobalProperties = globalProperties,
                         LoadSettings = DefaultProjectLoadSettings,
                         ProjectCollection = projectCollection,
                     })
                 .CreateProjectInstance(
                     ProjectInstanceSettings.ImmutableWithFastItemLookup,
-                    SharedEvaluationContext);
+                    ProjectLoaderFactory.SharedEvaluationContext);
+
+            ProjectLoaderFactory.LogProjectStartedEvent(_logger, projectInstance);
+
+            return projectInstance;
         }
     }
 }
+
 #endif
