@@ -4,6 +4,7 @@
 
 using McMaster.Extensions.CommandLineUtils;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.VisualStudio.SlnGen
 {
@@ -76,9 +77,9 @@ Example: -bl:output.binlog;ProjectImports=ZipFile")]
         /// </summary>
         [Option(
             "-vs|--devenvfullpath",
-            CommandOptionType.SingleValue,
+            CommandOptionType.MultipleValue,
             Description = "Specifies a full path to Visual Studio’s devenv.exe to use when opening the solution file. By default, SlnGen will launch the program associated with the .sln file extension.")]
-        public string DevEnvFullPath { get; set; }
+        public string[] DevEnvFullPath { get; set; }
 
         /// <summary>
         /// Gets or sets the file logger parameters.
@@ -101,20 +102,32 @@ Some additional available parameters are:
         /// </summary>
         [Option(
             "--folders",
-            CommandOptionType.SingleOrNoValue,
+            CommandOptionType.MultipleValue,
             ValueName = "true",
             Description = "Enables the creation of hierarchical solution folders.  Default: false")]
-        public bool Folders { get; set; }
+        public string[] Folders { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether Visual Studio should be launched after the solution is generated.
         /// </summary>
         [Option(
             "--launch",
-            CommandOptionType.SingleOrNoValue,
-            ValueName = "false",
+            CommandOptionType.MultipleValue,
+            ValueName = "true|false",
             Description = "Launch Visual Studio after generating the Solution file.  Default: true")]
-        public bool LaunchVisualStudio { get; set; } = true;
+        public string[] LaunchVisualStudio { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether Visual Studio should load projects.
+        /// </summary>
+        [Option(
+            "--loadprojects",
+            CommandOptionType.MultipleValue,
+            ValueName = "false",
+            Description = @"When launching Visual Studio, opens the specified solution without loading any projects.  Default: true
+You must disable shell execute when using this command-line option.
+  --useshellexecute:false")]
+        public string[] LoadProjectsInVisualStudio { get; set; }
 
         /// <summary>
         /// Gets or sets the logger parameters.
@@ -185,45 +198,37 @@ Examples:
         public string[] Property { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether Visual Studio should load projects.
+        /// Gets or sets a value indicating whether the shell should be used when starting the process.
         /// </summary>
         [Option(
-            "--loadprojects",
-            CommandOptionType.SingleOrNoValue,
+            "-u|--useshellexecute",
+            CommandOptionType.MultipleValue,
             ValueName = "false",
-            Description = @"When launching Visual Studio, opens the specified solution without loading any projects.  Default: true
-You must disable shell execute when using this command-line option.
-  --useshellexecute:false")]
-        public bool ShouldLoadProjectsInVisualStudio { get; set; } = true;
+            Description = "Indicates whether or not the Visual Studio solution file should be opened by the registered file extension handler.  Default: true")]
+        public string[] ShellExecute { get; set; }
 
         /// <summary>
         /// Gets or sets the full path to the solution file to generate.
         /// </summary>
         [Option(
             "-o|--solutionfile <path>",
-            CommandOptionType.SingleValue,
+            CommandOptionType.MultipleValue,
             Description = "An optional path to the solution file to generate.  Defaults to the same directory as the project.")]
-        public string SolutionFileFullPath { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the shell should be used when starting the process.
-        /// </summary>
-        [Option(
-            "-u|--useshellexecute",
-            CommandOptionType.SingleOrNoValue,
-            ValueName = "false",
-            Description = "Indicates whether or not the Visual Studio solution file should be opened by the registered file extension handler.  Default: true")]
-        public bool UseShellExecute { get; set; } = true;
+        public string[] SolutionFileFullPath { get; set; }
 
         /// <summary>
         /// Gets or sets the verbosity to use.
         /// </summary>
         [Option(
             "-v|--verbosity",
-            CommandOptionType.SingleValue,
+            CommandOptionType.MultipleValue,
             Description = @"Display this amount of information in the event log.  The available verbosity levels are:
   q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")]
-        public string Verbosity { get; set; }
+        public string[] Verbosity { get; set; }
+
+        public bool EnableFolders() => GetBoolean(Folders);
+
+        public bool EnableShellExecute() => GetBoolean(ShellExecute, defaultValue: true);
 
         /// <summary>
         /// Gets the Configuration values based on what was specified as command-line arguments.
@@ -236,5 +241,24 @@ You must disable shell execute when using this command-line option.
         /// </summary>
         /// <returns>An <see cref="IReadOnlyCollection{T}" /> containing the unique values for Platform.</returns>
         public IReadOnlyCollection<string> GetPlatforms() => Platform.SplitValues();
+
+        public bool ShouldLaunchVisualStudio() => GetBoolean(LaunchVisualStudio, defaultValue: true);
+
+        public bool ShouldLoadProjectsInVisualStudio() => GetBoolean(LoadProjectsInVisualStudio, defaultValue: true);
+
+        private bool GetBoolean(string[] values, bool defaultValue = false)
+        {
+            if (values == null || values.Length == 0)
+            {
+                return defaultValue;
+            }
+
+            if (bool.TryParse(values.Last(), out bool result))
+            {
+                return result;
+            }
+
+            return defaultValue;
+        }
     }
 }
