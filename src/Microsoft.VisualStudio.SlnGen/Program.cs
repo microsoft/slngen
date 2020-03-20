@@ -90,7 +90,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
         public int OnExecute()
         {
-            LoggerVerbosity verbosity = ForwardingLogger.ParseLoggerVerbosity(Verbosity);
+            LoggerVerbosity verbosity = ForwardingLogger.ParseLoggerVerbosity(Verbosity?.LastOrDefault());
 
             ConsoleForwardingLogger consoleLogger = new ConsoleForwardingLogger(ConsoleLoggerParameters, NoWarn, RedirectConsoleLogger ? Console : null)
             {
@@ -127,18 +127,21 @@ namespace Microsoft.VisualStudio.SlnGen
                     return 1;
                 }
 
-                GenerateSolutionFile(projectCollection.LoadedProjects.Where(i => !i.GlobalProperties.ContainsKey("TargetFramework")), forwardingLogger);
+                string solutionFileFullPath = GenerateSolutionFile(projectCollection.LoadedProjects.Where(i => !i.GlobalProperties.ContainsKey("TargetFramework")), forwardingLogger);
 
-                if (LaunchVisualStudio)
+                if (ShouldLaunchVisualStudio())
                 {
-                    string devEnvFullPath = DevEnvFullPath;
+                    bool loadProjectsInVisualStudio = ShouldLoadProjectsInVisualStudio();
+                    bool enableShellExecute = EnableShellExecute();
 
-                    if (!UseShellExecute || !ShouldLoadProjectsInVisualStudio)
+                    string devEnvFullPath = DevEnvFullPath?.LastOrDefault();
+
+                    if (!enableShellExecute || !loadProjectsInVisualStudio)
                     {
                         devEnvFullPath = Path.Combine(Program.VisualStudioInstance.VisualStudioRootPath, "Common7", "IDE", "devenv.exe");
                     }
 
-                    VisualStudioLauncher.Launch(SolutionFileFullPath, UseShellExecute, ShouldLoadProjectsInVisualStudio, devEnvFullPath, forwardingLogger);
+                    VisualStudioLauncher.Launch(solutionFileFullPath, enableShellExecute, loadProjectsInVisualStudio, devEnvFullPath, forwardingLogger);
                 }
 
                 LogTelemetry(forwardingLogger);
@@ -147,7 +150,7 @@ namespace Microsoft.VisualStudio.SlnGen
             return 0;
         }
 
-        private void GenerateSolutionFile(IEnumerable<Project> projects, ISlnGenLogger logger)
+        private string GenerateSolutionFile(IEnumerable<Project> projects, ISlnGenLogger logger)
         {
             Project project = projects.First();
 
@@ -159,12 +162,14 @@ namespace Microsoft.VisualStudio.SlnGen
 
             _solutionItemCount = solutionItems.Count;
 
-            if (SolutionFileFullPath.IsNullOrWhiteSpace())
+            string solutionFileFullPath = SolutionFileFullPath?.LastOrDefault();
+
+            if (solutionFileFullPath.IsNullOrWhiteSpace())
             {
-                SolutionFileFullPath = Path.ChangeExtension(project.FullPath, ".sln");
+                solutionFileFullPath = Path.ChangeExtension(project.FullPath, ".sln");
             }
 
-            logger.LogMessageHigh($"Generating Visual Studio solution \"{SolutionFileFullPath}\" ...");
+            logger.LogMessageHigh($"Generating Visual Studio solution \"{solutionFileFullPath}\" ...");
 
             if (customProjectTypeGuids.Count > 0)
             {
@@ -181,21 +186,23 @@ namespace Microsoft.VisualStudio.SlnGen
                 Configurations = GetConfigurations(),
             };
 
-            if (SlnFile.TryParseExistingSolution(SolutionFileFullPath, out Guid solutionGuid, out IReadOnlyDictionary<string, Guid> projectGuidsByPath))
+            if (SlnFile.TryParseExistingSolution(solutionFileFullPath, out Guid solutionGuid, out IReadOnlyDictionary<string, Guid> projectGuidsByPath))
             {
                 logger.LogMessageNormal("Updating existing solution file and reusing Visual Studio cache");
 
                 solution.SolutionGuid = solutionGuid;
                 solution.ExistingProjectGuids = projectGuidsByPath;
 
-                ShouldLoadProjectsInVisualStudio = true;
+                LoadProjectsInVisualStudio = new[] { bool.TrueString };
             }
 
             solution.AddProjects(projects, customProjectTypeGuids, project.FullPath);
 
             solution.AddSolutionItems(solutionItems);
 
-            solution.Save(SolutionFileFullPath, Folders);
+            solution.Save(solutionFileFullPath, EnableFolders());
+
+            return solutionFileFullPath;
         }
 
         /// <summary>
@@ -345,18 +352,18 @@ namespace Microsoft.VisualStudio.SlnGen
             logger.LogTelemetry("SlnGen", new Dictionary<string, string>
             {
                 ["CustomProjectTypeGuidCount"] = _customProjectTypeGuidCount.ToString(),
-                ["DevEnvFullPathSpecified"] = (!DevEnvFullPath.IsNullOrWhiteSpace()).ToString(),
+                ["DevEnvFullPathSpecified"] = (!DevEnvFullPath?.LastOrDefault().IsNullOrWhiteSpace()).ToString(),
                 ["EntryProjectCount"] = Projects?.Length.ToString(),
-                ["Folders"] = Folders.ToString(),
+                ["Folders"] = EnableFolders().ToString(),
                 ["IsCoreXT"] = IsCoreXT.ToString(),
-                ["LaunchVisualStudio"] = LaunchVisualStudio.ToString(),
+                ["LaunchVisualStudio"] = ShouldLaunchVisualStudio().ToString(),
                 ["ProjectEvaluationCount"] = _projectEvaluationCount.ToString(),
                 ["ProjectEvaluationMilliseconds"] = _projectEvaluationMilliseconds.ToString(),
-                ["SolutionFileFullPathSpecified"] = (!SolutionFileFullPath.IsNullOrWhiteSpace()).ToString(),
+                ["SolutionFileFullPathSpecified"] = (!SolutionFileFullPath?.LastOrDefault().IsNullOrWhiteSpace()).ToString(),
                 ["SolutionItemCount"] = _solutionItemCount.ToString(),
                 ["UseBinaryLogger"] = BinaryLogger.HasValue.ToString(),
                 ["UseFileLogger"] = FileLoggerParameters.HasValue.ToString(),
-                ["UseShellExecute"] = UseShellExecute.ToString(),
+                ["UseShellExecute"] = EnableShellExecute().ToString(),
             });
         }
     }
