@@ -204,7 +204,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
             if (solutionFileFullPath.IsNullOrWhiteSpace())
             {
-                string solutionDirectoryFullPath = SolutionDirectoryFullPath?.LastOrDefault();
+                string solutionDirectoryFullPath = _arguments.SolutionDirectoryFullPath?.LastOrDefault();
 
                 if (solutionDirectoryFullPath.IsNullOrWhiteSpace())
                 {
