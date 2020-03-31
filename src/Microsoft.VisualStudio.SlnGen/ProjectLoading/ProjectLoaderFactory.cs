@@ -7,6 +7,7 @@ using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using System.Collections;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 
 namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
@@ -27,15 +28,15 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
         /// <param name="msbuildExePath">The full path to MSBuild.exe.</param>
         /// <param name="logger">An <see cref="ISlnGenLogger" /> object to use for logging.</param>
         /// <returns>An <see cref="IProjectLoader" /> object that can be used to load MSBuild projects.</returns>
-        public static IProjectLoader Create(string msbuildExePath, ISlnGenLogger logger)
+        public static IProjectLoader Create(FileInfo msbuildExePath, ISlnGenLogger logger)
         {
 #if !NET46
-            FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(msbuildExePath);
+            FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(msbuildExePath.FullName);
 
             // MSBuild 16.4 and above use the Static Graph API
             if (fileVersionInfo.FileMajorPart >= 16 && fileVersionInfo.FileMinorPart >= 4)
             {
-                return new ProjectGraphProjectLoader(logger, msbuildExePath);
+                return new ProjectGraphProjectLoader(logger);
             }
 #endif
 

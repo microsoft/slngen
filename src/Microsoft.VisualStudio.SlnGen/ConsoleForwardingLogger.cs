@@ -5,15 +5,17 @@
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
+using System;
 using System.Threading;
 
 namespace Microsoft.VisualStudio.SlnGen
 {
-    internal class ConsoleForwardingLogger : EventArgsDispatcher, IEventSource, ILogger
+    /// <summary>
+    /// Represents a class that forwards logging events to a console.
+    /// </summary>
+    internal class ConsoleForwardingLogger : EventArgsDispatcher, ILogger
     {
         private readonly IConsole _console;
-        private readonly bool _noWarn;
-        private readonly (bool HasValue, string Arguments) _parameter;
         private ConsoleLogger _consoleLogger;
         private IEventSource _eventSource;
         private int _hasLoggedErrors;
@@ -21,20 +23,21 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <summary>
         /// Initializes a new instance of the <see cref="ConsoleForwardingLogger"/> class.
         /// </summary>
-        /// <param name="parameter">The parameters.</param>
-        /// <param name="noWarn">A flag indicating to disable warnings.</param>
-        /// <param name="console">An optional <see cref="IConsole" /> to use.</param>
-        public ConsoleForwardingLogger((bool HasValue, string Arguments) parameter, bool noWarn, IConsole console = null)
+        /// <param name="console">The <see cref="IConsole" /> to forward events to.</param>
+        public ConsoleForwardingLogger(IConsole console)
         {
-            _parameter = parameter;
-            _noWarn = noWarn;
-            _console = console;
+            _console = console ?? throw new ArgumentNullException(nameof(console));
         }
 
         /// <summary>
         /// Gets a value indicating whether or not any errors have been logged.
         /// </summary>
         public bool HasLoggedErrors => _hasLoggedErrors != 0;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether or not warnings should be suppressed.
+        /// </summary>
+        public bool NoWarn { get; set; }
 
         /// <inheritdoc />
         public string Parameters { get; set; }
@@ -45,20 +48,14 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <inheritdoc />
         public void Initialize(IEventSource eventSource)
         {
-            if (_console != null)
+            _consoleLogger = new ConsoleLogger(
+                Verbosity,
+                message => _console.Write(message),
+                color => { _console.ForegroundColor = color; },
+                () => { _console.ResetColor(); })
             {
-                _consoleLogger = new ConsoleLogger(Verbosity, message => _console.Write(message), color => { }, () => { })
-                {
-                    Parameters = _parameter.Arguments.IsNullOrWhiteSpace() ? "ForceNoAlign=true;Summary" : _parameter.Arguments,
-                };
-            }
-            else
-            {
-                _consoleLogger = new ConsoleLogger(Verbosity)
-                {
-                    Parameters = _parameter.Arguments.IsNullOrWhiteSpace() ? $"Verbosity={Verbosity};ForceNoAlign=true;Summary" : _parameter.Arguments,
-                };
-            }
+                Parameters = Parameters,
+            };
 
             _eventSource = eventSource;
 
@@ -70,9 +67,9 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <inheritdoc />
         public void Shutdown()
         {
-            _consoleLogger.Shutdown();
-
             _eventSource.AnyEventRaised -= OnAnyEventRaised;
+
+            _consoleLogger.Shutdown();
         }
 
         private new void Dispatch(BuildEventArgs e)
@@ -84,10 +81,11 @@ namespace Microsoft.VisualStudio.SlnGen
 
             if (e is ProjectStartedEventArgs || e is ProjectFinishedEventArgs)
             {
+                // Don't send these events to the ConsoleLogger because its not useful when running SlnGen like they are when running MSBuild
                 return;
             }
 
-            if (_noWarn && e is BuildWarningEventArgs)
+            if (NoWarn && e is BuildWarningEventArgs)
             {
                 return;
             }

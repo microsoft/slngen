@@ -3,7 +3,10 @@
 // Licensed under the MIT license.
 
 using McMaster.Extensions.CommandLineUtils;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 
 namespace Microsoft.VisualStudio.SlnGen
@@ -11,7 +14,7 @@ namespace Microsoft.VisualStudio.SlnGen
     /// <summary>
     /// Represents the command-line arguments for this application.
     /// </summary>
-    public sealed partial class Program
+    public sealed class ProgramArguments
     {
         /// <summary>
         /// Gets or sets the binary logger arguments.
@@ -251,9 +254,31 @@ Examples:
         /// <returns>An <see cref="IReadOnlyCollection{T}" /> containing the unique values for Platform.</returns>
         public IReadOnlyCollection<string> GetPlatforms() => Platform.SplitValues();
 
+        public int OnExecute(IConsole console)
+        {
+            if (!MSBuildLocator.TryLocate(message => Error(console, message), out VisualStudioInstance instance, out string msbuildBinPath))
+            {
+                return 1;
+            }
+
+            AssemblyResolver.Configure(msbuildBinPath, Path.Combine(msbuildBinPath, CultureInfo.CurrentCulture.TwoLetterISOLanguageName));
+
+            Program app = new Program(this, console, instance, msbuildBinPath);
+
+            return app.Execute();
+        }
+
         public bool ShouldLaunchVisualStudio() => GetBoolean(LaunchVisualStudio, defaultValue: true);
 
         public bool ShouldLoadProjectsInVisualStudio() => GetBoolean(LoadProjectsInVisualStudio, defaultValue: true);
+
+        private static void Error(IConsole console, string message)
+        {
+            console.BackgroundColor = ConsoleColor.Black;
+            console.ForegroundColor = ConsoleColor.Red;
+            console.Error.WriteLine(message);
+            console.ResetColor();
+        }
 
         private bool GetBoolean(string[] values, bool defaultValue = false)
         {
