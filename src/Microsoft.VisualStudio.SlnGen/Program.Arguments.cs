@@ -217,6 +217,15 @@ Examples:
         public string[] SolutionFileFullPath { get; set; }
 
         /// <summary>
+        /// Gets or sets the full path to the solution file to generate.
+        /// </summary>
+        [Option(
+            "-d|--solutiondir <path>",
+            CommandOptionType.MultipleValue,
+            Description = "An optional path to the directory in which the solution file will be generated.  Defaults to the same directory as the project. --solutionfile will take precedence over this switch.")]
+        public string[] SolutionDirectoryFullPath { get; set; }
+
+        /// <summary>
         /// Gets or sets the verbosity to use.
         /// </summary>
         [Option(

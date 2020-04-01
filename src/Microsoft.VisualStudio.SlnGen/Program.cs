@@ -166,7 +166,16 @@ namespace Microsoft.VisualStudio.SlnGen
 
             if (solutionFileFullPath.IsNullOrWhiteSpace())
             {
-                solutionFileFullPath = Path.ChangeExtension(project.FullPath, ".sln");
+                string solutionDirectoryFullPath = SolutionDirectoryFullPath?.LastOrDefault();
+
+                if (solutionDirectoryFullPath.IsNullOrWhiteSpace())
+                {
+                    solutionDirectoryFullPath = project.DirectoryPath;
+                }
+
+                string solutionFileName = Path.ChangeExtension(Path.GetFileName(project.FullPath), "sln");
+
+                solutionFileFullPath = Path.Combine(solutionDirectoryFullPath, solutionFileName);
             }
 
             logger.LogMessageHigh($"Generating Visual Studio solution \"{solutionFileFullPath}\" ...");
@@ -360,6 +369,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 ["ProjectEvaluationCount"] = _projectEvaluationCount.ToString(),
                 ["ProjectEvaluationMilliseconds"] = _projectEvaluationMilliseconds.ToString(),
                 ["SolutionFileFullPathSpecified"] = (!SolutionFileFullPath?.LastOrDefault().IsNullOrWhiteSpace()).ToString(),
+                ["SolutionDirectoryFullPathSpecified"] = (!SolutionDirectoryFullPath?.LastOrDefault().IsNullOrWhiteSpace()).ToString(),
                 ["SolutionItemCount"] = _solutionItemCount.ToString(),
                 ["UseBinaryLogger"] = BinaryLogger.HasValue.ToString(),
                 ["UseFileLogger"] = FileLoggerParameters.HasValue.ToString(),

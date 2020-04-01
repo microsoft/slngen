@@ -43,6 +43,7 @@ slngen [switches] [project]
 | <code>--loadprojects:true&#124;false</code> | | When launching Visual Studio, opens the specified solution without loading any projects. Default: `true` |
 | <code>--useshellexecute:true&#124;false</code> | <code>-u:true&#124;false</code> | Indicates whether or not the Visual Studio solution file should be opened by the registered file extension handler. Default: `true` |
 | <code>--solutionfile:path</code> | `-o:file` | An optional path to the solution file to generate. Defaults to the same directory as the project. |
+| <code>--solutiondir:path</code> | `-d:path` | An optional path to the directory in which the solution file will be generated.  Defaults to the same directory as the project. --solutionfile will take precedence over this switch. |
 | <code>--devenvpath:path</code> | | Specifies a full path to Visual Studio's devenv.exe to use when opening the solution file. By default, SlnGen will launch the program associated with the .sln file extension. |
 | <code>--property:name=value</code> | `-p:name=value` | Set or override these project-level properties. Use a semicolon or a comma to separate multiple properties, or specify each property separately.|
 | <code>--configuration:value</code> | | (Optional) Specifies one or more values to use for the solution Configuration (i.e. Debug or Release).  By default, all projects' available values for Configuration are used.  In certain cases, projects do not properly convey the Configuration so it is desirable to generate a solution with your own values. |
