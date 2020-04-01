@@ -11,7 +11,6 @@ using Microsoft.VisualStudio.SlnGen.ProjectLoading;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -21,23 +20,50 @@ namespace Microsoft.VisualStudio.SlnGen
     /// <summary>
     /// Represents the main program for SlnGen.
     /// </summary>
-    public sealed partial class Program
+    public sealed class Program
     {
-        private int _customProjectTypeGuidCount;
-        private int _projectEvaluationCount;
-        private long _projectEvaluationMilliseconds;
-        private int _solutionItemCount;
+        private readonly ProgramArguments _arguments;
+        private readonly IConsole _console;
+        private readonly VisualStudioInstance _instance;
+        private readonly string _msbuildBinPath;
+        private readonly FileInfo _msbuildExePath;
 
-        public static IConsole Console { get; set; } = new PhysicalConsole();
+        static Program()
+        {
+            if (Environment.GetCommandLineArgs().Any(i => i.Equals("--debug", StringComparison.OrdinalIgnoreCase)))
+            {
+                Debugger.Launch();
+            }
+        }
 
-        public static bool RedirectConsoleLogger { get; set; }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Program"/> class.
+        /// </summary>
+        /// <param name="arguments">The <see cref="ProgramArguments" /> to use.</param>
+        /// <param name="console">The <see cref="IConsole" /> to use.</param>
+        /// <param name="instance">The <see cref="VisualStudioInstance" /> to use.</param>
+        /// <param name="msbuildBinPath">The full path to MSBuild to use.</param>
+        public Program(ProgramArguments arguments, IConsole console, VisualStudioInstance instance, string msbuildBinPath)
+        {
+            _arguments = arguments ?? throw new ArgumentNullException(nameof(arguments));
+            _console = console ?? throw new ArgumentNullException(nameof(console));
+            _instance = instance;
+            _msbuildBinPath = msbuildBinPath;
+            _msbuildExePath = new FileInfo(Path.Combine(msbuildBinPath, IsNetCore ? "MSBuild.dll" : "MSBuild.exe"));
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether or not the current runtime framework is .NET Core.
+        /// </summary>
+        public static bool IsNetCore { get; } = RuntimeInformation.FrameworkDescription.StartsWith(".NET Core");
 
         /// <summary>
         /// Executes the programs with the specified arguments.
         /// </summary>
         /// <param name="args">The command-line arguments to use when executing.</param>
+        /// <param name="console">A <see cref="IConsole" /> object to use for the console.</param>
         /// <returns>zero if the program executed successfully, otherwise non-zero.</returns>
-        public static int Main(string[] args)
+        public static int Execute(string[] args, IConsole console)
         {
             bool noLogo = false;
 
@@ -73,31 +99,31 @@ namespace Microsoft.VisualStudio.SlnGen
             if (!noLogo)
             {
                 Console.WriteLine(
-                    string.Format(
-                        CultureInfo.CurrentCulture,
                         Strings.Message_Logo,
                         ThisAssembly.AssemblyTitle,
                         ThisAssembly.AssemblyInformationalVersion,
-#if NETFRAMEWORK
-                        ".NET Framework"));
-#else
-                        ".NET Core"));
-#endif
+                        IsNetCore ? ".NET Core" : ".NET Framework");
             }
 
-            return CommandLineApplication.Execute<Program>(Console, args);
+            return CommandLineApplication.Execute<ProgramArguments>(console, args);
         }
 
-        public int OnExecute()
+        /// <summary>
+        /// Executes the program.
+        /// </summary>
+        /// <returns>The exit code of the program.</returns>
+        public int Execute()
         {
-            LoggerVerbosity verbosity = ForwardingLogger.ParseLoggerVerbosity(Verbosity?.LastOrDefault());
+            LoggerVerbosity verbosity = ForwardingLogger.ParseLoggerVerbosity(_arguments.Verbosity?.LastOrDefault());
 
-            ConsoleForwardingLogger consoleLogger = new ConsoleForwardingLogger(ConsoleLoggerParameters, NoWarn, RedirectConsoleLogger ? Console : null)
+            ConsoleForwardingLogger consoleLogger = new ConsoleForwardingLogger(_console)
             {
+                NoWarn = _arguments.NoWarn,
+                Parameters = _arguments.ConsoleLoggerParameters.Arguments.IsNullOrWhiteSpace() ? "ForceNoAlign=true;Summary" : _arguments.ConsoleLoggerParameters.Arguments,
                 Verbosity = verbosity,
             };
 
-            ForwardingLogger forwardingLogger = new ForwardingLogger(GetLoggers(consoleLogger), NoWarn)
+            ForwardingLogger forwardingLogger = new ForwardingLogger(GetLoggers(consoleLogger), _arguments.NoWarn)
             {
                 Verbosity = verbosity,
             };
@@ -120,37 +146,53 @@ namespace Microsoft.VisualStudio.SlnGen
             {
                 forwardingLogger.LogMessageLow("Command Line Arguments: {0}", Environment.CommandLine);
 
-                LoadProjects(projectCollection, forwardingLogger);
+                (TimeSpan evaluationTime, int evaluationCount) = LoadProjects(projectCollection, forwardingLogger);
 
                 if (forwardingLogger.HasLoggedErrors)
                 {
                     return 1;
                 }
 
-                string solutionFileFullPath = GenerateSolutionFile(projectCollection.LoadedProjects.Where(i => !i.GlobalProperties.ContainsKey("TargetFramework")), forwardingLogger);
+                (string solutionFileFullPath, int customProjectTypeGuidCount, int solutionItemCount) = GenerateSolutionFile(projectCollection.LoadedProjects.Where(i => !i.GlobalProperties.ContainsKey("TargetFramework")), forwardingLogger);
 
-                if (ShouldLaunchVisualStudio())
+                if (_arguments.ShouldLaunchVisualStudio())
                 {
-                    bool loadProjectsInVisualStudio = ShouldLoadProjectsInVisualStudio();
-                    bool enableShellExecute = EnableShellExecute();
+                    bool loadProjectsInVisualStudio = _arguments.ShouldLoadProjectsInVisualStudio();
+                    bool enableShellExecute = _arguments.EnableShellExecute();
 
-                    string devEnvFullPath = DevEnvFullPath?.LastOrDefault();
+                    string devEnvFullPath = _arguments.DevEnvFullPath?.LastOrDefault();
 
                     if (!enableShellExecute || !loadProjectsInVisualStudio)
                     {
-                        devEnvFullPath = Path.Combine(Program.VisualStudioInstance.VisualStudioRootPath, "Common7", "IDE", "devenv.exe");
+                        if (_instance == null)
+                        {
+                            forwardingLogger.LogError("Cannot launch Visual Studio.");
+
+                            return 1;
+                        }
+
+                        if (_instance.IsBuildTools)
+                        {
+                            forwardingLogger.LogError("Cannot use a BuildTools instance of Visual Studio.");
+
+                            return 1;
+                        }
+
+                        devEnvFullPath = Path.Combine(_instance.InstallationPath, "Common7", "IDE", "devenv.exe");
                     }
 
                     VisualStudioLauncher.Launch(solutionFileFullPath, enableShellExecute, loadProjectsInVisualStudio, devEnvFullPath, forwardingLogger);
                 }
 
-                LogTelemetry(forwardingLogger);
+                LogTelemetry(evaluationTime, evaluationCount, customProjectTypeGuidCount, solutionItemCount);
             }
 
             return 0;
         }
 
-        private string GenerateSolutionFile(IEnumerable<Project> projects, ISlnGenLogger logger)
+        private static int Main(string[] args) => Execute(args, PhysicalConsole.Singleton);
+
+        private (string solutionFileFullPath, int customProjectTypeGuidCount, int solutionItemCount) GenerateSolutionFile(IEnumerable<Project> projects, ISlnGenLogger logger)
         {
             Project project = projects.First();
 
@@ -158,15 +200,11 @@ namespace Microsoft.VisualStudio.SlnGen
 
             IReadOnlyCollection<string> solutionItems = SlnProject.GetSolutionItems(project, logger).ToList();
 
-            _customProjectTypeGuidCount = customProjectTypeGuids.Count;
-
-            _solutionItemCount = solutionItems.Count;
-
-            string solutionFileFullPath = SolutionFileFullPath?.LastOrDefault();
+            string solutionFileFullPath = _arguments.SolutionFileFullPath?.LastOrDefault();
 
             if (solutionFileFullPath.IsNullOrWhiteSpace())
             {
-                string solutionDirectoryFullPath = SolutionDirectoryFullPath?.LastOrDefault();
+                string solutionDirectoryFullPath = _arguments.SolutionDirectoryFullPath?.LastOrDefault();
 
                 if (solutionDirectoryFullPath.IsNullOrWhiteSpace())
                 {
@@ -191,8 +229,8 @@ namespace Microsoft.VisualStudio.SlnGen
 
             SlnFile solution = new SlnFile
             {
-                Platforms = GetPlatforms(),
-                Configurations = GetConfigurations(),
+                Platforms = _arguments.GetPlatforms(),
+                Configurations = _arguments.GetConfigurations(),
             };
 
             if (SlnFile.TryParseExistingSolution(solutionFileFullPath, out Guid solutionGuid, out IReadOnlyDictionary<string, Guid> projectGuidsByPath))
@@ -202,16 +240,16 @@ namespace Microsoft.VisualStudio.SlnGen
                 solution.SolutionGuid = solutionGuid;
                 solution.ExistingProjectGuids = projectGuidsByPath;
 
-                LoadProjectsInVisualStudio = new[] { bool.TrueString };
+                _arguments.LoadProjectsInVisualStudio = new[] { bool.TrueString };
             }
 
             solution.AddProjects(projects, customProjectTypeGuids, project.FullPath);
 
             solution.AddSolutionItems(solutionItems);
 
-            solution.Save(solutionFileFullPath, EnableFolders());
+            solution.Save(solutionFileFullPath, _arguments.EnableFolders());
 
-            return solutionFileFullPath;
+            return (solutionFileFullPath, customProjectTypeGuids.Count, solutionItems.Count);
         }
 
         /// <summary>
@@ -220,7 +258,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <returns>An <see cref="IEnumerable{String}" /> containing the full paths to projects to generate a solution for.</returns>
         private IEnumerable<string> GetEntryProjectPaths(ISlnGenLogger logger)
         {
-            if (Projects == null || !Projects.Any())
+            if (_arguments.Projects == null || !_arguments.Projects.Any())
             {
                 logger.LogMessageNormal("Searching \"{0}\" for projects", Environment.CurrentDirectory);
                 bool projectFound = false;
@@ -242,7 +280,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 yield break;
             }
 
-            foreach (string projectPath in Projects.Select(Path.GetFullPath))
+            foreach (string projectPath in _arguments.Projects.Select(Path.GetFullPath))
             {
                 if (!File.Exists(projectPath))
                 {
@@ -265,9 +303,9 @@ namespace Microsoft.VisualStudio.SlnGen
                 [MSBuildPropertyNames.ExcludeRestorePackageImports] = bool.TrueString,
             };
 
-            if (Property != null)
+            if (_arguments.Property != null)
             {
-                foreach (KeyValuePair<string, string> item in Property.SelectMany(i => i.SplitProperties()))
+                foreach (KeyValuePair<string, string> item in _arguments.Property.SelectMany(i => i.SplitProperties()))
                 {
                     globalProperties[item.Key] = item.Value;
                 }
@@ -283,42 +321,42 @@ namespace Microsoft.VisualStudio.SlnGen
                 yield return consoleLogger;
             }
 
-            if (FileLoggerParameters.HasValue)
+            if (_arguments.FileLoggerParameters.HasValue)
             {
                 yield return new FileLogger
                 {
-                    Parameters = FileLoggerParameters.Arguments.IsNullOrWhiteSpace() ? "LogFile=slngen.log;Verbosity=Detailed" : $"LogFile=slngen.log;{FileLoggerParameters.Arguments}",
+                    Parameters = _arguments.FileLoggerParameters.Arguments.IsNullOrWhiteSpace() ? "LogFile=slngen.log;Verbosity=Detailed" : $"LogFile=slngen.log;{_arguments.FileLoggerParameters.Arguments}",
                 };
             }
 
-            if (BinaryLogger.HasValue)
+            if (_arguments.BinaryLogger.HasValue)
             {
-                foreach (ILogger logger in ForwardingLogger.ParseBinaryLoggerParameters(BinaryLogger.Arguments.IsNullOrWhiteSpace() ? "slngen.binlog" : BinaryLogger.Arguments))
+                foreach (ILogger logger in ForwardingLogger.ParseBinaryLoggerParameters(_arguments.BinaryLogger.Arguments.IsNullOrWhiteSpace() ? "slngen.binlog" : _arguments.BinaryLogger.Arguments))
                 {
                     yield return logger;
                 }
             }
 
-            foreach (ILogger logger in ForwardingLogger.ParseLoggerParameters(Loggers))
+            foreach (ILogger logger in ForwardingLogger.ParseLoggerParameters(_arguments.Loggers))
             {
                 yield return logger;
             }
         }
 
-        private void LoadProjects(ProjectCollection projectCollection, ISlnGenLogger logger)
+        private (TimeSpan projectEvaluation, int projectCount) LoadProjects(ProjectCollection projectCollection, ISlnGenLogger logger)
         {
             List<string> entryProjects = GetEntryProjectPaths(logger).ToList();
 
             if (logger.HasLoggedErrors)
             {
-                return;
+                return (TimeSpan.Zero, 0);
             }
 
             logger.LogMessageHigh("Loading project references...");
 
             Stopwatch sw = Stopwatch.StartNew();
 
-            IProjectLoader projectLoader = ProjectLoaderFactory.Create(MSBuildExePath, logger);
+            IProjectLoader projectLoader = ProjectLoaderFactory.Create(_msbuildExePath, logger);
 
             IDictionary<string, string> globalProperties = GetGlobalProperties();
 
@@ -328,9 +366,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 LoadAllFilesAsReadOnly = true,
                 MSBuildSkipEagerWildCardEvaluationRegexes = true,
                 UseSimpleProjectRootElementCacheConcurrency = true,
-#if NETFRAMEWORK
-                MSBuildExePath = MSBuildExePath,
-#endif
+                MSBuildExePath = _msbuildExePath.FullName,
             })
             {
                 try
@@ -339,12 +375,12 @@ namespace Microsoft.VisualStudio.SlnGen
                 }
                 catch (InvalidProjectFileException)
                 {
-                    return;
+                    return (TimeSpan.Zero, 0);
                 }
                 catch (Exception e)
                 {
                     logger.LogError(e.ToString());
-                    return;
+                    return (TimeSpan.Zero, 0);
                 }
             }
 
@@ -352,29 +388,11 @@ namespace Microsoft.VisualStudio.SlnGen
 
             logger.LogMessageNormal($"Loaded {projectCollection.LoadedProjects.Count:N0} project(s) in {sw.ElapsedMilliseconds:N0}ms");
 
-            _projectEvaluationMilliseconds = sw.ElapsedMilliseconds;
-            _projectEvaluationCount = projectCollection.LoadedProjects.Count;
+            return (sw.Elapsed, projectCollection.LoadedProjects.Count);
         }
 
-        private void LogTelemetry(ISlnGenLogger logger)
+        private void LogTelemetry(TimeSpan evaluationTime, int evaluationCount, int customProjectTypeGuidCount, int solutionItemCount)
         {
-            logger.LogTelemetry("SlnGen", new Dictionary<string, string>
-            {
-                ["CustomProjectTypeGuidCount"] = _customProjectTypeGuidCount.ToString(),
-                ["DevEnvFullPathSpecified"] = (!DevEnvFullPath?.LastOrDefault().IsNullOrWhiteSpace()).ToString(),
-                ["EntryProjectCount"] = Projects?.Length.ToString(),
-                ["Folders"] = EnableFolders().ToString(),
-                ["IsCoreXT"] = IsCoreXT.ToString(),
-                ["LaunchVisualStudio"] = ShouldLaunchVisualStudio().ToString(),
-                ["ProjectEvaluationCount"] = _projectEvaluationCount.ToString(),
-                ["ProjectEvaluationMilliseconds"] = _projectEvaluationMilliseconds.ToString(),
-                ["SolutionFileFullPathSpecified"] = (!SolutionFileFullPath?.LastOrDefault().IsNullOrWhiteSpace()).ToString(),
-                ["SolutionDirectoryFullPathSpecified"] = (!SolutionDirectoryFullPath?.LastOrDefault().IsNullOrWhiteSpace()).ToString(),
-                ["SolutionItemCount"] = _solutionItemCount.ToString(),
-                ["UseBinaryLogger"] = BinaryLogger.HasValue.ToString(),
-                ["UseFileLogger"] = FileLoggerParameters.HasValue.ToString(),
-                ["UseShellExecute"] = EnableShellExecute().ToString(),
-            });
         }
     }
 }

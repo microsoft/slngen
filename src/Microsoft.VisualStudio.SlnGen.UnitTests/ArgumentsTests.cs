@@ -9,16 +9,14 @@ using Xunit;
 
 namespace Microsoft.VisualStudio.SlnGen.UnitTests
 {
-    public class ArgumentsTests
+    public class ArgumentsTests : TestBase
     {
         [Fact]
         public void ForwardSlashQuestionMarkDisplaysUsage()
         {
             TestConsole console = new TestConsole();
 
-            Program.Console = console;
-
-            int exitCode = Program.Main(new[] { "/?" });
+            int exitCode = Program.Execute(new[] { "/?" }, console);
 
             exitCode.ShouldBe(0, console.Output);
 
@@ -28,19 +26,23 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         [Fact]
         public void GetConfigurations()
         {
-            new Program
+            ProgramArguments arguments = new ProgramArguments
             {
                 Configuration = new[] { "One", "Two;Three,one,Four", "four" },
-            }.GetConfigurations().ShouldBe(new[] { "One", "Two", "Three", "Four" });
+            };
+
+            arguments.GetConfigurations().ShouldBe(new[] { "One", "Two", "Three", "Four" });
         }
 
         [Fact]
         public void GetPlatforms()
         {
-            new Program
+            ProgramArguments arguments = new ProgramArguments()
             {
                 Platform = new[] { "Five", "Six;Seven,five,Eight", "eight" },
-            }.GetPlatforms().ShouldBe(new[] { "Five", "Six", "Seven", "Eight" });
+            };
+
+            arguments.GetPlatforms().ShouldBe(new[] { "Five", "Six", "Seven", "Eight" });
         }
 
         [Fact]
@@ -48,11 +50,17 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         {
             TestConsole console = new TestConsole();
 
-            Program.Console = console;
+            ProgramArguments programArguments = new ProgramArguments
+            {
+                Projects = new[]
+                {
+                    "foo",
+                },
+            };
 
-            Program.RedirectConsoleLogger = true;
+            Program program = new Program(programArguments, console, null, "msbuild");
 
-            int exitCode = Program.Main(new[] { "foo" });
+            int exitCode = program.Execute();
 
             exitCode.ShouldBe(1, console.Output);
 
@@ -66,9 +74,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         {
             TestConsole console = new TestConsole();
 
-            Program.Console = console;
-
-            int exitCode = Program.Main(new[] { argument, "--help" });
+            int exitCode = Program.Execute(new[] { argument, "--help" }, console);
 
             exitCode.ShouldBe(0, console.Output);
 

@@ -30,8 +30,7 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
         /// Initializes a new instance of the <see cref="ProjectGraphProjectLoader"/> class.
         /// </summary>
         /// <param name="logger">An <see cref="ISlnGenLogger" /> to use for logging.</param>
-        /// <param name="msbuildExePath">The full path to MSBuild.exe.</param>
-        public ProjectGraphProjectLoader(ISlnGenLogger logger, string msbuildExePath)
+        public ProjectGraphProjectLoader(ISlnGenLogger logger)
         {
             _logger = logger;
         }

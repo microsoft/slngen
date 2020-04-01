@@ -9,30 +9,13 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <Import Project="Shared.props" />
-  <ItemGroup>
-    <PackageReference Include="McMaster.Extensions.CommandLineUtils" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Build.Locator" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" PrivateAssets="All" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net46'">
-    <PackageReference Include="Microsoft.Build" VersionOverride="15.9.20" ExcludeAssets="Runtime" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Build.Runtime" VersionOverride="15.9.20" ExcludeAssets="Runtime" IncludeAssets="None" PrivateAssets="All" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" VersionOverride="15.9.20" ExcludeAssets="Runtime" PrivateAssets="All" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
-    <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Build.Runtime" ExcludeAssets="Runtime" IncludeAssets="None" PrivateAssets="All" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Win32.Registry" PrivateAssets="All" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\$(TargetFramework)\MSBuild.exe" Private="false" />
-  </ItemGroup>
+  <ItemDefinitionGroup>
+    <PackageReference>
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="Shared.props" />
     <None Include="Tasks\Microsoft.VisualStudio.SlnGen.targets" Pack="true" PackagePath="build\;buildMultiTargeting\" />
   </ItemGroup>
   <ItemGroup>
