@@ -40,6 +40,8 @@ namespace Microsoft.VisualStudio.SlnGen
                         return false;
                     }
 
+                    Program.IsCorext = true;
+
                     return true;
                 }
             }

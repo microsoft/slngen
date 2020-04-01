@@ -6,6 +6,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <PackageReference Update="McMaster.Extensions.CommandLineUtils" Version="2.5.0" />
+    <PackageReference Update="Microsoft.ApplicationInsights" Version="2.13.1" />
     <PackageReference Update="Microsoft.Build" Version="16.4.0" />
     <PackageReference Update="Microsoft.Build.Runtime" Version="16.4.0" />
     <PackageReference Update="Microsoft.Build.Utilities.Core" Version="16.4.0" />

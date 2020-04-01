@@ -3,11 +3,14 @@
 // Licensed under the MIT license.
 
 using McMaster.Extensions.CommandLineUtils;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 using Microsoft.VisualStudio.SlnGen.ProjectLoading;
+using Microsoft.VisualStudio.Telemetry;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -22,11 +25,13 @@ namespace Microsoft.VisualStudio.SlnGen
     /// </summary>
     public sealed class Program
     {
+        private const string AppInsightsInstrumentationKey = "e156bc48-16b5-43bf-ad68-7668455544c0";
+
         private readonly ProgramArguments _arguments;
         private readonly IConsole _console;
         private readonly VisualStudioInstance _instance;
-        private readonly string _msbuildBinPath;
         private readonly FileInfo _msbuildExePath;
+        private TelemetryClient _telemetryClient;
 
         static Program()
         {
@@ -48,9 +53,15 @@ namespace Microsoft.VisualStudio.SlnGen
             _arguments = arguments ?? throw new ArgumentNullException(nameof(arguments));
             _console = console ?? throw new ArgumentNullException(nameof(console));
             _instance = instance;
-            _msbuildBinPath = msbuildBinPath;
             _msbuildExePath = new FileInfo(Path.Combine(msbuildBinPath, IsNetCore ? "MSBuild.dll" : "MSBuild.exe"));
+
+            InitializeTelemetry();
         }
+
+        /// <summary>
+        /// Gets a value indicating whether or not the curent build environment is CoreXT.
+        /// </summary>
+        public static bool IsCorext { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether or not the current runtime framework is .NET Core.
@@ -343,6 +354,38 @@ namespace Microsoft.VisualStudio.SlnGen
             }
         }
 
+        private void InitializeTelemetry()
+        {
+            try
+            {
+                // Enable telemetry based on the opt-in status in Visual Studio
+                TelemetryService.DefaultSession.UseVsIsOptedIn();
+
+                if (TelemetryService.DefaultSession.IsOptedIn)
+                {
+                    _telemetryClient = new TelemetryClient(TelemetryConfiguration.CreateDefault())
+                    {
+                        Context =
+                    {
+                        Device =
+                        {
+                            OperatingSystem = RuntimeInformation.OSDescription,
+                        },
+                        InstrumentationKey = AppInsightsInstrumentationKey,
+                        Session =
+                        {
+                            Id = Guid.NewGuid().ToString("D"),
+                        },
+                    },
+                    };
+                }
+            }
+            catch
+            {
+                // Ignore exceptions related to telemetry
+            }
+        }
+
         private (TimeSpan projectEvaluation, int projectCount) LoadProjects(ProjectCollection projectCollection, ISlnGenLogger logger)
         {
             List<string> entryProjects = GetEntryProjectPaths(logger).ToList();
@@ -393,6 +436,36 @@ namespace Microsoft.VisualStudio.SlnGen
 
         private void LogTelemetry(TimeSpan evaluationTime, int evaluationCount, int customProjectTypeGuidCount, int solutionItemCount)
         {
+            _telemetryClient?.TrackEvent(
+                "Execute",
+                new Dictionary<string, string>
+                {
+                    ["AssemblyInformationalVersion"] = ThisAssembly.AssemblyInformationalVersion,
+                    ["DevEnvFullPathSpecified"] = (!_arguments.DevEnvFullPath?.LastOrDefault().IsNullOrWhiteSpace()).ToString(),
+                    ["EntryProjectCount"] = _arguments.Projects?.Length.ToString(),
+                    ["Folders"] = _arguments.EnableFolders().ToString(),
+                    ["IsCoreXT"] = IsCorext.ToString(),
+                    ["IsNetCore"] = IsNetCore.ToString(),
+                    ["LaunchVisualStudio"] = _arguments.ShouldLaunchVisualStudio().ToString(),
+                    ["SolutionFileFullPathSpecified"] = (!_arguments.SolutionFileFullPath?.LastOrDefault().IsNullOrWhiteSpace()).ToString(),
+    #if NETFRAMEWORK
+                    ["Runtime"] = $".NET Framework {Environment.Version}",
+    #elif NETCOREAPP
+                    ["Runtime"] = $".NET Core {Environment.Version}",
+    #endif
+                    ["UseBinaryLogger"] = _arguments.BinaryLogger.HasValue.ToString(),
+                    ["UseFileLogger"] = _arguments.FileLoggerParameters.HasValue.ToString(),
+                    ["UseShellExecute"] = _arguments.EnableShellExecute().ToString(),
+                },
+                new Dictionary<string, double>
+                {
+                    ["CustomProjectTypeGuidCount"] = customProjectTypeGuidCount,
+                    ["ProjectCount"] = evaluationCount,
+                    ["ProjectEvaluationMilliseconds"] = evaluationTime.TotalMilliseconds,
+                    ["SolutionItemCount"] = solutionItemCount,
+                });
+
+            _telemetryClient?.Flush();
         }
     }
 }
