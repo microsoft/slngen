@@ -15,11 +15,13 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" />
+    <PackageReference Include="Microsoft.ApplicationInsights" />
     <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" />
     <PackageReference Include="Microsoft.Build.Runtime" IncludeAssets="None" PrivateAssets="All" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" />
     <PackageReference Include="Microsoft.VisualStudio.SDK.EmbedInteropTypes" PrivateAssets="All" />
     <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" ExcludeAssets="Runtime" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.VisualStudio.Telemetry" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\$(TargetFramework)\MSBuild.exe" Private="false" Condition="'$(TargetFramework)' != 'netcoreapp3.1'"/>

@@ -6,6 +6,7 @@
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <SharedProjectExcludes>..\Microsoft.VisualStudio.SlnGen\obj\**;..\Microsoft.VisualStudio.SlnGen\bin\**;..\Microsoft.VisualStudio.SlnGen\**\.*\**;..\Microsoft.VisualStudio.SlnGen\Tasks\**</SharedProjectExcludes>
     <ToolCommandName>slngen</ToolCommandName>
+    <NoWarn>$(NoWarn);NU1701</NoWarn>
   </PropertyGroup>
   <Import Project="..\Microsoft.VisualStudio.SlnGen\Shared.props" />
   <ItemGroup>
