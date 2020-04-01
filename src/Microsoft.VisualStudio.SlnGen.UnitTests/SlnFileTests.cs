@@ -61,13 +61,24 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 ProjectTypeGuid = Guid.NewGuid(),
             };
 
+            SlnProject projectE = new SlnProject
+            {
+                Configurations = new[] { "Release" },
+                FullPath = GetTempFileName(),
+                IsMainProject = true,
+                Name = "ProjectE",
+                Platforms = new[] { "AnyCPU" },
+                ProjectGuid = Guid.NewGuid(),
+                ProjectTypeGuid = Guid.NewGuid(),
+            };
+
             SlnFile slnFile = new SlnFile()
             {
                 Configurations = new[] { "Debug" },
                 Platforms = new[] { "Any CPU" },
             };
 
-            slnFile.AddProjects(new[] { projectA, projectB, projectC, projectD });
+            slnFile.AddProjects(new[] { projectA, projectB, projectC, projectD, projectE });
 
             string solutionFilePath = GetTempFileName();
 
@@ -82,6 +93,8 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             ValidateSolutionPlatformAndConfiguration(projectC, solutionFile, "Debug", "amd64");
 
             ValidateSolutionPlatformAndConfiguration(projectD, solutionFile, "Debug", "Razzle", expectedIncludeInBuild: false);
+
+            ValidateSolutionPlatformAndConfiguration(projectE, solutionFile, "Release", "AnyCPU", expectedIncludeInBuild: false);
         }
 
         [Fact]

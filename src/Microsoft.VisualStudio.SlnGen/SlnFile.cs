@@ -351,20 +351,22 @@ namespace Microsoft.VisualStudio.SlnGen
 
                 foreach (string configuration in solutionConfigurations)
                 {
+                    bool foundConfiguration = TryGetProjectSolutionConfiguration(configuration, project, out string projectSolutionConfiguration);
+
                     foreach (string platform in solutionPlatforms)
                     {
                         bool foundPlatform = TryGetProjectSolutionPlatform(platform, project, out string projectSolutionPlatform, out string projectBuildPlatform);
 
-                        writer.WriteLine($@"		{projectGuid}.{configuration}|{platform}.ActiveCfg = {configuration}|{projectSolutionPlatform}");
+                        writer.WriteLine($@"		{projectGuid}.{configuration}|{platform}.ActiveCfg = {projectSolutionConfiguration}|{projectSolutionPlatform}");
 
-                        if (foundPlatform)
+                        if (foundPlatform && foundConfiguration)
                         {
-                            writer.WriteLine($@"		{projectGuid}.{configuration}|{platform}.Build.0 = {configuration}|{projectBuildPlatform}");
+                            writer.WriteLine($@"		{projectGuid}.{configuration}|{platform}.Build.0 = {projectSolutionConfiguration}|{projectBuildPlatform}");
                         }
 
                         if (project.IsDeployable)
                         {
-                            writer.WriteLine($@"		{projectGuid}.{configuration}|{platform}.Deploy.0 = {configuration}|{projectSolutionPlatform}");
+                            writer.WriteLine($@"		{projectGuid}.{configuration}|{platform}.Deploy.0 = {projectSolutionConfiguration}|{projectSolutionPlatform}");
                         }
                     }
                 }
@@ -403,6 +405,23 @@ namespace Microsoft.VisualStudio.SlnGen
                 .ToList();
 
             return values.Any() ? values : new List<string> { "Any CPU" };
+        }
+
+        private bool TryGetProjectSolutionConfiguration(string solutionConfiguration, SlnProject project, out string projectSolutionConfiguration)
+        {
+            foreach (string projectConfiguration in project.Configurations)
+            {
+                if (string.Equals(projectConfiguration, solutionConfiguration, StringComparison.OrdinalIgnoreCase))
+                {
+                    projectSolutionConfiguration = solutionConfiguration;
+
+                    return true;
+                }
+            }
+
+            projectSolutionConfiguration = project.Configurations.First();
+
+            return false;
         }
 
         private bool TryGetProjectSolutionPlatform(string solutionPlatform, SlnProject project, out string projectSolutionPlatform, out string projectBuildPlatform)
