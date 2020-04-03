@@ -21,6 +21,8 @@ You can invoke the tool using the following command: slngen
 Tool 'microsoft.visualstudio.slngen.tool' (version '3.0.37') was successfully installed.
 ```
 
+See the [frequently asked questions](FAQ) if you are having any issues.
+
 ## Command-Line Reference
 
 ```cmd
