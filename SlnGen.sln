@@ -24,7 +24,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.VisualStudio.SlnG
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.VisualStudio.SlnGen.UnitTests", "src\Microsoft.VisualStudio.SlnGen.UnitTests\Microsoft.VisualStudio.SlnGen.UnitTests.csproj", "{E7E0C8DA-3265-480C-BBAB-165C94C3BE09}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.VisualStudio.SlnGen.Tool", "src\Microsoft.VisualStudio.SlnGen.Tool\Microsoft.VisualStudio.SlnGen.Tool.csproj", "{60521B49-A95C-4D24-92A1-45313F84FB73}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.VisualStudio.SlnGen.Tool", "src\Microsoft.VisualStudio.SlnGen.Tool\Microsoft.VisualStudio.SlnGen.Tool.csproj", "{60521B49-A95C-4D24-92A1-45313F84FB73}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{5CA3348C-8F47-409C-89A4-B86AAADB02C8}"
+	ProjectSection(SolutionItems) = preProject
+		docs\FAQ.md = docs\FAQ.md
+		docs\README.md = docs\README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
