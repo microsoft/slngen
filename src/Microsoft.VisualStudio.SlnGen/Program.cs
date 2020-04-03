@@ -173,7 +173,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
                     string devEnvFullPath = _arguments.DevEnvFullPath?.LastOrDefault();
 
-                    if (!enableShellExecute || !loadProjectsInVisualStudio)
+                    if (!enableShellExecute || !loadProjectsInVisualStudio || IsCorext)
                     {
                         if (_instance == null)
                         {
@@ -192,7 +192,7 @@ namespace Microsoft.VisualStudio.SlnGen
                         devEnvFullPath = Path.Combine(_instance.InstallationPath, "Common7", "IDE", "devenv.exe");
                     }
 
-                    VisualStudioLauncher.Launch(solutionFileFullPath, enableShellExecute, loadProjectsInVisualStudio, devEnvFullPath, forwardingLogger);
+                    VisualStudioLauncher.Launch(solutionFileFullPath, loadProjectsInVisualStudio, devEnvFullPath, forwardingLogger);
                 }
 
                 LogTelemetry(evaluationTime, evaluationCount, customProjectTypeGuidCount, solutionItemCount);

@@ -20,11 +20,10 @@ namespace Microsoft.VisualStudio.SlnGen
         /// Launches Visual Studio.
         /// </summary>
         /// <param name="solutionFileFullPath">The full path to the solution file.</param>
-        /// <param name="useShellExecute">A value indicating whether to use shell execute.</param>
         /// <param name="loadProjects">A value indicating whether to load projects in Visual Studio.</param>
         /// <param name="devEnvFullPath">An optional full path to devenv.exe.</param>
         /// <param name="logger">A <see cref="ISlnGenLogger" /> to use for logging.</param>
-        public static void Launch(string solutionFileFullPath, bool useShellExecute, bool loadProjects, string devEnvFullPath, ISlnGenLogger logger)
+        public static void Launch(string solutionFileFullPath, bool loadProjects, string devEnvFullPath, ISlnGenLogger logger)
         {
             if (solutionFileFullPath.IsNullOrWhiteSpace())
             {
@@ -47,6 +46,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 processStartInfo = new ProcessStartInfo
                 {
                     FileName = devEnvFullPath,
+                    UseShellExecute = false,
                 };
 
                 commandLineBuilder.AppendFileNameIfNotNull(solutionFileFullPath);
