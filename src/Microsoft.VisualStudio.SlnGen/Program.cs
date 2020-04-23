@@ -16,7 +16,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace Microsoft.VisualStudio.SlnGen
 {
@@ -27,17 +30,54 @@ namespace Microsoft.VisualStudio.SlnGen
     {
         private const string AppInsightsInstrumentationKey = "e156bc48-16b5-43bf-ad68-7668455544c0";
 
+        private static readonly TelemetryClient TelemetryClient;
+
         private readonly ProgramArguments _arguments;
         private readonly IConsole _console;
         private readonly VisualStudioInstance _instance;
         private readonly FileInfo _msbuildExePath;
-        private TelemetryClient _telemetryClient;
 
         static Program()
         {
             if (Environment.GetCommandLineArgs().Any(i => i.Equals("--debug", StringComparison.OrdinalIgnoreCase)))
             {
                 Debugger.Launch();
+            }
+
+            try
+            {
+                // Enable telemetry based on the opt-in status in Visual Studio
+                TelemetryService.DefaultSession.UseVsIsOptedIn();
+
+                if (TelemetryService.DefaultSession.IsOptedIn)
+                {
+                    string hostName = Dns.GetHostEntry(Environment.MachineName).HostName;
+
+                    TelemetryClient = new TelemetryClient(TelemetryConfiguration.CreateDefault())
+                    {
+                        Context =
+                        {
+                            //Device =
+                            //{
+                            //    OperatingSystem = RuntimeInformation.OSDescription,
+                            //},
+                            InstrumentationKey = AppInsightsInstrumentationKey,
+                            User =
+                            {
+                                // If the user is on a Microsoft domain-joined machine, collect their alias for internal reporting
+                                AuthenticatedUserId = hostName.EndsWith("corp.microsoft.com", StringComparison.OrdinalIgnoreCase) ? $"{Environment.UserDomainName}\\{Environment.UserName}" : null,
+                            },
+                            Session =
+                            {
+                                Id = Guid.NewGuid().ToString("D"),
+                            },
+                        },
+                    };
+                }
+            }
+            catch
+            {
+                // Ignore exceptions related to telemetry
             }
         }
 
@@ -54,8 +94,6 @@ namespace Microsoft.VisualStudio.SlnGen
             _console = console ?? throw new ArgumentNullException(nameof(console));
             _instance = instance;
             _msbuildExePath = new FileInfo(Path.Combine(msbuildBinPath, IsNetCore ? "MSBuild.dll" : "MSBuild.exe"));
-
-            InitializeTelemetry();
         }
 
         /// <summary>
@@ -76,47 +114,80 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <returns>zero if the program executed successfully, otherwise non-zero.</returns>
         public static int Execute(string[] args, IConsole console)
         {
-            bool noLogo = false;
-
-            for (int i = 0; i < args.Length; i++)
+            try
             {
-                if (args[i].Equals("/?"))
-                {
-                    args[i] = "--help";
-                }
+                bool noLogo = false;
 
-                if (args[i].Equals("/nologo", StringComparison.OrdinalIgnoreCase) || args[i].Equals("--nologo", StringComparison.OrdinalIgnoreCase))
+                for (int i = 0; i < args.Length; i++)
                 {
-                    noLogo = true;
-                }
-
-                // Translate / to - or -- for Windows users
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    if (args[i][0] == '/')
+                    if (args[i].Equals("/?"))
                     {
-                        if (args[i].Length == 2 || (i >= 3 && args.Length > i && args[i].Length >= 3 && args[i][2] == ':'))
+                        args[i] = "--help";
+                    }
+
+                    if (args[i].Equals("/nologo", StringComparison.OrdinalIgnoreCase) || args[i].Equals("--nologo", StringComparison.OrdinalIgnoreCase))
+                    {
+                        noLogo = true;
+                    }
+
+                    // Translate / to - or -- for Windows users
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    {
+                        if (args[i][0] == '/')
                         {
-                            args[i] = $"-{args[i].Substring(1)}";
-                        }
-                        else
-                        {
-                            args[i] = $"--{args[i].Substring(1)}";
+                            if (args[i].Length == 2 || (i >= 3 && args.Length > i && args[i].Length >= 3 && args[i][2] == ':'))
+                            {
+                                args[i] = $"-{args[i].Substring(1)}";
+                            }
+                            else
+                            {
+                                args[i] = $"--{args[i].Substring(1)}";
+                            }
                         }
                     }
                 }
-            }
 
-            if (!noLogo)
-            {
-                Console.WriteLine(
+                if (!noLogo)
+                {
+                    Console.WriteLine(
                         Strings.Message_Logo,
                         ThisAssembly.AssemblyTitle,
                         ThisAssembly.AssemblyInformationalVersion,
                         IsNetCore ? ".NET Core" : ".NET Framework");
-            }
+                }
 
-            return CommandLineApplication.Execute<ProgramArguments>(console, args);
+                return CommandLineApplication.Execute<ProgramArguments>(console, args);
+            }
+            catch (Exception e)
+            {
+                if (TelemetryClient != null)
+                {
+                    try
+                    {
+                        TelemetryClient.TrackEvent(
+                            eventName: "UnhandledException",
+                            properties: new Dictionary<string, string>
+                            {
+                                ["Message"] = e.Message,
+                                ["Type"] = e.GetType().FullName,
+                                ["Exception"] = e.ToString(),
+                            });
+
+                        TelemetryClient.Flush();
+
+                        Thread.Sleep(200);
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+                else
+                {
+                    throw;
+                }
+
+                return 2;
+            }
         }
 
         /// <summary>
@@ -155,47 +226,62 @@ namespace Microsoft.VisualStudio.SlnGen
                 loadProjectsReadOnly: true))
 #endif
             {
-                forwardingLogger.LogMessageLow("Command Line Arguments: {0}", Environment.CommandLine);
-
-                (TimeSpan evaluationTime, int evaluationCount) = LoadProjects(projectCollection, forwardingLogger);
-
-                if (forwardingLogger.HasLoggedErrors)
+                try
                 {
-                    return 1;
-                }
+                    forwardingLogger.LogMessageLow("Command Line Arguments: {0}", Environment.CommandLine);
 
-                (string solutionFileFullPath, int customProjectTypeGuidCount, int solutionItemCount) = GenerateSolutionFile(projectCollection.LoadedProjects.Where(i => !i.GlobalProperties.ContainsKey("TargetFramework")), forwardingLogger);
+                    forwardingLogger.LogMessageLow("Using MSBuild from \"{0}\"", _msbuildExePath);
 
-                if (_arguments.ShouldLaunchVisualStudio())
-                {
-                    bool loadProjectsInVisualStudio = _arguments.ShouldLoadProjectsInVisualStudio();
-                    bool enableShellExecute = _arguments.EnableShellExecute();
-
-                    string devEnvFullPath = _arguments.DevEnvFullPath?.LastOrDefault();
-
-                    if (!enableShellExecute || !loadProjectsInVisualStudio || IsCorext)
+                    foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies().Where(i => i.FullName.StartsWith("Microsoft.Build")))
                     {
-                        if (_instance == null)
-                        {
-                            forwardingLogger.LogError("Cannot launch Visual Studio.");
-
-                            return 1;
-                        }
-
-                        if (_instance.IsBuildTools)
-                        {
-                            forwardingLogger.LogError("Cannot use a BuildTools instance of Visual Studio.");
-
-                            return 1;
-                        }
-
-                        devEnvFullPath = Path.Combine(_instance.InstallationPath, "Common7", "IDE", "devenv.exe");
+                        forwardingLogger.LogMessageLow("Loaded assembly: \"{0}\" from \"{1}\"", assembly.FullName, assembly.Location);
                     }
 
-                    VisualStudioLauncher.Launch(solutionFileFullPath, loadProjectsInVisualStudio, devEnvFullPath, forwardingLogger);
-                }
+                    (TimeSpan evaluationTime, int evaluationCount) = LoadProjects(projectCollection, forwardingLogger);
 
-                LogTelemetry(evaluationTime, evaluationCount, customProjectTypeGuidCount, solutionItemCount);
+                    if (forwardingLogger.HasLoggedErrors)
+                    {
+                        return 1;
+                    }
+
+                    (string solutionFileFullPath, int customProjectTypeGuidCount, int solutionItemCount) = GenerateSolutionFile(projectCollection.LoadedProjects.Where(i => !i.GlobalProperties.ContainsKey("TargetFramework")), forwardingLogger);
+
+                    if (_arguments.ShouldLaunchVisualStudio())
+                    {
+                        bool loadProjectsInVisualStudio = _arguments.ShouldLoadProjectsInVisualStudio();
+                        bool enableShellExecute = _arguments.EnableShellExecute();
+
+                        string devEnvFullPath = _arguments.DevEnvFullPath?.LastOrDefault();
+
+                        if (!enableShellExecute || !loadProjectsInVisualStudio || IsCorext)
+                        {
+                            if (_instance == null)
+                            {
+                                forwardingLogger.LogError("Cannot launch Visual Studio.");
+
+                                return 1;
+                            }
+
+                            if (_instance.IsBuildTools)
+                            {
+                                forwardingLogger.LogError("Cannot use a BuildTools instance of Visual Studio.");
+
+                                return 1;
+                            }
+
+                            devEnvFullPath = Path.Combine(_instance.InstallationPath, "Common7", "IDE", "devenv.exe");
+                        }
+
+                        VisualStudioLauncher.Launch(solutionFileFullPath, loadProjectsInVisualStudio, devEnvFullPath, forwardingLogger);
+                    }
+
+                    LogTelemetry(evaluationTime, evaluationCount, customProjectTypeGuidCount, solutionItemCount);
+                }
+                catch (Exception e)
+                {
+                    forwardingLogger.LogError($"Unhandled exception: {e}");
+                    throw;
+                }
             }
 
             return 0;
@@ -354,38 +440,6 @@ namespace Microsoft.VisualStudio.SlnGen
             }
         }
 
-        private void InitializeTelemetry()
-        {
-            try
-            {
-                // Enable telemetry based on the opt-in status in Visual Studio
-                TelemetryService.DefaultSession.UseVsIsOptedIn();
-
-                if (TelemetryService.DefaultSession.IsOptedIn)
-                {
-                    _telemetryClient = new TelemetryClient(TelemetryConfiguration.CreateDefault())
-                    {
-                        Context =
-                    {
-                        Device =
-                        {
-                            OperatingSystem = RuntimeInformation.OSDescription,
-                        },
-                        InstrumentationKey = AppInsightsInstrumentationKey,
-                        Session =
-                        {
-                            Id = Guid.NewGuid().ToString("D"),
-                        },
-                    },
-                    };
-                }
-            }
-            catch
-            {
-                // Ignore exceptions related to telemetry
-            }
-        }
-
         private (TimeSpan projectEvaluation, int projectCount) LoadProjects(ProjectCollection projectCollection, ISlnGenLogger logger)
         {
             List<string> entryProjects = GetEntryProjectPaths(logger).ToList();
@@ -436,7 +490,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
         private void LogTelemetry(TimeSpan evaluationTime, int evaluationCount, int customProjectTypeGuidCount, int solutionItemCount)
         {
-            _telemetryClient?.TrackEvent(
+            TelemetryClient?.TrackEvent(
                 "Execute",
                 new Dictionary<string, string>
                 {
@@ -448,11 +502,11 @@ namespace Microsoft.VisualStudio.SlnGen
                     ["IsNetCore"] = IsNetCore.ToString(),
                     ["LaunchVisualStudio"] = _arguments.ShouldLaunchVisualStudio().ToString(),
                     ["SolutionFileFullPathSpecified"] = (!_arguments.SolutionFileFullPath?.LastOrDefault().IsNullOrWhiteSpace()).ToString(),
-    #if NETFRAMEWORK
+#if NETFRAMEWORK
                     ["Runtime"] = $".NET Framework {Environment.Version}",
-    #elif NETCOREAPP
+#elif NETCOREAPP
                     ["Runtime"] = $".NET Core {Environment.Version}",
-    #endif
+#endif
                     ["UseBinaryLogger"] = _arguments.BinaryLogger.HasValue.ToString(),
                     ["UseFileLogger"] = _arguments.FileLoggerParameters.HasValue.ToString(),
                     ["UseShellExecute"] = _arguments.EnableShellExecute().ToString(),
@@ -465,7 +519,7 @@ namespace Microsoft.VisualStudio.SlnGen
                     ["SolutionItemCount"] = solutionItemCount,
                 });
 
-            _telemetryClient?.Flush();
+            TelemetryClient?.Flush();
         }
     }
 }
