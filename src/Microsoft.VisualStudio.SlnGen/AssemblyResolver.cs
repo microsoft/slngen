@@ -38,11 +38,6 @@ namespace Microsoft.VisualStudio.SlnGen
                 }
 
                 AssemblyName candidateAssemblyName = AssemblyName.GetAssemblyName(candidateAssemblyFile.FullName);
-                if (requestedAssemblyName.ProcessorArchitecture == ProcessorArchitecture.None && candidateAssemblyName.ProcessorArchitecture != ProcessorArchitecture.MSIL)
-                {
-                    // The requested assembly has no processor architecture but the candidate assembly does
-                    continue;
-                }
 
                 if (requestedAssemblyName.ProcessorArchitecture != ProcessorArchitecture.None && requestedAssemblyName.ProcessorArchitecture != candidateAssemblyName.ProcessorArchitecture)
                 {
