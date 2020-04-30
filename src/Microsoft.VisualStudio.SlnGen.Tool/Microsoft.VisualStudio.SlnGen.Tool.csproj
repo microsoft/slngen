@@ -16,6 +16,7 @@
     <EmbeddedResource Include="..\Microsoft.VisualStudio.SlnGen\**\*.resx" Exclude="$(SharedProjectExcludes)" Condition=" '$(EnableDefaultEmbeddedResourceItems)' == 'true' " />
   </ItemGroup>
   <ItemGroup>
+    <Compile Remove="..\Microsoft.VisualStudio.SlnGen\RepoInfo.cs" />
     <Compile Remove="..\Microsoft.VisualStudio.SlnGen\VisualStudioLocator.cs" />
   </ItemGroup>
 </Project>
