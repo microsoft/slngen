@@ -21,6 +21,7 @@
     <PackageReference Include="Microsoft.VisualStudio.SDK.EmbedInteropTypes" PrivateAssets="All" />
     <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" ExcludeAssets="Runtime" PrivateAssets="All" />
     <PackageReference Include="Microsoft.VisualStudio.Telemetry" />
+    <PackageReference Include="Microsoft.VisualStudio.Utilities.Internal" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\$(TargetFramework)\MSBuild.exe" Private="false" Condition="'$(TargetFramework)' != 'netcoreapp3.1'"/>
