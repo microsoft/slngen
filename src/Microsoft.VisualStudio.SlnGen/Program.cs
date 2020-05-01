@@ -3,14 +3,11 @@
 // Licensed under the MIT license.
 
 using McMaster.Extensions.CommandLineUtils;
-using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 using Microsoft.VisualStudio.SlnGen.ProjectLoading;
-using Microsoft.VisualStudio.Telemetry;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,7 +16,6 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Threading;
 
 namespace Microsoft.VisualStudio.SlnGen
 {
@@ -28,8 +24,6 @@ namespace Microsoft.VisualStudio.SlnGen
     /// </summary>
     public sealed class Program
     {
-        private const string AppInsightsInstrumentationKey = "e156bc48-16b5-43bf-ad68-7668455544c0";
-
         private static readonly TelemetryClient TelemetryClient;
 
         private readonly ProgramArguments _arguments;
@@ -44,41 +38,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 Debugger.Launch();
             }
 
-            try
-            {
-                // Enable telemetry based on the opt-in status in Visual Studio
-                TelemetryService.DefaultSession.UseVsIsOptedIn();
-
-                if (TelemetryService.DefaultSession.IsOptedIn)
-                {
-                    string hostName = Dns.GetHostEntry(Environment.MachineName).HostName;
-
-                    TelemetryClient = new TelemetryClient(TelemetryConfiguration.CreateDefault())
-                    {
-                        Context =
-                        {
-                            //Device =
-                            //{
-                            //    OperatingSystem = RuntimeInformation.OSDescription,
-                            //},
-                            InstrumentationKey = AppInsightsInstrumentationKey,
-                            User =
-                            {
-                                // If the user is on a Microsoft domain-joined machine, collect their alias for internal reporting
-                                AuthenticatedUserId = hostName.EndsWith("corp.microsoft.com", StringComparison.OrdinalIgnoreCase) ? $"{Environment.UserDomainName}\\{Environment.UserName}" : null,
-                            },
-                            Session =
-                            {
-                                Id = Guid.NewGuid().ToString("D"),
-                            },
-                        },
-                    };
-                }
-            }
-            catch
-            {
-                // Ignore exceptions related to telemetry
-            }
+            TelemetryClient = new TelemetryClient();
         }
 
         /// <summary>
@@ -114,80 +74,47 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <returns>zero if the program executed successfully, otherwise non-zero.</returns>
         public static int Execute(string[] args, IConsole console)
         {
-            try
+            bool noLogo = false;
+
+            for (int i = 0; i < args.Length; i++)
             {
-                bool noLogo = false;
-
-                for (int i = 0; i < args.Length; i++)
+                if (args[i].Equals("/?"))
                 {
-                    if (args[i].Equals("/?"))
-                    {
-                        args[i] = "--help";
-                    }
+                    args[i] = "--help";
+                }
 
-                    if (args[i].Equals("/nologo", StringComparison.OrdinalIgnoreCase) || args[i].Equals("--nologo", StringComparison.OrdinalIgnoreCase))
-                    {
-                        noLogo = true;
-                    }
+                if (args[i].Equals("/nologo", StringComparison.OrdinalIgnoreCase) || args[i].Equals("--nologo", StringComparison.OrdinalIgnoreCase))
+                {
+                    noLogo = true;
+                }
 
-                    // Translate / to - or -- for Windows users
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                // Translate / to - or -- for Windows users
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    if (args[i][0] == '/')
                     {
-                        if (args[i][0] == '/')
+                        if (args[i].Length == 2 || (i >= 3 && args.Length > i && args[i].Length >= 3 && args[i][2] == ':'))
                         {
-                            if (args[i].Length == 2 || (i >= 3 && args.Length > i && args[i].Length >= 3 && args[i][2] == ':'))
-                            {
-                                args[i] = $"-{args[i].Substring(1)}";
-                            }
-                            else
-                            {
-                                args[i] = $"--{args[i].Substring(1)}";
-                            }
+                            args[i] = $"-{args[i].Substring(1)}";
+                        }
+                        else
+                        {
+                            args[i] = $"--{args[i].Substring(1)}";
                         }
                     }
                 }
-
-                if (!noLogo)
-                {
-                    Console.WriteLine(
-                        Strings.Message_Logo,
-                        ThisAssembly.AssemblyTitle,
-                        ThisAssembly.AssemblyInformationalVersion,
-                        IsNetCore ? ".NET Core" : ".NET Framework");
-                }
-
-                return CommandLineApplication.Execute<ProgramArguments>(console, args);
             }
-            catch (Exception e)
+
+            if (!noLogo)
             {
-                if (TelemetryClient != null)
-                {
-                    try
-                    {
-                        TelemetryClient.TrackEvent(
-                            eventName: "UnhandledException",
-                            properties: new Dictionary<string, string>
-                            {
-                                ["Message"] = e.Message,
-                                ["Type"] = e.GetType().FullName,
-                                ["Exception"] = e.ToString(),
-                            });
-
-                        TelemetryClient.Flush();
-
-                        Thread.Sleep(200);
-                    }
-                    catch (Exception)
-                    {
-                    }
-                }
-                else
-                {
-                    throw;
-                }
-
-                return 2;
+                Console.WriteLine(
+                    Strings.Message_Logo,
+                    ThisAssembly.AssemblyTitle,
+                    ThisAssembly.AssemblyInformationalVersion,
+                    IsNetCore ? ".NET Core" : ".NET Framework");
             }
+
+            return CommandLineApplication.Execute<ProgramArguments>(console, args);
         }
 
         /// <summary>
@@ -287,7 +214,26 @@ namespace Microsoft.VisualStudio.SlnGen
             return 0;
         }
 
-        private static int Main(string[] args) => Execute(args, PhysicalConsole.Singleton);
+        private static int Main(string[] args)
+        {
+            try
+            {
+                return Execute(args, PhysicalConsole.Singleton);
+            }
+            catch (Exception e)
+            {
+                if (!TelemetryClient.PostException(e))
+                {
+                    throw;
+                }
+
+                return 2;
+            }
+            finally
+            {
+                TelemetryClient.Dispose();
+            }
+        }
 
         private (string solutionFileFullPath, int customProjectTypeGuidCount, int solutionItemCount) GenerateSolutionFile(IEnumerable<Project> projects, ISlnGenLogger logger)
         {
@@ -490,9 +436,11 @@ namespace Microsoft.VisualStudio.SlnGen
 
         private void LogTelemetry(TimeSpan evaluationTime, int evaluationCount, int customProjectTypeGuidCount, int solutionItemCount)
         {
-            TelemetryClient?.TrackEvent(
-                "Execute",
-                new Dictionary<string, string>
+            string hostName = Dns.GetHostEntry(Environment.MachineName).HostName;
+
+            TelemetryClient.PostEvent(
+                "slngen/execute",
+                new Dictionary<string, object>
                 {
                     ["AssemblyInformationalVersion"] = ThisAssembly.AssemblyInformationalVersion,
                     ["DevEnvFullPathSpecified"] = (!_arguments.DevEnvFullPath?.LastOrDefault().IsNullOrWhiteSpace()).ToString(),
@@ -510,16 +458,15 @@ namespace Microsoft.VisualStudio.SlnGen
                     ["UseBinaryLogger"] = _arguments.BinaryLogger.HasValue.ToString(),
                     ["UseFileLogger"] = _arguments.FileLoggerParameters.HasValue.ToString(),
                     ["UseShellExecute"] = _arguments.EnableShellExecute().ToString(),
-                },
-                new Dictionary<string, double>
-                {
                     ["CustomProjectTypeGuidCount"] = customProjectTypeGuidCount,
                     ["ProjectCount"] = evaluationCount,
                     ["ProjectEvaluationMilliseconds"] = evaluationTime.TotalMilliseconds,
                     ["SolutionItemCount"] = solutionItemCount,
+                },
+                new Dictionary<string, object>
+                {
+                    ["Username"] = hostName.EndsWith("corp.microsoft.com", StringComparison.OrdinalIgnoreCase) ? $"{Environment.UserDomainName}\\{Environment.UserName}" : null,
                 });
-
-            TelemetryClient?.Flush();
         }
     }
 }
