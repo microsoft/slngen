@@ -15,27 +15,25 @@ namespace Microsoft.VisualStudio.SlnGen
     /// </summary>
     internal sealed class TelemetryClient : IDisposable
     {
-        private static readonly TelemetrySession TelemetrySession;
+        private readonly TelemetrySession _telemetrySession;
 
-        static TelemetryClient()
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TelemetryClient"/> class.
+        /// </summary>
+        public TelemetryClient()
         {
-            if (Environment.GetCommandLineArgs().Any(i => i.Equals("--debug", StringComparison.OrdinalIgnoreCase)))
-            {
-                Debugger.Launch();
-            }
-
             // Only enable telemetry if the user has opted into it in Visual Studio
             TelemetryService.DefaultSession.UseVsIsOptedIn();
 
             if (TelemetryService.DefaultSession.IsOptedIn)
             {
-                TelemetrySession = TelemetryService.DefaultSession;
+                _telemetrySession = TelemetryService.DefaultSession;
 
                 GitRepositoryInfo repositoryInfo = GitRepositoryInfo.GetRepoInfoForCurrentDirectory();
 
                 if (repositoryInfo?.Origin != null)
                 {
-                    TelemetryContext context = TelemetrySession.CreateContext("GitRepository");
+                    TelemetryContext context = _telemetrySession.CreateContext("GitRepository");
 
                     context.SharedProperties["VS.TeamFoundation.Git.OriginRemoteUrlHashV2"] = new TelemetryPiiProperty(repositoryInfo.Origin);
                 }
@@ -45,7 +43,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <inheritdoc cref="IDisposable.Dispose" />
         public void Dispose()
         {
-            TelemetrySession?.Dispose();
+            _telemetrySession?.Dispose();
         }
 
         /// <summary>
@@ -57,7 +55,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <returns><code>true</code> if the event was successfully posted, otherwise <code>false</code>.</returns>
         public bool PostEvent(string name, IDictionary<string, object> properties, IDictionary<string, object> piiProperties = null)
         {
-            if (TelemetrySession == null)
+            if (_telemetrySession == null)
             {
                 return false;
             }
@@ -77,7 +75,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 }
             }
 
-            TelemetrySession.PostEvent(telemetryEvent);
+            _telemetrySession.PostEvent(telemetryEvent);
 
             return true;
         }
@@ -89,12 +87,12 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <returns><code>true</code> if the event was successfully posted, otherwise <code>false</code>.</returns>
         public bool PostException(Exception exception)
         {
-            if (TelemetrySession == null)
+            if (_telemetrySession == null)
             {
                 return false;
             }
 
-            TelemetrySession.PostFault("slngen/exception", string.Empty, FaultSeverity.Critical, exception);
+            _telemetrySession.PostFault("slngen/exception", string.Empty, FaultSeverity.Critical, exception);
 
             return true;
         }

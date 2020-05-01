@@ -24,7 +24,7 @@ namespace Microsoft.VisualStudio.SlnGen
     /// </summary>
     public sealed class Program
     {
-        private static readonly TelemetryClient TelemetryClient = new TelemetryClient();
+        private static readonly TelemetryClient TelemetryClient;
 
         private readonly ProgramArguments _arguments;
         private readonly IConsole _console;
@@ -37,6 +37,8 @@ namespace Microsoft.VisualStudio.SlnGen
             {
                 Debugger.Launch();
             }
+
+            TelemetryClient = new TelemetryClient();
         }
 
         /// <summary>
