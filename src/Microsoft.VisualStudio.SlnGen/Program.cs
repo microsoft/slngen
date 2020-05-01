@@ -341,6 +341,7 @@ namespace Microsoft.VisualStudio.SlnGen
         {
             IDictionary<string, string> globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
+                [MSBuildPropertyNames.IsSlnGen] = bool.TrueString,
                 [MSBuildPropertyNames.BuildingProject] = bool.FalseString,
                 [MSBuildPropertyNames.DesignTimeBuild] = bool.TrueString,
                 [MSBuildPropertyNames.ExcludeRestorePackageImports] = bool.TrueString,

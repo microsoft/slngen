@@ -19,6 +19,8 @@ namespace Microsoft.VisualStudio.SlnGen
 
         public const string IncludeInSolutionFile = nameof(IncludeInSolutionFile);
 
+        public const string IsSlnGen = nameof(IsSlnGen);
+
         public const string IsTraversal = nameof(IsTraversal);
 
         public const string IsTraversalProject = nameof(IsTraversalProject);
