@@ -33,11 +33,11 @@ The standard convention for declare project dependencies is using `<ProjectRefer
 > ```
 
 ## How do I leave projects out of the solution?
-You can leave projects out of the solution by setting the MSBuild property `ShouldIncludeInSolution`.  This can be set in invdividual projects like this:
+You can leave projects out of the solution by setting the MSBuild property `IncludeInSolutionFile`.  This can be set in invdividual projects like this:
 
 ```xml
 <PropertyGroup>
-  <ShouldIncludeInSolution>false</ShouldIncludeInSolution>
+  <IncludeInSolutionFile>false</IncludeInSolutionFile>
 </PropertyGroup>
 ```
 
@@ -45,7 +45,7 @@ You can also set this property in a common import like `Directory.Build.props` w
 
 ```xml
 <PropertyGroup>
-  <ShouldIncludeInSolution Condition="'$(MSBuildProjectExtension)' == '.myproj'">false</ShouldIncludeInSolution>
+  <IncludeInSolutionFile Condition="'$(MSBuildProjectExtension)' == '.myproj'">false</IncludeInSolutionFile>
 </PropertyGroup>
 ```
 
