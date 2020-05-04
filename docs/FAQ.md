@@ -32,6 +32,25 @@ The standard convention for declare project dependencies is using `<ProjectRefer
 > <Reference Include="..\MyLibrary\bin\Debug\MyLibrary.dll" />
 > ```
 
+## How do I leave projects out of the solution?
+You can leave projects out of the solution by setting the MSBuild property `ShouldIncludeInSolution`.  This can be set in invdividual projects like this:
+
+```xml
+<PropertyGroup>
+  <ShouldIncludeInSolution>false</ShouldIncludeInSolution>
+</PropertyGroup>
+```
+
+You can also set this property in a common import like `Directory.Build.props` with a condition:
+
+```xml
+<PropertyGroup>
+  <ShouldIncludeInSolution Condition="'$(MSBuildProjectExtension)' == '.myproj'">false</ShouldIncludeInSolution>
+</PropertyGroup>
+```
+
+This would leave out any project with an extension `.myproj` since Visual Studio can't load that kind of project anyway.
+
 ## How do I troubleshoot SlnGen?
 You can generate a diagnostic log by specifying the `--binarylogger` command-line parameter:
 
