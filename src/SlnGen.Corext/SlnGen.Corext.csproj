@@ -3,6 +3,9 @@
     <TargetFrameworks>net46;net472</TargetFrameworks>
     <ArtifactsPath>$(BaseArtifactsPath)\$(MSBuildProjectName)</ArtifactsPath>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Title>CoreXT Solution Generator</Title>
+    <PackageDescription>CoreXT wrapper around SlnGen (https://github.com/microsoft/slngen)</PackageDescription>
+    <PackageTags>slngen sln vsmsbuild</PackageTags>
     <IsTool>true</IsTool>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <DevelopmentDependency>true</DevelopmentDependency>
