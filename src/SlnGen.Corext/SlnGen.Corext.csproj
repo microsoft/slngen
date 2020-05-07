@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.Build.NoTargets/1.0.94">
+  <PropertyGroup>
+    <TargetFrameworks>net46;net472</TargetFrameworks>
+    <ArtifactsPath>$(BaseArtifactsPath)\$(MSBuildProjectName)</ArtifactsPath>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Title>CoreXT Solution Generator</Title>
+    <PackageDescription>CoreXT wrapper around SlnGen (https://github.com/microsoft/slngen)</PackageDescription>
+    <PackageTags>slngen sln vsmsbuild</PackageTags>
+    <IsTool>true</IsTool>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <IncludeSymbols>false</IncludeSymbols>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);GetMyPackageFiles</TargetsForTfmSpecificContentInPackage>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj"
+                      Private="false"
+                      OutputItemType="SlnGenOutputGroup" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="SlnGen.cmd"
+          Pack="true"
+          PackagePath="\" />
+    <None Include="SlnGen.Corext.cxspec"
+          Pack="true"
+          PackagePath="\" />
+  </ItemGroup>
+  <Target Name="GetMyPackageFiles" DependsOnTargets="ResolveProjectReferences">
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="%(SlnGenOutputGroup.RootDir)%(SlnGenOutputGroup.Directory)*"
+                              Exclude="%(SlnGenOutputGroup.RootDir)%(SlnGenOutputGroup.Directory)*.pdb"
+                              Pack="true"
+                              PackagePath="\tools\$(TargetFramework)" />
+    </ItemGroup>
+  </Target>
+</Project>

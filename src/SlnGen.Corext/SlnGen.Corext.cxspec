@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<package>
+  <tools>
+    <tool name="slngen" path="slngen.cmd" />
+  </tools>
+</package>
