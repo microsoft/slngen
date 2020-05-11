@@ -51,6 +51,16 @@ You can also set this property in a common import like `Directory.Build.props` w
 
 This would leave out any project with an extension `.myproj` since Visual Studio can't load that kind of project anyway.
 
+## How can I detect that a project is being loaded by SlnGen?
+SlnGen sets a global property when loading projects, `IsSlnGen`, to the value `true`.  This allows you to set conditions to control logic.
+
+For example, you want to leave out a `ProjectReference` because you know it won't load correctly in Visual Studio:
+```xml
+<ItemGroup>
+  <ProjectReference Include="..." Condition="'$(IsSlnGen)' != 'true'" />
+</ItemGroup>
+```
+
 ## How do I troubleshoot SlnGen?
 You can generate a diagnostic log by specifying the `--binarylogger` command-line parameter:
 
