@@ -17,6 +17,39 @@ SlnGen does not interact with Visual Studio at all, so if Visual Studio is havin
 ## Why doesn't SlnGen load my projects?
 SlnGen uses the standard MSBuild API to evaluate projects.  If the project contains invalid MSBUild project XML or custom build logic prevents them from being loaded, then SlnGen will not work properly.  Ensure that your projects can be evaluated before using SlnGen.
 
+## How do I control the Solution Configuration (Platforms and Configurations)
+Visual Studio and SlnGen determine the values for Platform and Configuration based on declared values in your project.
+
+For "legacy" projects, it looks at conditions and their proposed values:
+```xml
+<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+  ...
+</PropertyGroup>
+<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+  ...
+</PropertyGroup>
+```
+In the example above, the project supports a Configuration of Debug or Release and a Platform of AnyCPU and so the generated solution will have these values.
+
+Newer SDK-style projects use the `Configurations` and `Platforms` properties:
+```xml
+<PropertyGroup>
+  <Platforms>AnyCPU</Platforms>
+  <Configurations>Debug;Release</Configurations>
+</PropertyGroup>
+```
+
+If you find that the solution does not contain the values you desire, consider updating the projects to properly declare what they target.  In some cases you may not be declaring these values correctly or you have a custom value.  To generate solutions with your own values at the command-line, use the `--platform` and `--configuration` arguments:
+
+```cmd
+slgen --platform x64 --configuration Debug;Release
+```
+
+This tells SlnGen to ignore the values in your projects and to generate a solution with just that combination.  You can also specify your custom values:
+```cmd
+slgen --platform x64;x86 --configuration MyCustomConfiguration
+```
+
 ## Why are my project references missing?
 The standard convention for declare project dependencies is using `<ProjectReference />` items.  Since SlnGen uses an MSBuild API to evaluate projects and their dependencies, your projects must follow this pattern to be recursively discovered.
 
