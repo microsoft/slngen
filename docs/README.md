@@ -42,6 +42,7 @@ slngen [switches] [project]
 | <code>--help</code> | <code>-?</code> | Show help information |
 | <code>--launch:true&#124;false</code> | | Launch Visual Studio after generating the Solution file. Default: `true` |
 | <code>--folders:true&#124;false</code> | | Enables the creation of hierarchical solution folders. Default: `false` |
+| <code>--collapsefolders:true&#124;false</code> | | Enables folders containing a single item to be collapsed into their parent folder. Default: `false` |
 | <code>--loadprojects:true&#124;false</code> | | When launching Visual Studio, opens the specified solution without loading any projects. Default: `true` |
 | <code>--useshellexecute:true&#124;false</code> | <code>-u:true&#124;false</code> | Indicates whether or not the Visual Studio solution file should be opened by the registered file extension handler. Default: `true` |
 | <code>--solutionfile:path</code> | `-o:file` | An optional path to the solution file to generate. Defaults to the same directory as the project. |

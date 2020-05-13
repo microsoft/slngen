@@ -245,7 +245,8 @@ namespace Microsoft.VisualStudio.SlnGen
         /// </summary>
         /// <param name="path">The full path to the file to write to.</param>
         /// <param name="useFolders">Specifies if folders should be created.</param>
-        public void Save(string path, bool useFolders)
+        /// <param name="collapseFolders">An optional value indicating whether or not folders containing a single item should be collapsed into their parent folder.</param>
+        public void Save(string path, bool useFolders, bool collapseFolders = false)
         {
             string directoryName = Path.GetDirectoryName(path);
 
@@ -254,9 +255,10 @@ namespace Microsoft.VisualStudio.SlnGen
                 Directory.CreateDirectory(directoryName);
             }
 
-            using (StreamWriter writer = File.CreateText(path))
+            using (FileStream fileStream = File.Create(path))
+            using (StreamWriter writer = new StreamWriter(fileStream, Encoding.Unicode))
             {
-                Save(writer, useFolders);
+                Save(writer, useFolders, collapseFolders);
             }
         }
 
@@ -265,7 +267,8 @@ namespace Microsoft.VisualStudio.SlnGen
         /// </summary>
         /// <param name="writer">The <see cref="TextWriter" /> to save the solution file to.</param>
         /// <param name="useFolders">Specifies if folders should be created.</param>
-        internal void Save(TextWriter writer, bool useFolders)
+        /// <param name="collapseFolders">An optional value indicating whether or not folders containing a single item should be collapsed into their parent folder.</param>
+        internal void Save(TextWriter writer, bool useFolders, bool collapseFolders = false)
         {
             writer.WriteLine(Header, _fileFormatVersion);
 
@@ -292,7 +295,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
             if (useFolders && _projects.Any(i => !i.IsMainProject))
             {
-                hierarchy = new SlnHierarchy(_projects);
+                hierarchy = new SlnHierarchy(_projects, collapseFolders);
 
                 foreach (SlnFolder folder in hierarchy.Folders)
                 {

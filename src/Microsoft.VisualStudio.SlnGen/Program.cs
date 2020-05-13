@@ -290,7 +290,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
             solution.AddSolutionItems(solutionItems);
 
-            solution.Save(solutionFileFullPath, _arguments.EnableFolders());
+            solution.Save(solutionFileFullPath, _arguments.EnableFolders(), _arguments.EnableCollapseFolders());
 
             return (solutionFileFullPath, customProjectTypeGuids.Count, solutionItems.Count);
         }
@@ -447,6 +447,7 @@ namespace Microsoft.VisualStudio.SlnGen
                     ["DevEnvFullPathSpecified"] = (!_arguments.DevEnvFullPath?.LastOrDefault().IsNullOrWhiteSpace()).ToString(),
                     ["EntryProjectCount"] = _arguments.Projects?.Length.ToString(),
                     ["Folders"] = _arguments.EnableFolders().ToString(),
+                    ["CollapseFolders"] = _arguments.EnableCollapseFolders().ToString(),
                     ["IsCoreXT"] = IsCorext.ToString(),
                     ["IsNetCore"] = IsNetCore.ToString(),
                     ["LaunchVisualStudio"] = _arguments.ShouldLaunchVisualStudio().ToString(),

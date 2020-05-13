@@ -16,6 +16,11 @@ namespace Microsoft.VisualStudio.SlnGen
     public sealed class SlnHierarchy
     {
         /// <summary>
+        /// Character used for separating collapsed folders
+        /// </summary>
+        public const char Separator = '\u0338';
+
+        /// <summary>
         /// Stores a mapping of full paths to <see cref="SlnFolder" /> objects.
         /// </summary>
         private readonly Dictionary<string, SlnFolder> _pathToSlnFolderMap = new Dictionary<string, SlnFolder>(StringComparer.OrdinalIgnoreCase);
@@ -42,6 +47,7 @@ namespace Microsoft.VisualStudio.SlnGen
             if (collapseFolders)
             {
                 CollapseFolders(_rootFolder.Folders);
+                RemoveLeaves(_rootFolder);
             }
         }
 
@@ -84,7 +90,7 @@ namespace Microsoft.VisualStudio.SlnGen
             return new SlnFolder(commonPath.TrimEnd(Path.DirectorySeparatorChar));
         }
 
-        private void CollapseFolders(IReadOnlyCollection<SlnFolder> folders)
+        private static void CollapseFolders(IReadOnlyCollection<SlnFolder> folders)
         {
             foreach (SlnFolder folder in folders)
             {
@@ -95,10 +101,40 @@ namespace Microsoft.VisualStudio.SlnGen
             {
                 SlnFolder child = folderWithSingleChild.Folders.First();
 
-                folderWithSingleChild.Name = $"{folderWithSingleChild.Name}-{child.Name}";
+                folderWithSingleChild.Name = $"{folderWithSingleChild.Name} {Separator} {child.Name}";
                 folderWithSingleChild.Projects.AddRange(child.Projects);
                 folderWithSingleChild.Folders.Clear();
+                folderWithSingleChild.Folders.AddRange(child.Folders);
             }
+        }
+
+        private static bool RemoveLeaves(SlnFolder folder)
+        {
+            // Check if we are a leave node
+            if (folder.Folders.Count == 0)
+            {
+                // We want to remove leaves that have only a single project. There is no need to keep that
+                // directory as it would be represented by the project file itself. We ignore folders that
+                // contain the Separator character as these are folders which have been collapsed already.
+                return folder.Projects.Count == 1 && !folder.Name.Contains(Separator);
+            }
+
+            List<SlnFolder> foldersToRemove = new List<SlnFolder>();
+            foreach (SlnFolder child in folder.Folders)
+            {
+                if (RemoveLeaves(child))
+                {
+                    folder.Projects.AddRange(child.Projects);
+                    foldersToRemove.Add(child);
+                }
+            }
+
+            foreach (SlnFolder folderToRemove in foldersToRemove)
+            {
+                folder.Folders.Remove(folderToRemove);
+            }
+
+            return false;
         }
 
         private void CreateHierarchy(SlnProject project)
