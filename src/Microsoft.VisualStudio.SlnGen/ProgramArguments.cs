@@ -35,6 +35,16 @@ Example: -bl:output.binlog;ProjectImports=ZipFile")]
         public (bool HasValue, string Arguments) BinaryLogger { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether or not folders containing a single item should be collapsed into their parent folder.
+        /// </summary>
+        [Option(
+            "--collapsefolders",
+            CommandOptionType.MultipleValue,
+            ValueName = "true",
+            Description = "Enables folders containing a single item to be collapsed into their parent folder.  Default: false")]
+        public string[] CollapseFolders { get; set; }
+
+        /// <summary>
         /// Gets or sets the configurations to use when generating the solution.
         /// </summary>
         [Option(
@@ -239,6 +249,8 @@ Examples:
         public string[] Verbosity { get; set; }
 
         public bool EnableFolders() => GetBoolean(Folders);
+
+        public bool EnableCollapseFolders() => GetBoolean(CollapseFolders);
 
         public bool EnableShellExecute() => GetBoolean(ShellExecute, defaultValue: true);
 
