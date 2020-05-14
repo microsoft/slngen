@@ -77,6 +77,6 @@ stages:
             displayName: 'Push NuGet Package'
             inputs:
               command: 'push'
-              packagesToPush: '$(Pipeline.Workspace)/$(ArtifactsDirectoryName)/**/*.nupkg'
+              packagesToPush: '$(Pipeline.Workspace)/$(ArtifactsDirectoryName)/**/Microsoft.VisualStudio.SlnGen*.nupkg'
               nuGetFeedType: 'external'
               publishFeedCredentials: 'NuGet-1ES-Full'
