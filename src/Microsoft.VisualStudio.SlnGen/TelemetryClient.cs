@@ -71,7 +71,10 @@ namespace Microsoft.VisualStudio.SlnGen
             {
                 foreach (KeyValuePair<string, object> property in piiProperties)
                 {
-                    telemetryEvent.Properties[property.Key] = new TelemetryPiiProperty(property.Value);
+                    if (property.Value != null)
+                    {
+                        telemetryEvent.Properties[property.Key] = new TelemetryPiiProperty(property.Value);
+                    }
                 }
             }
 

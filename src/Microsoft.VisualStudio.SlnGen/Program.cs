@@ -202,7 +202,13 @@ namespace Microsoft.VisualStudio.SlnGen
                         VisualStudioLauncher.Launch(solutionFileFullPath, loadProjectsInVisualStudio, devEnvFullPath, forwardingLogger);
                     }
 
-                    LogTelemetry(evaluationTime, evaluationCount, customProjectTypeGuidCount, solutionItemCount);
+                    try
+                    {
+                        LogTelemetry(evaluationTime, evaluationCount, customProjectTypeGuidCount, solutionItemCount);
+                    }
+                    catch (Exception)
+                    {
+                    }
                 }
                 catch (Exception e)
                 {
