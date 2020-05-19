@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.VisualStudio.SlnGen
 {
@@ -43,7 +45,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <inheritdoc cref="IDisposable.Dispose" />
         public void Dispose()
         {
-            _telemetrySession?.Dispose();
+            _telemetrySession?.DisposeToNetworkAsync(CancellationToken.None).Wait(TimeSpan.FromSeconds(2));
         }
 
         /// <summary>
@@ -78,7 +80,13 @@ namespace Microsoft.VisualStudio.SlnGen
                 }
             }
 
-            _telemetrySession.PostEvent(telemetryEvent);
+            Task.Run(() =>
+            {
+                if (_telemetrySession != null && !_telemetrySession.IsDisposed)
+                {
+                    _telemetrySession?.PostEvent(telemetryEvent);
+                }
+            });
 
             return true;
         }
