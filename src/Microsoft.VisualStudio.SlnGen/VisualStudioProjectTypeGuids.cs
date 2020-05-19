@@ -12,7 +12,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <summary>
         /// Azure SDK project (.ccproj).
         /// </summary>
-        public const string AzureSdk = "151D2E53-A2C4-4D7D-83FE-D05416EBD58E";
+        public const string AzureSdk = "CC5FD16D-436D-48AD-A40C-5A424C6E3E79";
 
         /// <summary>
         /// Azure Service Fabric projects (.sfproj).
