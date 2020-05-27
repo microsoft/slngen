@@ -443,8 +443,6 @@ namespace Microsoft.VisualStudio.SlnGen
 
         private void LogTelemetry(TimeSpan evaluationTime, int evaluationCount, int customProjectTypeGuidCount, int solutionItemCount)
         {
-            string hostName = Dns.GetHostEntry(Environment.MachineName).HostName;
-
             TelemetryClient.PostEvent(
                 "slngen/execute",
                 new Dictionary<string, object>
@@ -470,10 +468,6 @@ namespace Microsoft.VisualStudio.SlnGen
                     ["ProjectCount"] = evaluationCount,
                     ["ProjectEvaluationMilliseconds"] = evaluationTime.TotalMilliseconds,
                     ["SolutionItemCount"] = solutionItemCount,
-                },
-                new Dictionary<string, object>
-                {
-                    ["Username"] = hostName.EndsWith("corp.microsoft.com", StringComparison.OrdinalIgnoreCase) ? $"{Environment.UserDomainName}\\{Environment.UserName}" : null,
                 });
         }
     }
