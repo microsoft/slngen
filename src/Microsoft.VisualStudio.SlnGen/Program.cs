@@ -444,7 +444,7 @@ namespace Microsoft.VisualStudio.SlnGen
         private void LogTelemetry(TimeSpan evaluationTime, int evaluationCount, int customProjectTypeGuidCount, int solutionItemCount)
         {
             TelemetryClient.PostEvent(
-                "slngen/execute",
+                "execute",
                 new Dictionary<string, object>
                 {
                     ["AssemblyInformationalVersion"] = ThisAssembly.AssemblyInformationalVersion,

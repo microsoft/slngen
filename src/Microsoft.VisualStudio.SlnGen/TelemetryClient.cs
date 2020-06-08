@@ -5,8 +5,6 @@
 using Microsoft.VisualStudio.Telemetry;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -62,7 +60,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 return false;
             }
 
-            TelemetryEvent telemetryEvent = new TelemetryEvent(name);
+            TelemetryEvent telemetryEvent = new TelemetryEvent($"microsoft/slngen/{name}");
 
             foreach (KeyValuePair<string, object> property in properties)
             {
@@ -103,7 +101,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 return false;
             }
 
-            _telemetrySession.PostFault("slngen/exception", string.Empty, FaultSeverity.Critical, exception);
+            _telemetrySession.PostFault("microsoft/slngen/exception", string.Empty, FaultSeverity.Critical, exception);
 
             return true;
         }
