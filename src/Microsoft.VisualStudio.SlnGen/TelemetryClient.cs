@@ -43,7 +43,14 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <inheritdoc cref="IDisposable.Dispose" />
         public void Dispose()
         {
-            _telemetrySession?.DisposeToNetworkAsync(CancellationToken.None).Wait(TimeSpan.FromSeconds(2));
+            try
+            {
+                _telemetrySession?.DisposeToNetworkAsync(CancellationToken.None).Wait(TimeSpan.FromSeconds(2));
+            }
+            catch (PlatformNotSupportedException)
+            {
+                // Ignored
+            }
         }
 
         /// <summary>
