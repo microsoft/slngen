@@ -30,13 +30,32 @@ namespace Microsoft.VisualStudio.SlnGen
                     if (Program.IsNetCore)
                     {
                         error("The .NET Core version of SlnGen is not supported in CoreXT.  You must use the .NET Framework version via the SlnGen.Corext package");
+
                         return false;
                     }
 
                     msbuildBinPath = msbuildToolsPath;
 
-                    if (!TryGetVisualStudioFromCorext(out instance))
+                    if (Version.TryParse(Environment.GetEnvironmentVariable("VisualStudioVersion") ?? string.Empty, out Version visualStudioVersion))
                     {
+                        if (visualStudioVersion.Major <= 14)
+                        {
+                            error("MSBuild.Corext version 15.0 or greater is required");
+
+                            return false;
+                        }
+
+                        VisualStudioConfiguration configuration = new VisualStudioConfiguration();
+
+                        instance = configuration.GetLaunchableInstances()
+                            .Where(i => !i.IsBuildTools && i.HasMSBuild && i.InstallationVersion.Major == visualStudioVersion.Major)
+                            .OrderByDescending(i => i.InstallationVersion)
+                            .FirstOrDefault();
+                    }
+                    else
+                    {
+                        error("The VisualStudioVersion environment variable must be set in CoreXT");
+
                         return false;
                     }
 
@@ -133,25 +152,6 @@ namespace Microsoft.VisualStudio.SlnGen
             }
 
             return false;
-        }
-
-        private static bool TryGetVisualStudioFromCorext(out VisualStudioInstance instance)
-        {
-            instance = null;
-
-            if (!Version.TryParse(Environment.GetEnvironmentVariable("VisualStudioVersion"), out Version visualStudioVersion))
-            {
-                return false;
-            }
-
-            VisualStudioConfiguration configuration = new VisualStudioConfiguration();
-
-            instance = configuration.GetLaunchableInstances()
-                .Where(i => !i.IsBuildTools && i.HasMSBuild && i.InstallationVersion.Major == visualStudioVersion.Major)
-                .OrderByDescending(i => i.InstallationVersion)
-                .FirstOrDefault();
-
-            return instance != null;
         }
 
         private static bool TryGetVisualStudioFromDeveloperConsole(out VisualStudioInstance instance)
