@@ -234,7 +234,7 @@ namespace Microsoft.VisualStudio.SlnGen
                         columnNumber: 0,
                         endLineNumber: 0,
                         endColumnNumber: 0,
-                        message: $"The {MSBuildPropertyNames.ProjectGuid} property value \"{projectGuid}\" is not a valid GUID.",
+                        message: $"The {MSBuildPropertyNames.ProjectGuid} property value \"{projectGuidValue}\" is not a valid GUID.",
                         errorSubcategory: null,
                         errorCode: null,
                         helpKeyword: null);

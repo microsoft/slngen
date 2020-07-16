@@ -216,6 +216,12 @@ namespace Microsoft.VisualStudio.SlnGen
                     {
                     }
                 }
+                catch (InvalidProjectFileException e)
+                {
+                    forwardingLogger.LogError(e.Message, e.ErrorCode, e.ProjectFile, e.LineNumber, e.ColumnNumber);
+
+                    return 1;
+                }
                 catch (Exception e)
                 {
                     forwardingLogger.LogError($"Unhandled exception: {e}");
