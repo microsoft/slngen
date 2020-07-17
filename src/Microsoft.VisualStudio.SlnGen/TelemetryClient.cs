@@ -47,6 +47,10 @@ namespace Microsoft.VisualStudio.SlnGen
             {
                 _telemetrySession?.DisposeToNetworkAsync(CancellationToken.None).Wait(TimeSpan.FromSeconds(2));
             }
+            catch (AggregateException e) when (e?.InnerException is PlatformNotSupportedException)
+            {
+                // Ignored
+            }
             catch (PlatformNotSupportedException)
             {
                 // Ignored
