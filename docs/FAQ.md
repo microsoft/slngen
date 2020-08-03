@@ -50,6 +50,14 @@ This tells SlnGen to ignore the values in your projects and to generate a soluti
 slgen --platform x64;x86 --configuration MyCustomConfiguration
 ```
 
+If you're using the MSBuild target, please specify the supported Platforms and Configurations if possible.  To override them when generating a solution, you'll need to specify a value for `SlnGenGlobalProperties` in your `Directory.Build.props` or individual projects:
+
+```xml
+<PropertyGroup>
+  <SlnGenGlobalProperties>Platform=64</SlnGenGlobalProperties>
+</PropertyGroup>
+```
+
 ## Why are my project references missing?
 The standard convention for declare project dependencies is using `<ProjectReference />` items.  Since SlnGen uses an MSBuild API to evaluate projects and their dependencies, your projects must follow this pattern to be recursively discovered.
 
