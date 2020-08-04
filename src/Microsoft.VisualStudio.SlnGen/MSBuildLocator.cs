@@ -117,6 +117,7 @@ namespace Microsoft.VisualStudio.SlnGen
             process.StartInfo.EnvironmentVariables["DOTNET_CLI_UI_LANGUAGE "] = "en-US";
             process.StartInfo.EnvironmentVariables["DOTNET_MULTILEVEL_LOOKUP "] = "0";
             process.StartInfo.EnvironmentVariables["DOTNET_NOLOGO"] = "1";
+            process.StartInfo.EnvironmentVariables["COREHOST_TRACE"] = string.Empty;
 
             try
             {
