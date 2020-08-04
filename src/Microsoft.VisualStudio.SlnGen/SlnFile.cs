@@ -210,8 +210,8 @@ namespace Microsoft.VisualStudio.SlnGen
         /// </summary>
         /// <param name="projects">An <see cref="IEnumerable{T}" /> of projects to add.</param>
         /// <param name="customProjectTypeGuids">An <see cref="IReadOnlyDictionary{TKey,TValue}" /> containing any custom project type GUIDs to use.</param>
-        /// <param name="mainProjectFullPath">The full path to the main project.</param>
-        public void AddProjects(IEnumerable<Project> projects, IReadOnlyDictionary<string, Guid> customProjectTypeGuids, string mainProjectFullPath)
+        /// <param name="mainProjectFullPath">Optional full path to the main project.</param>
+        public void AddProjects(IEnumerable<Project> projects, IReadOnlyDictionary<string, Guid> customProjectTypeGuids, string mainProjectFullPath = null)
         {
             _projects.AddRange(
                 projects
