@@ -69,9 +69,16 @@ namespace Microsoft.VisualStudio.SlnGen
 
             if (Program.IsNetCore)
             {
-                if (!TryGetMSBuildInNetCore(out msbuildBinPath))
+                if (!TryGetMSBuildInNetCore(out msbuildBinPath, out string errorMessage))
                 {
-                    error("Failed to find .NET Core");
+                    if (!string.IsNullOrWhiteSpace(errorMessage))
+                    {
+                        error($"Failed to find .NET Core: {errorMessage}");
+                    }
+                    else
+                    {
+                        error("Failed to find .NET Core.  Run dotnet --info for more information.");
+                    }
 
                     return false;
                 }
@@ -95,9 +102,11 @@ namespace Microsoft.VisualStudio.SlnGen
             return true;
         }
 
-        private static bool TryGetMSBuildInNetCore(out string msbuildPath)
+        private static bool TryGetMSBuildInNetCore(out string msbuildPath, out string error)
         {
             msbuildPath = null;
+
+            error = null;
 
             Process process = new Process
             {
@@ -117,7 +126,7 @@ namespace Microsoft.VisualStudio.SlnGen
             process.StartInfo.EnvironmentVariables["DOTNET_CLI_UI_LANGUAGE "] = "en-US";
             process.StartInfo.EnvironmentVariables["DOTNET_MULTILEVEL_LOOKUP "] = "0";
             process.StartInfo.EnvironmentVariables["DOTNET_NOLOGO"] = "1";
-            process.StartInfo.EnvironmentVariables["COREHOST_TRACE"] = string.Empty;
+            process.StartInfo.EnvironmentVariables["COREHOST_TRACE"] = "0";
 
             try
             {
@@ -132,6 +141,13 @@ namespace Microsoft.VisualStudio.SlnGen
             }
 
             if (!process.WaitForExit((int)TimeSpan.FromSeconds(2).TotalMilliseconds))
+            {
+                return false;
+            }
+
+            error = process.StandardError.ReadLine();
+
+            if (!string.IsNullOrWhiteSpace(error))
             {
                 return false;
             }
