@@ -121,6 +121,15 @@ Some additional available parameters are:
         public string[] Folders { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the main project should receive special treatment.
+        /// </summary>
+        [Option(
+            "--ignoreMainProject",
+            CommandOptionType.NoValue,
+            Description = "None of the projects receive special treatment.")]
+        public bool IgnoreMainProject { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether Visual Studio should be launched after the solution is generated.
         /// </summary>
         [Option(

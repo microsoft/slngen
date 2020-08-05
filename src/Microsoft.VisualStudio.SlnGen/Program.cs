@@ -304,7 +304,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 _arguments.LoadProjectsInVisualStudio = new[] { bool.TrueString };
             }
 
-            solution.AddProjects(projects, customProjectTypeGuids, project.FullPath);
+            solution.AddProjects(projects, customProjectTypeGuids, _arguments.IgnoreMainProject ? null : project.FullPath);
 
             solution.AddSolutionItems(solutionItems);
 
