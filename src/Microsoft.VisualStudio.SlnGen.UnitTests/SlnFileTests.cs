@@ -3,6 +3,7 @@
 // Licensed under the MIT license.
 
 using Microsoft.Build.Construction;
+using Microsoft.Build.Evaluation;
 using Shouldly;
 using System;
 using System.Collections.Generic;
@@ -461,6 +462,104 @@ EndGlobal
             }
 
             ValidateProjectInSolution(Action, projects, true);
+        }
+
+        [Fact]
+        public void WithFoldersIgnoreMainProject()
+        {
+            var root = Path.GetTempPath();
+            var projectName1 = Path.GetFileName(Path.GetTempFileName());
+            var projectName2 = Path.GetFileName(Path.GetTempFileName());
+            var projectName3 = Path.GetFileName(Path.GetTempFileName());
+            Project[] projects =
+            {
+                new Project
+                {
+                    FullPath = Path.Combine(root, "SubFolder1", "Project1", projectName1),
+                },
+                new Project
+                {
+                    FullPath = Path.Combine(root, "SubFolder1", "Project2", projectName2),
+                },
+                new Project
+                {
+                    FullPath = Path.Combine(root, "SubFolder2", "Project3", projectName3),
+                },
+            };
+
+            string solutionFilePath = GetTempFileName();
+
+            SlnFile slnFile = new SlnFile();
+
+            slnFile.AddProjects(projects, new Dictionary<string, Guid>());
+            slnFile.Save(solutionFilePath, true);
+
+            SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
+
+            foreach (var slnProject in solutionFile.ProjectsInOrder)
+            {
+                if (slnProject.ProjectName == projectName1)
+                {
+                    slnProject.ParentProjectGuid.ShouldNotBeNull();
+                }
+                else if (slnProject.ProjectName == projectName2)
+                {
+                    slnProject.ParentProjectGuid.ShouldNotBeNull();
+                }
+                else if (slnProject.ProjectName == projectName3)
+                {
+                    slnProject.ParentProjectGuid.ShouldNotBeNull();
+                }
+            }
+        }
+
+        [Fact]
+        public void WithFoldersDoNotIgnoreMainProject()
+        {
+            var root = Path.GetTempPath();
+            var projectName1 = Path.GetFileName(Path.GetTempFileName());
+            var projectName2 = Path.GetFileName(Path.GetTempFileName());
+            var projectName3 = Path.GetFileName(Path.GetTempFileName());
+            Project[] projects =
+            {
+                new Project
+                {
+                    FullPath = Path.Combine(root, "SubFolder1", "Project1", projectName1),
+                },
+                new Project
+                {
+                    FullPath = Path.Combine(root, "SubFolder1", "Project2", projectName2),
+                },
+                new Project
+                {
+                    FullPath = Path.Combine(root, "SubFolder2", "Project3", projectName3),
+                },
+            };
+
+            string solutionFilePath = GetTempFileName();
+
+            SlnFile slnFile = new SlnFile();
+
+            slnFile.AddProjects(projects, new Dictionary<string, Guid>(), projects[1].FullPath);
+            slnFile.Save(solutionFilePath, true);
+
+            SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
+
+            foreach (var slnProject in solutionFile.ProjectsInOrder)
+            {
+                if (slnProject.ProjectName == projectName1)
+                {
+                    slnProject.ParentProjectGuid.ShouldBeNull();
+                }
+                else if (slnProject.ProjectName == projectName2)
+                {
+                    slnProject.ParentProjectGuid.ShouldNotBeNull();
+                }
+                else if (slnProject.ProjectName == projectName3)
+                {
+                    slnProject.ParentProjectGuid.ShouldNotBeNull();
+                }
+            }
         }
 
         private void ValidateProjectInSolution(Action<SlnProject, ProjectInSolution> customValidator, SlnProject[] projects, bool folders)
