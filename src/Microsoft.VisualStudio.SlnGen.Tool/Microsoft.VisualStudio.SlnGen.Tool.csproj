@@ -1,12 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
     <PackAsTool>true</PackAsTool>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <SharedProjectExcludes>..\Microsoft.VisualStudio.SlnGen\obj\**;..\Microsoft.VisualStudio.SlnGen\bin\**;..\Microsoft.VisualStudio.SlnGen\**\.*\**;..\Microsoft.VisualStudio.SlnGen\Tasks\**</SharedProjectExcludes>
     <ToolCommandName>slngen</ToolCommandName>
     <NoWarn>$(NoWarn);NU1701</NoWarn>
+    <RollForward>LatestMajor</RollForward>
   </PropertyGroup>
   <Import Project="..\Microsoft.VisualStudio.SlnGen\Shared.props" />
   <ItemGroup>
