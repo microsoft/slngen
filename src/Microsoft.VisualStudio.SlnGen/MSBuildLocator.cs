@@ -14,7 +14,14 @@ namespace Microsoft.VisualStudio.SlnGen
     {
         private static readonly Regex NetCoreBasePathRegex = new Regex(@"^\s+Base Path:\s+(?<Path>.*)$");
 
-        public static bool TryLocate(Action<string> error, out VisualStudioInstance instance, out string msbuildBinPath)
+        /// <summary>
+        /// Attempts to locate MSBuild based on the current environment.
+        /// </summary>
+        /// <param name="logError">An <see cref="Action{String}" /> which can be used to log an error.</param>
+        /// <param name="instance">Receives a <see cref="VisualStudioInstance" /> if one could be found.</param>
+        /// <param name="msbuildBinPath">Receives the path to MSBuild if it could be found.</param>
+        /// <returns><code>true</code> if an instance of MSBuild could be found, otherwise <code>false</code>.</returns>
+        public static bool TryLocate(Action<string> logError, out VisualStudioInstance instance, out string msbuildBinPath)
         {
             instance = null;
             msbuildBinPath = null;
@@ -29,35 +36,33 @@ namespace Microsoft.VisualStudio.SlnGen
                 {
                     if (Program.IsNetCore)
                     {
-                        error("The .NET Core version of SlnGen is not supported in CoreXT.  You must use the .NET Framework version via the SlnGen.Corext package");
+                        logError("The .NET Core version of SlnGen is not supported in CoreXT.  You must use the .NET Framework version via the SlnGen.Corext package");
 
                         return false;
                     }
 
                     msbuildBinPath = msbuildToolsPath;
 
-                    if (Version.TryParse(Environment.GetEnvironmentVariable("VisualStudioVersion") ?? string.Empty, out Version visualStudioVersion))
+                    if (!Version.TryParse(Environment.GetEnvironmentVariable("VisualStudioVersion") ?? string.Empty, out Version visualStudioVersion))
                     {
-                        if (visualStudioVersion.Major <= 14)
-                        {
-                            error("MSBuild.Corext version 15.0 or greater is required");
-
-                            return false;
-                        }
-
-                        VisualStudioConfiguration configuration = new VisualStudioConfiguration();
-
-                        instance = configuration.GetLaunchableInstances()
-                            .Where(i => !i.IsBuildTools && i.HasMSBuild && i.InstallationVersion.Major == visualStudioVersion.Major)
-                            .OrderByDescending(i => i.InstallationVersion)
-                            .FirstOrDefault();
-                    }
-                    else
-                    {
-                        error("The VisualStudioVersion environment variable must be set in CoreXT");
+                        logError("The VisualStudioVersion environment variable must be set in CoreXT");
 
                         return false;
                     }
+
+                    if (visualStudioVersion.Major <= 14)
+                    {
+                        logError("MSBuild.Corext version 15.0 or greater is required");
+
+                        return false;
+                    }
+
+                    VisualStudioConfiguration configuration = new VisualStudioConfiguration();
+
+                    instance = configuration.GetLaunchableInstances()
+                        .Where(i => !i.IsBuildTools && i.HasMSBuild && i.InstallationVersion.Major == visualStudioVersion.Major)
+                        .OrderByDescending(i => i.InstallationVersion)
+                        .FirstOrDefault();
 
                     Program.IsCorext = true;
 
@@ -65,20 +70,11 @@ namespace Microsoft.VisualStudio.SlnGen
                 }
             }
 
-            TryGetVisualStudioFromDeveloperConsole(out instance);
-
             if (Program.IsNetCore)
             {
                 if (!TryGetMSBuildInNetCore(out msbuildBinPath, out string errorMessage))
                 {
-                    if (!string.IsNullOrWhiteSpace(errorMessage))
-                    {
-                        error($"Failed to find .NET Core: {errorMessage}");
-                    }
-                    else
-                    {
-                        error("Failed to find .NET Core.  Run dotnet --info for more information.");
-                    }
+                    logError(!string.IsNullOrWhiteSpace(errorMessage) ? $"Failed to find .NET Core: {errorMessage}" : "Failed to find .NET Core.  Run dotnet --info for more information.");
 
                     return false;
                 }
@@ -86,9 +82,9 @@ namespace Microsoft.VisualStudio.SlnGen
                 return true;
             }
 
-            if (instance == null)
+            if (!TryGetVisualStudioFromDeveloperConsole(out instance) || instance == null)
             {
-                error("You must run SlnGen in a Visual Studio Developer Command Prompt");
+                logError("You must run SlnGen in a Visual Studio Developer Command Prompt");
 
                 return false;
             }
@@ -100,6 +96,40 @@ namespace Microsoft.VisualStudio.SlnGen
                 "Bin");
 
             return true;
+        }
+
+        /// <summary>
+        /// Attempts to determine the path to the .NET Core SDK from the output of dotnet --info.
+        /// </summary>
+        /// <param name="reader">A <see cref="StreamReader" /> that contains the output of dotnet --info</param>
+        /// <param name="basePath">Receives the path to the .NET Core SDK if one is found.</param>
+        /// <returns><code>true</code> if the path to the .NET Core SDK could be found, otherwise <code>false</code>.</returns>
+        internal static bool TryGetDotNetCoreBasePath(StreamReader reader, out string basePath)
+        {
+            basePath = null;
+
+            string line;
+
+            while ((line = reader.ReadLine()) != null)
+            {
+                if (string.IsNullOrWhiteSpace(line) || !line.StartsWith(" ", StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                Match match = NetCoreBasePathRegex.Match(line);
+
+                if (!match.Success || !match.Groups["Path"].Success)
+                {
+                    continue;
+                }
+
+                basePath = match.Groups["Path"].Value.Trim();
+
+                return true;
+            }
+
+            return false;
         }
 
         private static bool TryGetMSBuildInNetCore(out string msbuildPath, out string error)
@@ -152,19 +182,8 @@ namespace Microsoft.VisualStudio.SlnGen
                 return false;
             }
 
-            string line;
-
-            while ((line = process.StandardOutput.ReadLine()) != null)
+            if (TryGetDotNetCoreBasePath(process.StandardOutput, out msbuildPath))
             {
-                Match match = NetCoreBasePathRegex.Match(line);
-
-                if (!match.Success || !match.Groups["Path"].Success)
-                {
-                    continue;
-                }
-
-                msbuildPath = match.Groups["Path"].Value.Trim();
-
                 return true;
             }
 

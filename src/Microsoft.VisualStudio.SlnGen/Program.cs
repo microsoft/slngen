@@ -64,7 +64,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <summary>
         /// Gets a value indicating whether or not the current runtime framework is .NET Core.
         /// </summary>
-        public static bool IsNetCore { get; } = RuntimeInformation.FrameworkDescription.StartsWith(".NET Core");
+        public static bool IsNetCore { get; } = !RuntimeInformation.FrameworkDescription.StartsWith(".NET Framework", StringComparison.Ordinal);
 
         /// <summary>
         /// Executes the programs with the specified arguments.

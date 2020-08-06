@@ -24,8 +24,8 @@
     <PackageReference Include="Microsoft.VisualStudio.Utilities.Internal" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\$(TargetFramework)\MSBuild.exe" Private="false" Condition="'$(TargetFramework)' != 'netcoreapp3.1'"/>
-    <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\netcoreapp2.1\MSBuild.dll" Private="false" Condition="'$(TargetFramework)' == 'netcoreapp3.1'" />
+    <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\$(TargetFramework)\MSBuild.exe" Private="false" Condition="'$(TargetFramework)' != 'netcoreapp3.1' And '$(TargetFramework)' != 'net5.0'" />
+    <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\netcoreapp2.1\MSBuild.dll" Private="false" Condition="'$(TargetFramework)' == 'netcoreapp3.1' Or '$(TargetFramework)' == 'net5.0'" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileFullPath)" />
