@@ -3,9 +3,11 @@ resources:
 
 variables:
   ArtifactsDirectoryName: 'artifacts'
-  BinaryLoggerArgs: '"/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
+  BuildConfiguration: 'Debug'
+  BuildPlatform: 'Any CPU'
   DotNetCore3Version: '3.x'
   DotNetCore5Version: '5.x'
+  MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   SignType: 'Test'
 
 trigger:
@@ -36,7 +38,6 @@ jobs:
     displayName: 'Install .NET Core $(DotNetCore3Version)'
     inputs:
       version: '$(DotNetCore3Version)'
-      includePreviewVersions: true
 
   - task: UseDotNet@2
     displayName: 'Install .NET Core $(DotNetCore5Version)'
@@ -49,7 +50,7 @@ jobs:
     inputs:
       command: 'build'
       projects: 'SlnGen.sln'
-      arguments: '"/p:SignType=Test" $(BinaryLoggerArgs)'
+      arguments: '$(MSBuildArgs)'
 
   - task: DotNetCoreCLI@2
     displayName: 'Run Unit Tests'

@@ -3,10 +3,11 @@ resources:
 
 variables:
   ArtifactsDirectoryName: 'artifacts'
-  BinaryLoggerArgs: '"/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   BuildConfiguration: 'Release'
   BuildPlatform: 'Any CPU'
-  DotNetCoreVersion: '3.1.100'
+  DotNetCore3Version: '3.x'
+  DotNetCore5Version: '5.x'
+  MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   SignType: 'Test'
 
 trigger:
@@ -19,7 +20,14 @@ trigger:
     exclude:
     - '*.md'
 
-pr: none
+pr:
+  branches:
+    include:
+    - master
+    - 'rel/*'
+  paths:
+    exclude:
+    - '*.md'
 
 stages:
 - stage:
@@ -35,9 +43,15 @@ stages:
       condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
 
     - task: UseDotNet@2
-      displayName: 'Install .NET Core $(DotNetCoreVersion)'
+      displayName: 'Install .NET Core $(DotNetCore3Version)'
       inputs:
-        version: '$(DotNetCoreVersion)'
+        version: '$(DotNetCore3Version)'
+
+    - task: UseDotNet@2
+      displayName: 'Install .NET Core $(DotNetCore5Version)'
+      inputs:
+        version: '$(DotNetCore5Version)'
+        includePreviewVersions: true
 
     - task: MicroBuildSigningPlugin@1
       displayName: 'Install MicroBuild Signing Plugin'
@@ -45,13 +59,12 @@ stages:
         signType: '$(SignType)'
         zipSources: false
 
-    - task: MSBuild@1
+    - task: DotNetCoreCLI@2
       displayName: 'Build Solution'
       inputs:
-        solution: SlnGen.sln
-        platform: '$(BuildPlatform)'
-        configuration: '$(BuildConfiguration)'
-        msbuildArguments: '$(BinaryLoggerArgs)'
+        command: 'build'
+        projects: 'SlnGen.sln'
+        arguments: '$(MSBuildArgs)'
 
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifacts'
