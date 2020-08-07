@@ -171,7 +171,7 @@ namespace Microsoft.VisualStudio.SlnGen
                         return 1;
                     }
 
-                    (string solutionFileFullPath, int customProjectTypeGuidCount, int solutionItemCount) = GenerateSolutionFile(projectCollection.LoadedProjects.Where(i => !i.GlobalProperties.ContainsKey("TargetFramework")), forwardingLogger);
+                    (string solutionFileFullPath, int customProjectTypeGuidCount, int solutionItemCount, Guid solutionGuid) = GenerateSolutionFile(projectCollection.LoadedProjects.Where(i => !i.GlobalProperties.ContainsKey("TargetFramework")), forwardingLogger);
 
                     if (_arguments.ShouldLaunchVisualStudio())
                     {
@@ -210,7 +210,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
                     try
                     {
-                        LogTelemetry(evaluationTime, evaluationCount, customProjectTypeGuidCount, solutionItemCount);
+                        LogTelemetry(evaluationTime, evaluationCount, customProjectTypeGuidCount, solutionItemCount, solutionGuid);
                     }
                     catch (Exception)
                     {
@@ -253,7 +253,7 @@ namespace Microsoft.VisualStudio.SlnGen
             }
         }
 
-        private (string solutionFileFullPath, int customProjectTypeGuidCount, int solutionItemCount) GenerateSolutionFile(IEnumerable<Project> projects, ISlnGenLogger logger)
+        private (string solutionFileFullPath, int customProjectTypeGuidCount, int solutionItemCount, Guid solutionGuid) GenerateSolutionFile(IEnumerable<Project> projects, ISlnGenLogger logger)
         {
             Project project = projects.First();
 
@@ -310,7 +310,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
             solution.Save(solutionFileFullPath, _arguments.EnableFolders(), _arguments.EnableCollapseFolders());
 
-            return (solutionFileFullPath, customProjectTypeGuids.Count, solutionItems.Count);
+            return (solutionFileFullPath, customProjectTypeGuids.Count, solutionItems.Count, solution.SolutionGuid);
         }
 
         /// <summary>
@@ -453,7 +453,7 @@ namespace Microsoft.VisualStudio.SlnGen
             return (sw.Elapsed, projectCollection.LoadedProjects.Count);
         }
 
-        private void LogTelemetry(TimeSpan evaluationTime, int evaluationCount, int customProjectTypeGuidCount, int solutionItemCount)
+        private void LogTelemetry(TimeSpan evaluationTime, int evaluationCount, int customProjectTypeGuidCount, int solutionItemCount, Guid solutionGuid)
         {
             TelemetryClient.PostEvent(
                 "execute",
@@ -480,6 +480,7 @@ namespace Microsoft.VisualStudio.SlnGen
                     ["ProjectCount"] = evaluationCount,
                     ["ProjectEvaluationMilliseconds"] = evaluationTime.TotalMilliseconds,
                     ["SolutionItemCount"] = solutionItemCount,
+                    ["VS.Platform.Solution.Project.SccProvider.SolutionId"] = solutionGuid == Guid.Empty ? string.Empty : solutionGuid.ToString("B"),
                 });
         }
     }
