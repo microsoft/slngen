@@ -3,7 +3,6 @@
 // Licensed under the MIT license.
 
 using Shouldly;
-using System.IO;
 using System.Linq;
 using Xunit;
 
@@ -16,7 +15,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         {
             TestConsole console = new TestConsole();
 
-            int exitCode = Program.Execute(new[] { "/?" }, console);
+            int exitCode = SharedProgram.Main(new[] { "/?" }, console, (arguments, console1) => 1);
 
             exitCode.ShouldBe(0, console.Output);
 
@@ -45,28 +44,6 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             arguments.GetPlatforms().ShouldBe(new[] { "Five", "Six", "Seven", "Eight" });
         }
 
-        [Fact]
-        public void MissingProjectFileLogsErrorAndFails()
-        {
-            TestConsole console = new TestConsole();
-
-            ProgramArguments programArguments = new ProgramArguments
-            {
-                Projects = new[]
-                {
-                    "foo",
-                },
-            };
-
-            Program program = new Program(programArguments, console, null, "msbuild");
-
-            int exitCode = program.Execute();
-
-            exitCode.ShouldBe(1, console.Output);
-
-            console.Output.ShouldContain($"Project file \"{Path.GetFullPath("foo")}\" does not exist", console.Output);
-        }
-
         [Theory]
         [InlineData("--nologo")]
         [InlineData("/nologo")]
@@ -74,7 +51,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         {
             TestConsole console = new TestConsole();
 
-            int exitCode = Program.Execute(new[] { argument, "--help" }, console);
+            int exitCode = SharedProgram.Main(new[] { argument, "--help" }, console, (arguments, console1) => 0);
 
             exitCode.ShouldBe(0, console.Output);
 

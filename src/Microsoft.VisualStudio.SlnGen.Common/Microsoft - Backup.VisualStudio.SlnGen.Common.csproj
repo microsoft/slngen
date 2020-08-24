@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.VisualStudio.SlnGen</RootNamespace>
+    <TargetFrameworks>netstandard2.1;net46;net472</TargetFrameworks>
+    <AssemblyTitle>SlnGen</AssemblyTitle>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" />
+    <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" NoWarn="NU1701" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" NoWarn="NU1701" />
+    <PackageReference Include="Microsoft.VisualStudio.SDK.EmbedInteropTypes" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" ExcludeAssets="Runtime" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.VisualStudio.Telemetry" />
+    <PackageReference Include="Microsoft.VisualStudio.Utilities.Internal" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Strings.Designer.cs" DependentUpon="Strings.resx" DesignTime="True" AutoGen="true" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Strings.resx" LastGenOutput="Strings.Designer.cs" Generator="ResXFileCodeGenerator" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="slngen" />
+    <InternalsVisibleTo Include="Microsoft.VisualStudio.SlnGen.UnitTests" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Tasks\" />
+  </ItemGroup>
+</Project>

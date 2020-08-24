@@ -15,13 +15,16 @@
     </PackageReference>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen.Common\Microsoft.VisualStudio.SlnGen.Common.csproj" PrivateAssets="All" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Runtime" IncludeAssets="None" PrivateAssets="All" GeneratePathProperty="true" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\$(TargetFramework)\MSBuild.exe" Private="false" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="App.config" />
-    <None Include="Tasks\Microsoft.VisualStudio.SlnGen.targets" Pack="true" PackagePath="build\;buildMultiTargeting\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Update="Strings.Designer.cs" DesignTime="True" AutoGen="true" DependentUpon="Strings.resx" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Update="Strings.resx" Generator="ResXFileCodeGenerator" LastGenOutput="Strings.Designer.cs" />
+    <None Include="Microsoft.VisualStudio.SlnGen.targets" Pack="true" PackagePath="build\;buildMultiTargeting\" />
   </ItemGroup>
 </Project>

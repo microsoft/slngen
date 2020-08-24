@@ -34,8 +34,6 @@ namespace Microsoft.VisualStudio.SlnGen
                 typeof(ProcessVerbositySwitchDelegate),
                 typeof(MSBuildApp).GetMethod("ProcessVerbositySwitch", BindingFlags.Static | BindingFlags.NonPublic)) as ProcessVerbositySwitchDelegate);
 
-        private readonly IReadOnlyCollection<ILogger> _loggers;
-
         private readonly bool _noWarn;
 
         private IEventSource _eventSource;
@@ -56,9 +54,9 @@ namespace Microsoft.VisualStudio.SlnGen
 
             _noWarn = noWarn;
 
-            _loggers = loggers.ToList();
+            Loggers = loggers.ToList();
 
-            IsDiagnostic = _loggers.Any(i => i.Verbosity == LoggerVerbosity.Diagnostic);
+            IsDiagnostic = Loggers.Any(i => i.Verbosity == LoggerVerbosity.Diagnostic);
         }
 
         private delegate void ProcessBinaryLoggerDelegate(string[] parameters, ArrayList loggers, ref LoggerVerbosity verbosity);
@@ -79,7 +77,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <summary>
         /// Gets the loggers.
         /// </summary>
-        public IReadOnlyCollection<ILogger> Loggers => _loggers;
+        public IReadOnlyCollection<ILogger> Loggers { get; }
 
         /// <inheritdoc />
         public int NextProjectId => Interlocked.Increment(ref _projectId);
@@ -183,7 +181,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 eventSource2.TelemetryLogged += OnTelemetryLogged;
             }
 
-            foreach (ILogger logger in _loggers)
+            foreach (ILogger logger in Loggers)
             {
                 logger.Initialize(this);
             }
@@ -220,7 +218,7 @@ namespace Microsoft.VisualStudio.SlnGen
         {
             Dispatch(new BuildFinishedEventArgs(HasLoggedErrors ? "Failed" : "Success", null, !HasLoggedErrors));
 
-            foreach (ILogger logger in _loggers)
+            foreach (ILogger logger in Loggers)
             {
                 logger.Shutdown();
             }

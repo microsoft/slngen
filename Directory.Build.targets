@@ -24,7 +24,8 @@
 
   <ItemGroup>
     <Compile Include="..\GlobalSuppressions.cs"
-             Link="Shared\GlobalSuppressions.cs" />
+             Link="GlobalSuppressions.cs"
+             Condition="'$(UsingMicrosoftNoTargetsSdk)' != 'true'" />
     <AdditionalFiles Include="..\..\stylecop.json"
                      Visible="false"/>
   </ItemGroup>
@@ -47,6 +48,9 @@
           DependsOnTargets="ResolveReferences">
     <ItemGroup>
       <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('AssetType', 'runtime'))"
+                            TargetPath="$(TargetFramework)\%(Filename)%(Extension)" />
+
+      <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('CopyLocal', 'true'))"
                             TargetPath="$(TargetFramework)\%(Filename)%(Extension)" />
 
       <BuiltProjectOutputGroupOutput Update="@(BuiltProjectOutputGroupOutput)"

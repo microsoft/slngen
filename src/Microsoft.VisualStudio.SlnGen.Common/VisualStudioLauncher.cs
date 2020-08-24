@@ -6,6 +6,7 @@ using Microsoft.Build.Utilities;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 
 namespace Microsoft.VisualStudio.SlnGen
 {
@@ -19,12 +20,47 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <summary>
         /// Launches Visual Studio.
         /// </summary>
+        /// <param name="arguments">The current <see cref="ProgramArguments" />.</param>
+        /// <param name="visualStudioInstance">A <see cref="VisualStudioInstance" /> object representing which instance of Visual Studio to launch.</param>
         /// <param name="solutionFileFullPath">The full path to the solution file.</param>
-        /// <param name="loadProjects">A value indicating whether to load projects in Visual Studio.</param>
-        /// <param name="devEnvFullPath">An optional full path to devenv.exe.</param>
         /// <param name="logger">A <see cref="ISlnGenLogger" /> to use for logging.</param>
-        public static void Launch(string solutionFileFullPath, bool loadProjects, string devEnvFullPath, ISlnGenLogger logger)
+        public static bool TryLaunch(ProgramArguments arguments, VisualStudioInstance visualStudioInstance, string solutionFileFullPath, ISlnGenLogger logger)
         {
+            if (!arguments.ShouldLaunchVisualStudio())
+            {
+                return true;
+            }
+
+            bool loadProjectsInVisualStudio = arguments.ShouldLoadProjectsInVisualStudio();
+            bool enableShellExecute = arguments.EnableShellExecute();
+
+            string devEnvFullPath = arguments.DevEnvFullPath?.LastOrDefault();
+
+            if (!enableShellExecute || !loadProjectsInVisualStudio || SharedProgram.IsCorext)
+            {
+                if (devEnvFullPath.IsNullOrWhiteSpace())
+                {
+                    if (visualStudioInstance == null)
+                    {
+                        logger.LogError(
+                            SharedProgram.IsCorext
+                                ? $"Could not find a Visual Studio {Environment.GetEnvironmentVariable("VisualStudioVersion")} installation.  Please do one of the following:\n a) Specify a full path to devenv.exe via the -vs command-line argument\n b) Update your corext.config to specify a version of MSBuild.Corext that matches a Visual Studio version you have installed\n c) Install a version of Visual Studio that matches the version of MSBuild.Corext in your corext.config"
+                                : "Could not find a Visual Studio installation.  Please specify the full path to devenv.exe via the -vs command-line argument");
+
+                        return false;
+                    }
+
+                    if (visualStudioInstance.IsBuildTools)
+                    {
+                        logger.LogError("Cannot use a BuildTools instance of Visual Studio.");
+
+                        return false;
+                    }
+
+                    devEnvFullPath = Path.Combine(visualStudioInstance.InstallationPath, "Common7", "IDE", "devenv.exe");
+                }
+            }
+
             if (solutionFileFullPath.IsNullOrWhiteSpace())
             {
                 throw new ArgumentNullException(nameof(solutionFileFullPath));
@@ -40,7 +76,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 {
                     logger.LogError($"The specified path to Visual Studio ({devEnvFullPath}) does not exist or is inaccessible.");
 
-                    return;
+                    return false;
                 }
 
                 processStartInfo = new ProcessStartInfo
@@ -51,7 +87,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
                 commandLineBuilder.AppendFileNameIfNotNull(solutionFileFullPath);
 
-                if (!loadProjects)
+                if (!arguments.ShouldLoadProjectsInVisualStudio())
                 {
                     commandLineBuilder.AppendSwitch(DoNotLoadProjectsCommandLineArgument);
                 }
@@ -89,6 +125,8 @@ namespace Microsoft.VisualStudio.SlnGen
             {
                 logger.LogError($"Failed to launch Visual Studio. {e.Message}");
             }
+
+            return true;
         }
     }
 }

@@ -5,8 +5,6 @@
     <NoWarn>$(NoWarn);SA1600</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="McMaster.Extensions.CommandLineUtils" />
-    <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="MSBuild.ProjectCreation" />
     <PackageReference Include="Shouldly" />
@@ -14,11 +12,12 @@
     <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj" Condition="'$(TargetFramework)' == 'net472'" />
+    <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen.Common\Microsoft.VisualStudio.SlnGen.Common.csproj" />
     <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen.Tool\Microsoft.VisualStudio.SlnGen.Tool.csproj" Condition="'$(TargetFramework)' == 'netcoreapp3.1' Or '$(TargetFramework)' == 'net5.0'" />
+    <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj" Condition="'$(TargetFramework)' == 'net472'" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
     <Content Include="..\Microsoft.VisualStudio.SlnGen\Tasks\*.targets" Link="build\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="..\Microsoft.VisualStudio.SlnGen\Tasks\*.Targets" Link="buildMultiTargeting\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\Microsoft.VisualStudio.SlnGen\Tasks\*.targets" Link="buildMultiTargeting\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
