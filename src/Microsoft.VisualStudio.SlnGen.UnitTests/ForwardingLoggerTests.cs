@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation.
 //
 // Licensed under the MIT license.
-
+#if NETFRAMEWORK
 using Shouldly;
 using System.Linq;
 using Xunit;
@@ -27,3 +27,4 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         }
     }
 }
+#endif

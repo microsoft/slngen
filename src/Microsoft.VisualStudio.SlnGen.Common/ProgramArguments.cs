@@ -5,7 +5,6 @@
 using McMaster.Extensions.CommandLineUtils;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 
@@ -233,19 +232,19 @@ Examples:
         /// Gets or sets the full path to the solution file to generate.
         /// </summary>
         [Option(
-            "-o|--solutionfile <path>",
+            "-d|--solutiondir <path>",
             CommandOptionType.MultipleValue,
-            Description = "An optional path to the solution file to generate.  Defaults to the same directory as the project.")]
-        public string[] SolutionFileFullPath { get; set; }
+            Description = "An optional path to the directory in which the solution file will be generated.  Defaults to the same directory as the project. --solutionfile will take precedence over this switch.")]
+        public string[] SolutionDirectoryFullPath { get; set; }
 
         /// <summary>
         /// Gets or sets the full path to the solution file to generate.
         /// </summary>
         [Option(
-            "-d|--solutiondir <path>",
+            "-o|--solutionfile <path>",
             CommandOptionType.MultipleValue,
-            Description = "An optional path to the directory in which the solution file will be generated.  Defaults to the same directory as the project. --solutionfile will take precedence over this switch.")]
-        public string[] SolutionDirectoryFullPath { get; set; }
+            Description = "An optional path to the solution file to generate.  Defaults to the same directory as the project.")]
+        public string[] SolutionFileFullPath { get; set; }
 
         /// <summary>
         /// Gets or sets the verbosity to use.
@@ -257,9 +256,55 @@ Examples:
   q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")]
         public string[] Verbosity { get; set; }
 
-        public bool EnableFolders() => GetBoolean(Folders);
+        /// <summary>
+        /// Gets specified projects or all projects in the current working directory.
+        /// </summary>
+        /// <returns>An <see cref="IEnumerable{String}" /> containing the full paths to projects to generate a solution for.</returns>
+        public bool TryGetEntryProjectPaths(ISlnGenLogger logger, out IReadOnlyList<string> projectEntryPaths)
+        {
+            List<string> result = new List<string>();
+
+            projectEntryPaths = result;
+
+            if (Projects == null || !Projects.Any())
+            {
+                logger.LogMessageNormal("Searching \"{0}\" for projects", Environment.CurrentDirectory);
+
+                foreach (string projectPath in Directory.EnumerateFiles(Environment.CurrentDirectory, "*.*proj"))
+                {
+                    result.Add(projectPath);
+
+                    logger.LogMessageNormal("Generating solution for project \"{0}\"", projectPath);
+                }
+
+                if (result.Count == 0)
+                {
+                    logger.LogError("No projects found in the current directory. Please specify the path to the project you want to generate a solution for.");
+                }
+            }
+            else
+            {
+                foreach (string projectPath in Projects.Select(Path.GetFullPath))
+                {
+                    if (!File.Exists(projectPath))
+                    {
+                        logger.LogError($"Project file \"{projectPath}\" does not exist");
+
+                        continue;
+                    }
+
+                    logger.LogMessageNormal("Generating solution for project \"{0}\"", projectPath);
+
+                    result.Add(projectPath);
+                }
+            }
+
+            return result.Count > 0;
+        }
 
         public bool EnableCollapseFolders() => GetBoolean(CollapseFolders);
+
+        public bool EnableFolders() => GetBoolean(Folders);
 
         public bool EnableShellExecute() => GetBoolean(ShellExecute, defaultValue: true);
 
@@ -270,6 +315,31 @@ Examples:
         public IReadOnlyCollection<string> GetConfigurations() => Configuration.SplitValues();
 
         /// <summary>
+        /// Gets the global properties to use when evaluating projects.
+        /// </summary>
+        /// <returns>An <see cref="IDictionary{String,String}" /> containing the global properties to use when evaluating projects.</returns>
+        public IDictionary<string, string> GetGlobalProperties()
+        {
+            IDictionary<string, string> globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [MSBuildPropertyNames.IsSlnGen] = bool.TrueString,
+                [MSBuildPropertyNames.BuildingProject] = bool.FalseString,
+                [MSBuildPropertyNames.DesignTimeBuild] = bool.TrueString,
+                [MSBuildPropertyNames.ExcludeRestorePackageImports] = bool.TrueString,
+            };
+
+            if (Property != null)
+            {
+                foreach (KeyValuePair<string, string> item in Property.SelectMany(i => i.SplitProperties()))
+                {
+                    globalProperties[item.Key] = item.Value;
+                }
+            }
+
+            return globalProperties;
+        }
+
+        /// <summary>
         /// Gets the Platform values based on what was specified as command-line arguments.
         /// </summary>
         /// <returns>An <see cref="IReadOnlyCollection{T}" /> containing the unique values for Platform.</returns>
@@ -277,29 +347,12 @@ Examples:
 
         public int OnExecute(IConsole console)
         {
-            if (!MSBuildLocator.TryLocate(message => Error(console, message), out VisualStudioInstance instance, out string msbuildBinPath))
-            {
-                return 1;
-            }
-
-            AssemblyResolver.Configure(msbuildBinPath, Path.Combine(msbuildBinPath, CultureInfo.CurrentCulture.TwoLetterISOLanguageName));
-
-            Program app = new Program(this, console, instance, msbuildBinPath);
-
-            return app.Execute();
+            return SharedProgram.Main(this, console);
         }
 
         public bool ShouldLaunchVisualStudio() => GetBoolean(LaunchVisualStudio, defaultValue: true);
 
         public bool ShouldLoadProjectsInVisualStudio() => GetBoolean(LoadProjectsInVisualStudio, defaultValue: true);
-
-        private static void Error(IConsole console, string message)
-        {
-            console.BackgroundColor = ConsoleColor.Black;
-            console.ForegroundColor = ConsoleColor.Red;
-            console.Error.WriteLine(message);
-            console.ResetColor();
-        }
 
         private bool GetBoolean(string[] values, bool defaultValue = false)
         {

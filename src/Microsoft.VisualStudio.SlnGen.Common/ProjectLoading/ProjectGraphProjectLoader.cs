@@ -3,7 +3,6 @@
 // Licensed under the MIT license.
 
 #if !NET46
-
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
@@ -49,20 +48,19 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
                     projectFullPath,
                     new ProjectOptions
                     {
-                        EvaluationContext = ProjectLoaderFactory.SharedEvaluationContext,
+                        EvaluationContext = ProjectLoader.SharedEvaluationContext,
                         GlobalProperties = globalProperties,
                         LoadSettings = DefaultProjectLoadSettings,
                         ProjectCollection = projectCollection,
                     })
                 .CreateProjectInstance(
                     ProjectInstanceSettings.ImmutableWithFastItemLookup,
-                    ProjectLoaderFactory.SharedEvaluationContext);
+                    ProjectLoader.SharedEvaluationContext);
 
-            ProjectLoaderFactory.LogProjectStartedEvent(_logger, projectInstance);
+            ProjectLoader.LogProjectStartedEvent(_logger, projectInstance);
 
             return projectInstance;
         }
     }
 }
-
 #endif

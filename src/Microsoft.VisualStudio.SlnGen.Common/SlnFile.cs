@@ -109,6 +109,73 @@ namespace Microsoft.VisualStudio.SlnGen
         public IReadOnlyCollection<string> SolutionItems => _solutionItems;
 
         /// <summary>
+        /// Generates a solution file.
+        /// </summary>
+        /// <param name="arguments">The current <see cref="ProgramArguments" />.</param>
+        /// <param name="projects">A <see cref="IEnumerable{String}" /> containing the entry projects.</param>
+        /// <param name="logger">A <see cref="ISlnGenLogger" /> to use for logging.</param>
+        /// <returns>A <see cref="Tuple{String, Int32, Int32, Guid}" /> with the full path to the solution file, the count of custom project type GUIDs used, the count of solution ites, and the solution GUID.</returns>
+        public static (string solutionFileFullPath, int customProjectTypeGuidCount, int solutionItemCount, Guid solutionGuid) GenerateSolutionFile(ProgramArguments arguments, IEnumerable<Project> projects, ISlnGenLogger logger)
+        {
+            Project project = projects.First();
+
+            IReadOnlyDictionary<string, Guid> customProjectTypeGuids = SlnProject.GetCustomProjectTypeGuids(project);
+
+            IReadOnlyCollection<string> solutionItems = SlnProject.GetSolutionItems(project, logger).ToList();
+
+            string solutionFileFullPath = arguments.SolutionFileFullPath?.LastOrDefault();
+
+            if (solutionFileFullPath.IsNullOrWhiteSpace())
+            {
+                string solutionDirectoryFullPath = arguments.SolutionDirectoryFullPath?.LastOrDefault();
+
+                if (solutionDirectoryFullPath.IsNullOrWhiteSpace())
+                {
+                    solutionDirectoryFullPath = project.DirectoryPath;
+                }
+
+                string solutionFileName = Path.ChangeExtension(Path.GetFileName(project.FullPath), "sln");
+
+                solutionFileFullPath = Path.Combine(solutionDirectoryFullPath, solutionFileName);
+            }
+
+            logger.LogMessageHigh($"Generating Visual Studio solution \"{solutionFileFullPath}\" ...");
+
+            if (customProjectTypeGuids.Count > 0)
+            {
+                logger.LogMessageLow("Custom Project Type GUIDs:");
+                foreach (KeyValuePair<string, Guid> item in customProjectTypeGuids)
+                {
+                    logger.LogMessageLow("  {0} = {1}", item.Key, item.Value);
+                }
+            }
+
+            SlnFile solution = new SlnFile
+            {
+                Platforms = arguments.GetPlatforms(),
+                Configurations = arguments.GetConfigurations(),
+            };
+
+            if (SlnFile.TryParseExistingSolution(solutionFileFullPath, out Guid solutionGuid, out IReadOnlyDictionary<string, Guid> projectGuidsByPath))
+            {
+                logger.LogMessageNormal("Updating existing solution file and reusing Visual Studio cache");
+
+                solution.SolutionGuid = solutionGuid;
+                solution.ExistingProjectGuids = projectGuidsByPath;
+
+                arguments.LoadProjectsInVisualStudio = new[] { bool.TrueString };
+            }
+
+            solution.AddProjects(projects, customProjectTypeGuids, arguments.IgnoreMainProject ? null : project.FullPath);
+
+            solution.AddSolutionItems(solutionItems);
+
+            solution.Save(solutionFileFullPath, arguments.EnableFolders(), arguments.EnableCollapseFolders());
+
+            return (solutionFileFullPath, customProjectTypeGuids.Count, solutionItems.Count, solution.SolutionGuid);
+        }
+
+        /// <summary>
         /// Attempts to read the existing GUID from a solution file if one exists.
         /// </summary>
         /// <param name="path">The path to a solution file.</param>

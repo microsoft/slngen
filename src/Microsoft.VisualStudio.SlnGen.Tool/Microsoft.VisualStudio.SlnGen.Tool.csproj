@@ -3,21 +3,11 @@
     <OutputType>Exe</OutputType>
     <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
     <PackAsTool>true</PackAsTool>
-    <ServerGarbageCollection>true</ServerGarbageCollection>
-    <SharedProjectExcludes>..\Microsoft.VisualStudio.SlnGen\obj\**;..\Microsoft.VisualStudio.SlnGen\bin\**;..\Microsoft.VisualStudio.SlnGen\**\.*\**;..\Microsoft.VisualStudio.SlnGen\Tasks\**</SharedProjectExcludes>
     <ToolCommandName>slngen</ToolCommandName>
-    <NoWarn>$(NoWarn);NU1701</NoWarn>
     <RollForward>LatestMajor</RollForward>
   </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen.Common\Microsoft.VisualStudio.SlnGen.Common.csproj" />
+  </ItemGroup>
   <Import Project="..\Microsoft.VisualStudio.SlnGen\Shared.props" />
-  <ItemGroup>
-    <Compile Include="..\Microsoft.VisualStudio.SlnGen\**\*$(DefaultLanguageSourceExtension)" Exclude="$(SharedProjectExcludes)" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="..\Microsoft.VisualStudio.SlnGen\**\*.resx" Exclude="$(SharedProjectExcludes)" Condition=" '$(EnableDefaultEmbeddedResourceItems)' == 'true' " />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="..\Microsoft.VisualStudio.SlnGen\RepoInfo.cs" />
-    <Compile Remove="..\Microsoft.VisualStudio.SlnGen\VisualStudioLocator.cs" />
-  </ItemGroup>
 </Project>

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation.
 //
 // Licensed under the MIT license.
-
 using Microsoft.VisualStudio.Setup.Configuration;
 using System;
 using System.Collections.Concurrent;

@@ -7,6 +7,7 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 
@@ -81,12 +82,6 @@ namespace Microsoft.VisualStudio.SlnGen.Tasks
         public bool InheritGlobalProperties { get; set; }
 
         /// <summary>
-        /// The path to the directory containing MSBuild.exe.
-        /// </summary>
-        [Required]
-        public string MSBuildBinPath { get; set; }
-
-        /// <summary>
         /// Gets or sets the full path to the project being built.
         /// </summary>
         [Required]
@@ -127,7 +122,7 @@ namespace Microsoft.VisualStudio.SlnGen.Tasks
         }
 
         /// <inheritdoc />
-        protected override string GenerateFullPathToTool() => Assembly.GetExecutingAssembly().Location;
+        protected override string GenerateFullPathToTool() => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "slngen.exe");
 
         /// <inheritdoc />
         protected override bool ValidateParameters()

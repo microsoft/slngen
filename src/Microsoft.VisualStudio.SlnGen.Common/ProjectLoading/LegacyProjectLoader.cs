@@ -129,7 +129,7 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
             {
                 project = new Project(fullPath, globalProperties, toolsVersion, projectCollection, DefaultProjectLoadSettings);
 
-                ProjectLoaderFactory.LogProjectStartedEvent(_logger, project.CreateProjectInstance(ProjectInstanceSettings.ImmutableWithFastItemLookup, ProjectLoaderFactory.SharedEvaluationContext));
+                ProjectLoader.LogProjectStartedEvent(_logger, project.CreateProjectInstance(ProjectInstanceSettings.ImmutableWithFastItemLookup, ProjectLoader.SharedEvaluationContext));
             }
             catch (InvalidProjectFileException e)
             {
