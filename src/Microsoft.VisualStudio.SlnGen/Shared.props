@@ -17,9 +17,6 @@
     <None Include="$(MSBuildThisFileFullPath)" />
   </ItemGroup>
   <ItemGroup>
-    <FilesToSign Include="$(TargetPath)" Authenticode="Microsoft400" StrongName="StrongName" />
-  </ItemGroup>
-  <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.VisualStudio.SlnGen.UnitTests" />
   </ItemGroup>
 </Project>

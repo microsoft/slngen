@@ -2,23 +2,20 @@
 //
 // Licensed under the MIT license.
 
-using McMaster.Extensions.CommandLineUtils;
-using Microsoft.VisualStudio.SlnGen.Tasks;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Xml.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.VisualStudio.SlnGen
 {
+    /// <summary>
+    /// Represents the main program of SlnGen.
+    /// </summary>
     public static class Program
     {
-        private const string TargetName = "GenerateVisualStudioSolution";
-
-        private static readonly FileInfo ProjectFileInfo = new FileInfo(Path.Combine(Environment.CurrentDirectory, Path.ChangeExtension(Guid.NewGuid().ToString("N"), ".slngen")));
-
         static Program()
         {
             if (Environment.GetCommandLineArgs().Any(i => i.Equals("--debug", StringComparison.OrdinalIgnoreCase)))
@@ -27,106 +24,43 @@ namespace Microsoft.VisualStudio.SlnGen
             }
         }
 
+        /// <summary>
+        /// Runs SlnGen with the specified arguments.
+        /// </summary>
+        /// <param name="args">The <see cref="string[]" /> command-line arguments to use.</param>
+        /// <returns>A non-zero number if the program failed, otherwise zero.</returns>
         public static int Main(string[] args)
         {
-            if (!TryLocateVisualStudio(out string vsInstallDir, out string error))
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                Console.BackgroundColor = ConsoleColor.Black;
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.Error.WriteLine(error);
+                WriteError("SlnGen currently only supports Windows.");
+
                 return -1;
             }
 
-            new XElement(
-                    "Project",
-                    new XElement(
-                        "UsingTask",
-                        new XAttribute("TaskName", nameof(SlnGenTask)),
-                        new XAttribute("AssemblyFile", typeof(SharedProgram).Assembly.Location)),
-                    new XElement(
-                        "Target",
-                        new XAttribute("Name", TargetName),
-                        new XElement(
-                            nameof(SlnGenTask),
-                            new XAttribute(nameof(SlnGenTask.Args), $"{string.Join(Path.PathSeparator, args)};--nologo"),
-                            new XAttribute(nameof(SlnGenTask.VisualStudioInstallDirectory), vsInstallDir))))
-                .Save(ProjectFileInfo.FullName);
+            string visualStudioVersionEnvironmentVariable = Environment.GetEnvironmentVariable("VISUALSTUDIOVERSION");
 
-            try
+            if (string.IsNullOrWhiteSpace(visualStudioVersionEnvironmentVariable) || !Version.TryParse(visualStudioVersionEnvironmentVariable, out Version visualStudioVersion))
             {
-                ProjectFileInfo.Attributes |= FileAttributes.Hidden;
-
-                return SharedProgram.Main(args, Execute);
-            }
-            finally
-            {
-                ProjectFileInfo.Delete();
-            }
-        }
-
-        private static bool TryLocateVisualStudio(out string vsInstallDir, out string error)
-        {
-            vsInstallDir = Environment.GetEnvironmentVariable("VSINSTALLDIR");
-            error = null;
-
-            if (vsInstallDir.IsNullOrWhiteSpace())
-            {
-                error = "SlnGen must run from a Visual Studio Developer Command prompt and requires the %VSINSTALLDIR% environment variable to be set.";
-
-                return false;
+                visualStudioVersion = new Version(16, 0);
             }
 
-            if (!Directory.Exists(vsInstallDir))
+            FileInfo slnGenExe = new FileInfo(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "..", "..", visualStudioVersion.Major >= 16 ? "net472" : "net46", "slngen.exe"));
+
+            if (!slnGenExe.Exists)
             {
-                error = $"The current Visual Studio Developer Command prompt is configured against a Visual Studio directory that does not exist ({vsInstallDir}).";
-
-                return false;
-            }
-
-            return true;
-        }
-
-        private static int Execute(ProgramArguments arguments, IConsole console)
-        {
-            List<string> commandLineArguments = new List<string>
-            {
-                "msbuild",
-                $"\"{ProjectFileInfo.FullName}\"",
-                "-noLogo",
-                "-noAutoResponse",
-                "-restore:false",
-                $"-target:{TargetName}",
-            };
-
-            if (arguments.ConsoleLoggerParameters.HasValue)
-            {
-                commandLineArguments.Add($"-consoleLoggerParameters:{(arguments.ConsoleLoggerParameters.Arguments.IsNullOrWhiteSpace() ? "Verbosity=Minimal;Summary;ForceNoAlign" : arguments.ConsoleLoggerParameters.Arguments)}");
-            }
-
-            if (arguments.FileLoggerParameters.HasValue)
-            {
-                commandLineArguments.Add($"-fileLoggerParameters:{(arguments.FileLoggerParameters.Arguments.IsNullOrWhiteSpace() ? "LogFile=slngen.log;Verbosity=Detailed" : $"LogFile=slngen.log;{arguments.FileLoggerParameters.Arguments}")}");
-            }
-
-            if (arguments.BinaryLogger.HasValue)
-            {
-                commandLineArguments.Add($"-binaryLogger:{(arguments.BinaryLogger.Arguments.IsNullOrWhiteSpace() ? "LogFile=slngen.binlog" : $"LogFile=slngen.binlog;{arguments.BinaryLogger.Arguments}")}");
+                WriteError("The required component '{0}' was not found. Please check your installation.", slnGenExe.FullName);
             }
 
             Process process = new Process
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    Arguments = string.Join(" ", commandLineArguments),
-                    FileName = "dotnet",
+                    Arguments = string.Join(" ", args),
+                    FileName = slnGenExe.FullName,
                     UseShellExecute = false,
                 },
             };
-
-            process.StartInfo.EnvironmentVariables["COMPLUS_GCSERVER"] = "1";
-            process.StartInfo.EnvironmentVariables["COREHOST_TRACE"] = "0";
-            process.StartInfo.EnvironmentVariables["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1";
-            process.StartInfo.EnvironmentVariables["DOTNET_NOLOGO"] = "1";
 
             if (process.Start())
             {
@@ -143,6 +77,14 @@ namespace Microsoft.VisualStudio.SlnGen
             }
 
             return -1;
+        }
+
+        private static void WriteError(string message, params object[] args)
+        {
+            Console.BackgroundColor = ConsoleColor.Black;
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.Error.WriteLine(message, args);
+            Console.ResetColor();
         }
     }
 }

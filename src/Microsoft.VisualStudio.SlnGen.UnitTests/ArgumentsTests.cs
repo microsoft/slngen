@@ -15,9 +15,9 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         {
             TestConsole console = new TestConsole();
 
-            int exitCode = SharedProgram.Main(new[] { "/?" }, console, (arguments, console1) => 1);
+            int exitCode = Program.Execute(new[] { "/?" }, console, (arguments, console1) => 1);
 
-            exitCode.ShouldBe(0, console.Output);
+            exitCode.ShouldBe(0, console.AllOutput);
 
             console.Output.ShouldContain("Usage: ", console.Output);
         }
@@ -51,7 +51,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         {
             TestConsole console = new TestConsole();
 
-            int exitCode = SharedProgram.Main(new[] { argument, "--help" }, console, (arguments, console1) => 0);
+            int exitCode = Program.Execute(new[] { argument, "--help" }, console, (arguments, console1) => 0);
 
             exitCode.ShouldBe(0, console.Output);
 

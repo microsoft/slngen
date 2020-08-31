@@ -15,6 +15,8 @@ namespace Microsoft.VisualStudio.SlnGen
     /// </summary>
     public sealed class ProgramArguments
     {
+        internal static Func<ProgramArguments, IConsole, int> Execute = (arguments, console) => Program.Execute(arguments, console);
+
         /// <summary>
         /// Gets or sets the binary logger arguments.
         /// </summary>
@@ -347,7 +349,7 @@ Examples:
 
         public int OnExecute(IConsole console)
         {
-            return SharedProgram.Main(this, console);
+            return Execute(this, console);
         }
 
         public bool ShouldLaunchVisualStudio() => GetBoolean(LaunchVisualStudio, defaultValue: true);

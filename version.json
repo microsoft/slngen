@@ -1,7 +1,8 @@
 ﻿{
   "$schema": "https://raw.githubusercontent.com/AArnott/Nerdbank.GitVersioning/master/src/NerdBank.GitVersioning/version.schema.json",
-  "version": "4.1-preview",
+  "version": "4.2-preview",
   "assemblyVersion": "3.0",
+  "buildNumberOffset": -1,
   "publicReleaseRefSpec": [
     "^refs/heads/master$",
     "^refs/tags/v\\d+\\.\\d+\\.\\d+"

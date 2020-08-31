@@ -48,28 +48,18 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
 
             IProjectLoader projectLoader = Create(msbuildExeFileInfo, logger);
 
-            using (new MSBuildFeatureFlags
+            try
             {
-                CacheFileEnumerations = true,
-                LoadAllFilesAsReadOnly = true,
-                MSBuildSkipEagerWildCardEvaluationRegexes = true,
-                UseSimpleProjectRootElementCacheConcurrency = true,
-                MSBuildExePath = msbuildExeFileInfo.FullName,
-            })
+                projectLoader.LoadProjects(entryProjects, projectCollection, globalProperties);
+            }
+            catch (InvalidProjectFileException)
             {
-                try
-                {
-                    projectLoader.LoadProjects(entryProjects, projectCollection, globalProperties);
-                }
-                catch (InvalidProjectFileException)
-                {
-                    return (TimeSpan.Zero, 0);
-                }
-                catch (Exception e)
-                {
-                    logger.LogError(e.ToString());
-                    return (TimeSpan.Zero, 0);
-                }
+                return (TimeSpan.Zero, 0);
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e.ToString());
+                return (TimeSpan.Zero, 0);
             }
 
             sw.Stop();
