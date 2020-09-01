@@ -81,21 +81,20 @@ namespace Microsoft.VisualStudio.SlnGen
                         args);
             }
 
-            using (new MSBuildFeatureFlags
+            return Execute(args, PhysicalConsole.Singleton);
+        }
+
+        internal static int Execute(ProgramArguments arguments, IConsole console)
+        {
+            MSBuildFeatureFlags featureFlags = new MSBuildFeatureFlags
             {
                 CacheFileEnumerations = true,
                 LoadAllFilesAsReadOnly = true,
                 MSBuildSkipEagerWildCardEvaluationRegexes = true,
                 UseSimpleProjectRootElementCacheConcurrency = true,
-                MSBuildExePath = msBuildExeFileInfo.FullName,
-            })
-            {
-                return Execute(args, PhysicalConsole.Singleton);
-            }
-        }
+                MSBuildExePath = MSBuildExeFileInfo.FullName,
+            };
 
-        internal static int Execute(ProgramArguments arguments, IConsole console)
-        {
             LoggerVerbosity verbosity = ForwardingLogger.ParseLoggerVerbosity(arguments.Verbosity?.LastOrDefault());
 
             ConsoleForwardingLogger consoleLogger = new ConsoleForwardingLogger(console)
@@ -150,6 +149,8 @@ namespace Microsoft.VisualStudio.SlnGen
                     }
 
                     (string solutionFileFullPath, int customProjectTypeGuidCount, int solutionItemCount, Guid solutionGuid) = SlnFile.GenerateSolutionFile(arguments, projectCollection.LoadedProjects.Where(i => !i.GlobalProperties.ContainsKey("TargetFramework")), forwardingLogger);
+
+                    featureFlags.Dispose();
 
                     if (!VisualStudioLauncher.TryLaunch(arguments, VisualStudio, solutionFileFullPath, forwardingLogger))
                     {
