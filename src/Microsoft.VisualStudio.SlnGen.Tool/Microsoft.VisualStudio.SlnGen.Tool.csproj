@@ -11,6 +11,10 @@
     <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj" ReferenceOutputAssembly="false" PrivateAssets="All" IncludeAssets="None" OutputItemType="DotNetFrameworkSlnGen" SkipGetTargetFrameworkProperties="true" AdditionalProperties="TargetFramework=net472" TargetFramework="net472" />
   </ItemGroup>
   <Import Project="..\Microsoft.VisualStudio.SlnGen\Shared.props" />
+
+  <ItemGroup>
+    <FilesToSign Include="$(PublishDir)$(TargetName)$(TargetExt)" Authenticode="Microsoft400" StrongName="StrongName" />
+  </ItemGroup>
   
   <Target Name="CopyDotNetFrameworkSlnGenToOutputDirectoryAndPackage"
           AfterTargets="DispatchToInnerBuilds">
@@ -48,5 +52,9 @@
     <ItemGroup>
       <TargetPathWithTargetPlatformMoniker Include="@(DotNetFrameworkSlnGen)" IsDotNetFrameworkSlnGen="true" />
     </ItemGroup>
+  </Target>
+
+  <Target Name="Foo">
+    <Message Text=""
   </Target>
 </Project>
