@@ -13,7 +13,7 @@
   <Import Project="..\Microsoft.VisualStudio.SlnGen\Shared.props" />
 
   <ItemGroup>
-    <FilesToSign Include="$(PublishDir)$(TargetName)$(TargetExt)" Authenticode="Microsoft400" StrongName="StrongName" />
+    <FilesToSign Include="$(IntermediateOutputPath)$(TargetName)$(TargetExt)" Authenticode="Microsoft400" StrongName="StrongName" />
   </ItemGroup>
   
   <Target Name="CopyDotNetFrameworkSlnGenToOutputDirectoryAndPackage"
@@ -52,9 +52,5 @@
     <ItemGroup>
       <TargetPathWithTargetPlatformMoniker Include="@(DotNetFrameworkSlnGen)" IsDotNetFrameworkSlnGen="true" />
     </ItemGroup>
-  </Target>
-
-  <Target Name="Foo">
-    <Message Text=""
   </Target>
 </Project>
