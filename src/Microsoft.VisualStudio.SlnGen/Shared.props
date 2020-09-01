@@ -19,4 +19,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.VisualStudio.SlnGen.UnitTests" />
   </ItemGroup>
+  <ItemGroup>
+    <FilesToSign Include="$(TargetPath)" Authenticode="Microsoft400" StrongName="StrongName" />
+  </ItemGroup>
 </Project>
