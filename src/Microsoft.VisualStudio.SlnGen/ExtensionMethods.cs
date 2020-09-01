@@ -86,7 +86,7 @@ namespace Microsoft.VisualStudio.SlnGen
         {
             HashSet<string> values = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (string conditionPropertyValue in project.GetConditionedPropertyValuesOrDefault(name, string.Empty))
+            foreach (string conditionPropertyValue in project.GetConditionedPropertyValuesOrDefault(name, defaultValue))
             {
                 values.Add(conditionPropertyValue);
             }

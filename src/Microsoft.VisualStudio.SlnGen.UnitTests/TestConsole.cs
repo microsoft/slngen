@@ -42,6 +42,8 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
         public string ErrorOutput => _error.ToString();
 
+        public string AllOutput => $"{Output}{Environment.NewLine}{ErrorOutput}";
+
         public ConsoleColor ForegroundColor { get; set; }
 
         public TextReader In => throw new NotImplementedException();

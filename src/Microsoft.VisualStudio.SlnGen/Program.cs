@@ -14,20 +14,32 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.VisualStudio.SlnGen
 {
     public static class Program
     {
+        private static readonly TelemetryClient TelemetryClient;
+
         static Program()
         {
             if (Environment.GetCommandLineArgs().Any(i => i.Equals("--debug", StringComparison.OrdinalIgnoreCase)))
             {
                 Debugger.Launch();
             }
+
+            TelemetryClient = new TelemetryClient();
         }
 
         public static ProgramArguments Arguments { get; set; }
+
+        public static bool IsCorext { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether or not the current runtime framework is .NET Core.
+        /// </summary>
+        public static bool IsNetCore { get; } = !RuntimeInformation.FrameworkDescription.StartsWith(".NET Framework", StringComparison.Ordinal);
 
         public static FileInfo MSBuildExeFileInfo { get; set; }
 
@@ -69,10 +81,20 @@ namespace Microsoft.VisualStudio.SlnGen
                         args);
             }
 
-            return SharedProgram.Main(args, Execute);
+            using (new MSBuildFeatureFlags
+            {
+                CacheFileEnumerations = true,
+                LoadAllFilesAsReadOnly = true,
+                MSBuildSkipEagerWildCardEvaluationRegexes = true,
+                UseSimpleProjectRootElementCacheConcurrency = true,
+                MSBuildExePath = msBuildExeFileInfo.FullName,
+            })
+            {
+                return Execute(args, PhysicalConsole.Singleton);
+            }
         }
 
-        private static int Execute(ProgramArguments arguments, IConsole console)
+        internal static int Execute(ProgramArguments arguments, IConsole console)
         {
             LoggerVerbosity verbosity = ForwardingLogger.ParseLoggerVerbosity(arguments.Verbosity?.LastOrDefault());
 
@@ -134,7 +156,7 @@ namespace Microsoft.VisualStudio.SlnGen
                         return 1;
                     }
 
-                    SharedProgram.LogTelemetry(arguments, evaluationTime, evaluationCount, customProjectTypeGuidCount, solutionItemCount, solutionGuid);
+                    Program.LogTelemetry(arguments, evaluationTime, evaluationCount, customProjectTypeGuidCount, solutionItemCount, solutionGuid);
                 }
                 catch (InvalidProjectFileException e)
                 {
@@ -150,6 +172,74 @@ namespace Microsoft.VisualStudio.SlnGen
             }
 
             return 0;
+        }
+
+        internal static int Execute(string[] args, IConsole console, Func<ProgramArguments, IConsole, int> execute)
+        {
+            ProgramArguments.Execute = execute;
+
+            return Execute(args, console);
+        }
+
+        private static int Execute(string[] args, IConsole console)
+        {
+            try
+            {
+                bool noLogo = false;
+
+                for (int i = 0; i < args.Length; i++)
+                {
+                    if (args[i].Equals("/?"))
+                    {
+                        args[i] = "--help";
+                    }
+
+                    if (args[i].Equals("/nologo", StringComparison.OrdinalIgnoreCase) || args[i].Equals("--nologo", StringComparison.OrdinalIgnoreCase))
+                    {
+                        noLogo = true;
+                    }
+
+                    // Translate / to - or -- for Windows users
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    {
+                        if (args[i][0] == '/')
+                        {
+                            if (args[i].Length == 2 || (i >= 3 && args.Length > i && args[i].Length >= 3 && args[i][2] == ':'))
+                            {
+                                args[i] = $"-{args[i].Substring(1)}";
+                            }
+                            else
+                            {
+                                args[i] = $"--{args[i].Substring(1)}";
+                            }
+                        }
+                    }
+                }
+
+                if (!noLogo)
+                {
+                    Console.WriteLine(
+                        Strings.Message_Logo,
+                        ThisAssembly.AssemblyTitle,
+                        ThisAssembly.AssemblyInformationalVersion,
+                        IsNetCore ? ".NET Core" : ".NET Framework");
+                }
+
+                return CommandLineApplication.Execute<ProgramArguments>(console, args);
+            }
+            catch (Exception e)
+            {
+                if (!TelemetryClient.PostException(e))
+                {
+                    throw;
+                }
+
+                return 2;
+            }
+            finally
+            {
+                TelemetryClient.Dispose();
+            }
         }
 
         private static IEnumerable<ILogger> GetLoggers(ConsoleForwardingLogger consoleLogger, ProgramArguments arguments)
@@ -181,6 +271,44 @@ namespace Microsoft.VisualStudio.SlnGen
             }
         }
 
+        private static void LogTelemetry(ProgramArguments arguments, TimeSpan evaluationTime, int evaluationCount, int customProjectTypeGuidCount, int solutionItemCount, Guid solutionGuid)
+        {
+            try
+            {
+                TelemetryClient.PostEvent(
+                        "execute",
+                        new Dictionary<string, object>
+                        {
+                            ["AssemblyInformationalVersion"] = ThisAssembly.AssemblyInformationalVersion,
+                            ["DevEnvFullPathSpecified"] = (!arguments.DevEnvFullPath?.LastOrDefault().IsNullOrWhiteSpace()).ToString(),
+                            ["EntryProjectCount"] = arguments.Projects?.Length.ToString(),
+                            ["Folders"] = arguments.EnableFolders().ToString(),
+                            ["CollapseFolders"] = arguments.EnableCollapseFolders().ToString(),
+                            ["IsCoreXT"] = IsCorext.ToString(),
+                            ["IsNetCore"] = IsNetCore.ToString(),
+                            ["LaunchVisualStudio"] = arguments.ShouldLaunchVisualStudio().ToString(),
+                            ["SolutionFileFullPathSpecified"] = (!arguments.SolutionFileFullPath?.LastOrDefault().IsNullOrWhiteSpace()).ToString(),
+#if NETFRAMEWORK
+                            ["Runtime"] = $".NET Framework {Environment.Version}",
+#elif NETCOREAPP
+                            ["Runtime"] = $".NET Core {Environment.Version}",
+#endif
+                            ["UseBinaryLogger"] = arguments.BinaryLogger.HasValue.ToString(),
+                            ["UseFileLogger"] = arguments.FileLoggerParameters.HasValue.ToString(),
+                            ["UseShellExecute"] = arguments.EnableShellExecute().ToString(),
+                            ["CustomProjectTypeGuidCount"] = customProjectTypeGuidCount,
+                            ["ProjectCount"] = evaluationCount,
+                            ["ProjectEvaluationMilliseconds"] = evaluationTime.TotalMilliseconds,
+                            ["SolutionItemCount"] = solutionItemCount,
+                            ["VS.Platform.Solution.Project.SccProvider.SolutionId"] = solutionGuid == Guid.Empty ? string.Empty : solutionGuid.ToString("B"),
+                        });
+            }
+            catch (Exception)
+            {
+                // Ignored
+            }
+        }
+
         /// <summary>
         /// Attempts to locate MSBuild based on the current environment.
         /// </summary>
@@ -202,7 +330,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
                 if (!msbuildToolsPath.IsNullOrWhiteSpace())
                 {
-                    if (SharedProgram.IsNetCore)
+                    if (IsNetCore)
                     {
                         error = "The .NET Core version of SlnGen is not supported in CoreXT.  You must use the .NET Framework version via the SlnGen.Corext package";
 
@@ -230,13 +358,13 @@ namespace Microsoft.VisualStudio.SlnGen
                         .OrderByDescending(i => i.InstallationVersion)
                         .FirstOrDefault();
 
-                    SharedProgram.IsCorext = true;
+                    IsCorext = true;
 
                     return true;
                 }
             }
 
-            string vsInstallDirEnvVar = Environment.GetEnvironmentVariable("VSINSTALLDIR");
+            string vsInstallDirEnvVar = Environment.GetEnvironmentVariable("VSINSTALLDIR") ?? Environment.GetEnvironmentVariable("VSAPPIDDIR");
 
             if (vsInstallDirEnvVar.IsNullOrWhiteSpace())
             {

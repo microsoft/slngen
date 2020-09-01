@@ -36,14 +36,14 @@ namespace Microsoft.VisualStudio.SlnGen
 
             string devEnvFullPath = arguments.DevEnvFullPath?.LastOrDefault();
 
-            if (!enableShellExecute || !loadProjectsInVisualStudio || SharedProgram.IsCorext)
+            if (!enableShellExecute || !loadProjectsInVisualStudio || Program.IsCorext)
             {
                 if (devEnvFullPath.IsNullOrWhiteSpace())
                 {
                     if (visualStudioInstance == null)
                     {
                         logger.LogError(
-                            SharedProgram.IsCorext
+                            Program.IsCorext
                                 ? $"Could not find a Visual Studio {Environment.GetEnvironmentVariable("VisualStudioVersion")} installation.  Please do one of the following:\n a) Specify a full path to devenv.exe via the -vs command-line argument\n b) Update your corext.config to specify a version of MSBuild.Corext that matches a Visual Studio version you have installed\n c) Install a version of Visual Studio that matches the version of MSBuild.Corext in your corext.config"
                                 : "Could not find a Visual Studio installation.  Please specify the full path to devenv.exe via the -vs command-line argument");
 

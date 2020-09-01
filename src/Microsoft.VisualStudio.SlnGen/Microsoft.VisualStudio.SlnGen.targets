@@ -8,15 +8,14 @@
           Condition="'$(CustomBeforeSlnGenTargets)' != '' and Exists('$(CustomBeforeSlnGenTargets)')" />
 
   <UsingTask TaskName="Microsoft.VisualStudio.SlnGen.Tasks.SlnGenToolTask"
-             AssemblyFile="$([MSBuild]::ValueOrDefault('$(SlnGenAssemblyFile)', '$(MSBuildThisFileDirectory)..\tools\net46\Microsoft.VisualStudio.SlnGen.Common.dll'))"
+             AssemblyFile="$([MSBuild]::ValueOrDefault('$(SlnGenAssemblyFile)', '$(MSBuildThisFileDirectory)..\tools\net46\slngen.exe'))"
              Condition="'$(MSBuildToolsVersion)' != 'Current'" />
 
   <UsingTask TaskName="Microsoft.VisualStudio.SlnGen.Tasks.SlnGenToolTask"
-             AssemblyFile="$([MSBuild]::ValueOrDefault('$(SlnGenAssemblyFile)', '$(MSBuildThisFileDirectory)..\tools\net472\Microsoft.VisualStudio.SlnGen.Common.dll'))"
+             AssemblyFile="$([MSBuild]::ValueOrDefault('$(SlnGenAssemblyFile)', '$(MSBuildThisFileDirectory)..\tools\net472\slngen.exe'))"
              Condition="'$(MSBuildToolsVersion)' == 'Current'" />
 
   <Target Name="SlnGen"
-          Condition="'$(MSBuildRuntimeType)' == 'Full'"
           DependsOnTargets="$(SlnGenDependsOn)">
     <Microsoft.VisualStudio.SlnGen.Tasks.SlnGenToolTask
       BuildingSolutionFile="$([MSBuild]::ValueOrDefault('$(BuildingSolutionFile)', 'false'))"

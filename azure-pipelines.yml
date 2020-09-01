@@ -11,7 +11,7 @@ variables:
   SignType: 'Test'
 
 trigger:
-  batch: true
+  batch: 'true'
   branches:
     include:
     - 'master'
@@ -52,11 +52,14 @@ jobs:
       projects: 'SlnGen.sln'
       arguments: '$(MSBuildArgs)'
 
-  - task: DotNetCoreCLI@2
-    displayName: 'Run Unit Tests'
+  - task: VSTest@2
     inputs:
-      command: 'test'
-      arguments: '--no-restore --no-build "/restore:false"'
+      testSelector: 'testAssemblies'
+      testAssemblyVer2: |
+        **\*test*.dll
+        !**\*TestAdapter.dll
+        !**\obj\**
+      searchFolder: '$(System.DefaultWorkingDirectory)'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifacts'

@@ -15,10 +15,14 @@
     </PackageReference>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen.Common\Microsoft.VisualStudio.SlnGen.Common.csproj" PrivateAssets="All" />
-  </ItemGroup>
-  <ItemGroup>
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" />
+    <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" NoWarn="NU1701" />
     <PackageReference Include="Microsoft.Build.Runtime" IncludeAssets="None" PrivateAssets="All" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" NoWarn="NU1701" />
+    <PackageReference Include="Microsoft.VisualStudio.SDK.EmbedInteropTypes" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" ExcludeAssets="Runtime" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.VisualStudio.Telemetry" />
+    <PackageReference Include="Microsoft.VisualStudio.Utilities.Internal" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\$(TargetFramework)\MSBuild.exe" Private="false" />
@@ -26,5 +30,21 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="Microsoft.VisualStudio.SlnGen.targets" Pack="true" PackagePath="build\;buildMultiTargeting\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Strings.Designer.cs">
+      <DependentUpon>Strings.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>true</AutoGen>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Strings.resx">
+      <LastGenOutput>Strings.Designer.cs</LastGenOutput>
+      <Generator>ResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.VisualStudio.SlnGen.UnitTests" />
   </ItemGroup>
 </Project>

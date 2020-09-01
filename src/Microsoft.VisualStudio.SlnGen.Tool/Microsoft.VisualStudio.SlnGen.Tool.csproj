@@ -7,7 +7,46 @@
     <RollForward>LatestMajor</RollForward>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen.Common\Microsoft.VisualStudio.SlnGen.Common.csproj" />
+    <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj" ReferenceOutputAssembly="false" PrivateAssets="All" IncludeAssets="None" OutputItemType="DotNetFrameworkSlnGen" SkipGetTargetFrameworkProperties="true" AdditionalProperties="TargetFramework=net46" TargetFramework="net46" />
+    <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj" ReferenceOutputAssembly="false" PrivateAssets="All" IncludeAssets="None" OutputItemType="DotNetFrameworkSlnGen" SkipGetTargetFrameworkProperties="true" AdditionalProperties="TargetFramework=net472" TargetFramework="net472" />
   </ItemGroup>
   <Import Project="..\Microsoft.VisualStudio.SlnGen\Shared.props" />
+  
+  <Target Name="CopyDotNetFrameworkSlnGenToOutputDirectoryAndPackage"
+          AfterTargets="DispatchToInnerBuilds">
+    <ItemGroup>
+      <DotNetFrameworkSlnGenFiles Include="%(InnerOutput.RootDir)%(InnerOutput.Directory)\**"
+                                  Condition="'%(InnerOutput.IsDotNetFrameworkSlnGen)' == 'true'"
+                                  TargetFramework="%(InnerOutput.TargetFramework)" />
+      
+      <InnerOutput Remove="@(InnerOutput)" Condition="'%(InnerOutput.IsDotNetFrameworkSlnGen)' == 'true'" />
+
+      <_PackageFiles Include="@(DotNetFrameworkSlnGenFiles)"
+                     TargetFramework="%(DotNetFrameworkSlnGenFiles.TargetFramework)"
+                     Pack="true"
+                     PackagePath="tools/%(DotNetFrameworkSlnGenFiles.TargetFramework)/%(DotNetFrameworkSlnGenFiles.RecursiveDir)%(DotNetFrameworkSlnGenFiles.Filename)%(DotNetFrameworkSlnGenFiles.Extension)"
+                     BuildAction="None" />
+    </ItemGroup>
+    
+    <Copy
+        SourceFiles="@(DotNetFrameworkSlnGenFiles)"
+        DestinationFiles="@(DotNetFrameworkSlnGenFiles->'$(OutputPath)%(TargetFramework)\%(RecursiveDir)%(Filename)%(Extension)')"
+        SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
+        OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+        Retries="$(CopyRetryCount)"
+        RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+        UseHardlinksIfPossible="$(CreateHardLinksForCopyLocalIfPossible)"
+        UseSymboliclinksIfPossible="$(CreateSymbolicLinksForCopyLocalIfPossible)">
+      <Output TaskParameter="DestinationFiles" ItemName="FileWritesShareable"/>
+      <Output TaskParameter="CopiedFiles" ItemName="ReferencesCopiedInThisBuild"/>
+    </Copy>
+  </Target>
+
+  <Target Name="AddDotNetFrameworkSlnGenToInnerBuildOutput"
+          AfterTargets="ResolveProjectReferences"
+          Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
+    <ItemGroup>
+      <TargetPathWithTargetPlatformMoniker Include="@(DotNetFrameworkSlnGen)" IsDotNetFrameworkSlnGen="true" />
+    </ItemGroup>
+  </Target>
 </Project>
