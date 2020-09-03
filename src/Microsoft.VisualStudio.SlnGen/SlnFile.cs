@@ -459,19 +459,27 @@ namespace Microsoft.VisualStudio.SlnGen
         {
             List<string> values = platforms
                 .Select(i => i.ToSolutionPlatform())
-                .Where(platform =>
+                .Select(platform =>
                 {
                     switch (platform.ToLowerInvariant())
                     {
                         case "any cpu":
                         case "x64":
                         case "x86":
-                            return true;
+                            return platform;
+
+                        case "amd64":
+                            return "x64";
+
+                        case "win32":
+                            return "x86";
 
                         default:
-                            return false;
+                            return null;
                     }
-                }).OrderBy(i => i)
+                })
+                .Where(i => i != null)
+                .OrderBy(i => i)
                 .ToList();
 
             return values.Any() ? values : new List<string> { "Any CPU" };

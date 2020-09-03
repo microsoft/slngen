@@ -154,6 +154,26 @@ namespace Microsoft.VisualStudio.SlnGen
 
         internal static IReadOnlyList<string> GetConfigurations(Project project, string projectFileExtension, in bool isUsingMicrosoftNETSdk)
         {
+            if (string.Equals(projectFileExtension, ".vcxproj"))
+            {
+                HashSet<string> items = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                foreach (ProjectItem item in project.GetItems("ProjectConfiguration"))
+                {
+                    string configuration = item.GetMetadataValue("Configuration");
+
+                    if (!configuration.IsNullOrWhiteSpace())
+                    {
+                        items.Add(configuration);
+                    }
+                }
+
+                if (items.Any())
+                {
+                    return items.ToList();
+                }
+            }
+
             if (isUsingMicrosoftNETSdk)
             {
                 string value = project.GetPropertyValue("Configurations");
@@ -335,6 +355,26 @@ namespace Microsoft.VisualStudio.SlnGen
 
         private static IReadOnlyList<string> GetPlatforms(Project project, string projectFileExtension, bool isUsingMicrosoftNETSdk)
         {
+            if (string.Equals(projectFileExtension, ".vcxproj"))
+            {
+                HashSet<string> items = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                foreach (ProjectItem item in project.GetItems("ProjectConfiguration"))
+                {
+                    string platform = item.GetMetadataValue("Platform");
+
+                    if (!platform.IsNullOrWhiteSpace())
+                    {
+                        items.Add(platform);
+                    }
+                }
+
+                if (items.Any())
+                {
+                    return items.ToList();
+                }
+            }
+
             if (isUsingMicrosoftNETSdk)
             {
                 string value = project.GetPropertyValue("Platforms");
@@ -346,40 +386,6 @@ namespace Microsoft.VisualStudio.SlnGen
             }
 
             return project.GetPossiblePropertyValuesOrDefault("Platform", "Any CPU").ToList();
-        }
-
-        private static IEnumerable<string> GetPlatforms(Project project)
-        {
-            string platforms = project.GetPropertyValue("Platforms");
-
-            if (!platforms.IsNullOrWhiteSpace())
-            {
-                foreach (string value in platforms.Split(';'))
-                {
-                    if (string.Equals(value, "AnyCPU", StringComparison.OrdinalIgnoreCase))
-                    {
-                        yield return "Any CPU";
-                    }
-                    else
-                    {
-                        yield return value;
-                    }
-                }
-            }
-            else
-            {
-                foreach (string platform in project.GetPossiblePropertyValuesOrDefault("Platform", "Any CPU"))
-                {
-                    if (string.Equals(platform, "AnyCPU", StringComparison.OrdinalIgnoreCase))
-                    {
-                        yield return "Any CPU";
-                    }
-                    else
-                    {
-                        yield return platform;
-                    }
-                }
-            }
         }
     }
 }

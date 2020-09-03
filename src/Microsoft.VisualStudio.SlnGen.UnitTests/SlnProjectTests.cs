@@ -275,6 +275,50 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         }
 
         [Fact]
+        public void GetPlatformsAndConfigurationsFromCppProject()
+        {
+            Project project = ProjectCreator.Create()
+                .ItemInclude(
+                    "ProjectConfiguration",
+                    "ConfigA|PlatformA",
+                    metadata: new Dictionary<string, string>
+                    {
+                        ["Configuration"] = "ConfigA",
+                        ["Platform"] = "PlatformA",
+                    })
+                .ItemInclude(
+                    "ProjectConfiguration",
+                    "ConfigA|PlatformB",
+                    metadata: new Dictionary<string, string>
+                    {
+                        ["Configuration"] = "ConfigA",
+                        ["Platform"] = "PlatformB",
+                    })
+                .ItemInclude(
+                    "ProjectConfiguration",
+                    "ConfigB|PlatformA",
+                    metadata: new Dictionary<string, string>
+                    {
+                        ["Configuration"] = "ConfigB",
+                        ["Platform"] = "PlatformA",
+                    })
+                .ItemInclude(
+                    "ProjectConfiguration",
+                    "ConfigB|PlatformB",
+                    metadata: new Dictionary<string, string>
+                    {
+                        ["Configuration"] = "ConfigB",
+                        ["Platform"] = "PlatformB",
+                    })
+                .Save(GetTempFileName(".vcxproj"));
+
+            SlnProject slnProject = SlnProject.FromProject(project, new Dictionary<string, Guid>());
+
+            slnProject.Configurations.ShouldBe(new[] { "ConfigA", "ConfigB" });
+            slnProject.Platforms.ShouldBe(new[] { "PlatformA", "PlatformB" });
+        }
+
+        [Fact]
         public void UseFileName()
         {
             CreateAndValidateProject(expectedGuid: "{DE681393-7151-459D-862C-918CCD2CB371}");
