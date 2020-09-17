@@ -73,11 +73,11 @@ namespace Microsoft.VisualStudio.SlnGen
             string nextPath = null;
             foreach (string pathSegment in separatedPath.AsEnumerable())
             {
-                if (commonPath.Length == 0 && paths.All(str => str.StartsWith(pathSegment)))
+                if (commonPath.Length == 0 && paths.All(str => str.StartsWith(pathSegment, StringComparison.OrdinalIgnoreCase)))
                 {
                     commonPath = pathSegment + Path.DirectorySeparatorChar;
                 }
-                else if (paths.All(str => str.StartsWith(nextPath = $"{commonPath}{pathSegment}{Path.DirectorySeparatorChar}")))
+                else if (paths.All(str => str.StartsWith(nextPath = $"{commonPath}{pathSegment}{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase)))
                 {
                     commonPath = nextPath;
                 }
