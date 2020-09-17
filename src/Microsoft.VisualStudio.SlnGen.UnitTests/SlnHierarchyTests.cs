@@ -62,6 +62,13 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             };
 
             SlnHierarchy hierarchy = new SlnHierarchy(projects);
+
+            hierarchy.Folders.Select(i => i.FullPath).ShouldBe(new[]
+            {
+                @"E:\Code\ProjectA",
+                @"E:\code\ProjectB",
+                @"E:\Code",
+            });
         }
 
         [Fact]
