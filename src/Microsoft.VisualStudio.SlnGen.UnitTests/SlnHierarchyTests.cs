@@ -41,6 +41,30 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         }
 
         [Fact]
+        public void HierarchyIgnoresCase()
+        {
+            var projects = new[]
+            {
+                new SlnProject
+                {
+                    FullPath = Path.Combine(@"E:\Code", "ProjectA", "ProjectA.csproj"),
+                    Name = "ProjectA",
+                    ProjectGuid = Guid.NewGuid(),
+                    ProjectTypeGuid = SlnProject.DefaultLegacyProjectTypeGuid,
+                },
+                new SlnProject
+                {
+                    FullPath = Path.Combine(@"E:\code", "ProjectB", "ProjectB.csproj"),
+                    Name = "ProjectB",
+                    ProjectGuid = Guid.NewGuid(),
+                    ProjectTypeGuid = SlnProject.DefaultLegacyProjectTypeGuid,
+                },
+            };
+
+            SlnHierarchy hierarchy = new SlnHierarchy(projects);
+        }
+
+        [Fact]
         public void HierarchyWithCollapsedFoldersIsCorrectlyFormed()
         {
             DummyFolder root = DummyFolder.CreateRoot(@"D:\zoo\foo");
@@ -93,11 +117,11 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             {
                 FileInfo fileInfo = new FileInfo(path);
 
-                this.Folders = new List<DummyFolder>();
-                this.Projects = new List<SlnProject>();
+                Folders = new List<DummyFolder>();
+                Projects = new List<SlnProject>();
 
-                this.FullPath = path;
-                this.Name = fileInfo.Name;
+                FullPath = path;
+                Name = fileInfo.Name;
             }
 
             public string FullPath { get; }
@@ -115,18 +139,18 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             public List<SlnProject> GetAllProjects()
             {
-                List<SlnProject> projects = this.Folders
+                List<SlnProject> projects = Folders
                     .SelectMany(f => f.GetAllProjects())
                     .ToList();
 
-                projects.AddRange(this.Projects);
+                projects.AddRange(Projects);
 
                 return projects;
             }
 
             public List<DummyFolder> GetAllFolders()
             {
-                List<DummyFolder> folders = this.Folders
+                List<DummyFolder> folders = Folders
                     .SelectMany(f => f.GetAllFolders())
                     .ToList();
 
@@ -137,11 +161,11 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             public DummyFolder AddSubDirectory(string folderName)
             {
-                string path = Path.Combine(this.FullPath, folderName);
+                string path = Path.Combine(FullPath, folderName);
 
                 DummyFolder childFolder = new DummyFolder(path);
 
-                this.Folders.Add(childFolder);
+                Folders.Add(childFolder);
 
                 return childFolder;
             }
@@ -150,20 +174,20 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             {
                 SlnProject project = new SlnProject
                 {
-                    FullPath = Path.Combine(this.FullPath, name) + ".csproj",
+                    FullPath = Path.Combine(FullPath, name) + ".csproj",
                     Name = name,
                     ProjectGuid = Guid.NewGuid(),
                     ProjectTypeGuid = SlnProject.DefaultLegacyProjectTypeGuid,
                 };
 
-                this.Projects.Add(project);
+                Projects.Add(project);
 
                 return project;
             }
 
             public SlnProject AddProjectWithDirectory(string name)
             {
-                return this.AddSubDirectory(name).AddProject(name);
+                return AddSubDirectory(name).AddProject(name);
             }
         }
     }
