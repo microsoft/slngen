@@ -23,6 +23,7 @@
       GlobalProperties="$(SlnGenGlobalProperties)"
       GlobalPropertiesToRemove="$(SlnGenGlobalPropertiesToRemove)"
       InheritGlobalProperties="$([MSBuild]::ValueOrDefault('$(SlnGenInheritGlobalProperties)', 'true'))"
+      MSBuildBinPath="$(MSBuildBinPath)"
       ProjectFullPath="$(MSBuildProjectFullPath)" />
   </Target>
 

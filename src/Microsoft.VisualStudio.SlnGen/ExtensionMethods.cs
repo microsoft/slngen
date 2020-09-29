@@ -3,12 +3,10 @@
 // Licensed under the MIT license.
 
 using Microsoft.Build.Evaluation;
-using Microsoft.Build.Framework;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 
 namespace Microsoft.VisualStudio.SlnGen
@@ -18,8 +16,14 @@ namespace Microsoft.VisualStudio.SlnGen
     /// </summary>
     internal static class ExtensionMethods
     {
+        /// <summary>
+        /// Represents an array of <see cref="char" /> containing an equal sign.
+        /// </summary>
         public static readonly char[] EqualsSign = { '=' };
 
+        /// <summary>
+        /// Represents an array of <see cref="char" /> containing an semicolon.
+        /// </summary>
         public static readonly char[] Semicolon = { ';' };
 
         /// <summary>
@@ -54,25 +58,6 @@ namespace Microsoft.VisualStudio.SlnGen
             }
 
             return project.ConditionedProperties[name];
-        }
-
-        public static object GetLoggingService(this IBuildEngine buildEngine)
-        {
-            try
-            {
-                object requestEntry = buildEngine.GetType().GetField("_requestEntry", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(buildEngine);
-
-                object builder = requestEntry?.GetType().GetProperty("Builder")?.GetValue(requestEntry);
-
-                object nodeLoggingContext = builder?.GetType().GetField("_nodeLoggingContext", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(builder);
-
-                return nodeLoggingContext?.GetType().GetProperty("LoggingService")?.GetValue(nodeLoggingContext);
-            }
-            catch
-            {
-                // Ignored because we never want this method to throw since its using reflection to access internal members that could go away with any future release of MSBuild
-                return null;
-            }
         }
 
         /// <summary>
@@ -131,7 +116,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// </summary>
         /// <param name="project">The <see cref="Project" /> to get the property of.</param>
         /// <param name="name">The name of the property.</param>
-        /// <returns>true if the proeprty is considered true, otherwise false.</returns>
+        /// <returns>true if the property is considered true, otherwise false.</returns>
         public static bool IsPropertyValueTrue(this Project project, string name)
         {
             return project.GetPropertyValue(name).Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase);
@@ -213,14 +198,13 @@ namespace Microsoft.VisualStudio.SlnGen
                 return path;
             }
 
-            using (FileStream stream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-            {
-                StringBuilder stringBuilder = new StringBuilder(NativeMethods.GetFinalPathNameByHandle(stream.SafeFileHandle, null, 0, 0));
+            using FileStream stream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
-                NativeMethods.GetFinalPathNameByHandle(stream.SafeFileHandle, stringBuilder, stringBuilder.Capacity, 0);
+            StringBuilder stringBuilder = new StringBuilder(NativeMethods.GetFinalPathNameByHandle(stream.SafeFileHandle, null, 0, 0));
 
-                return stringBuilder.ToString(4, stringBuilder.Capacity - 5);
-            }
+            NativeMethods.GetFinalPathNameByHandle(stream.SafeFileHandle, stringBuilder, stringBuilder.Capacity, 0);
+
+            return stringBuilder.ToString(4, stringBuilder.Capacity - 5);
         }
 
         /// <summary>

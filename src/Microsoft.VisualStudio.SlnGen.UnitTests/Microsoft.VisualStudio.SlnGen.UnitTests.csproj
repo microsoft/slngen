@@ -17,7 +17,8 @@
     <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\Microsoft.VisualStudio.SlnGen\Tasks\*.targets" Link="build\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="..\Microsoft.VisualStudio.SlnGen\Tasks\*.targets" Link="buildMultiTargeting\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\Microsoft.VisualStudio.SlnGen\*.targets" Link="build\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\Microsoft.VisualStudio.SlnGen\*.targets" Link="buildMultiTargeting\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

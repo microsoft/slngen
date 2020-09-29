@@ -33,10 +33,8 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <param name="path">The path to save the solution filter file to.</param>
         public void Save(string path)
         {
-            using (FileStream stream = File.Create(path))
-            {
-                Save(stream);
-            }
+            using FileStream stream = File.Create(path);
+            Save(stream);
         }
 
         /// <summary>
@@ -45,24 +43,23 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <param name="stream">The <see cref="Stream" /> to save the Solution filter to.</param>
         public void Save(Stream stream)
         {
-            using (XmlDictionaryWriter writer = JsonReaderWriterFactory.CreateJsonWriter(stream, Encoding.UTF8, ownsStream: false, indent: true))
-            {
-                new XDocument(
+            using XmlDictionaryWriter writer = JsonReaderWriterFactory.CreateJsonWriter(stream, Encoding.UTF8, ownsStream: false, indent: true);
+
+            new XDocument(
+                    new XElement(
+                        "root",
+                        new XAttribute("type", "object"),
                         new XElement(
-                            "root",
+                            "solution",
                             new XAttribute("type", "object"),
                             new XElement(
-                                "solution",
-                                new XAttribute("type", "object"),
-                                new XElement(
-                                    "path",
-                                    new XText(SolutionFilePath)),
-                                new XElement(
-                                    "projects",
-                                    new XAttribute("type", "array"),
-                                    Projects.Select(i => new XElement("item", i))))))
-                    .Save(writer);
-            }
+                                "path",
+                                new XText(SolutionFilePath)),
+                            new XElement(
+                                "projects",
+                                new XAttribute("type", "array"),
+                                Projects.Select(i => new XElement("item", i))))))
+                .Save(writer);
         }
     }
 }

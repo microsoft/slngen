@@ -46,7 +46,11 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
 
             Stopwatch sw = Stopwatch.StartNew();
 
+#if NET46
+            IProjectLoader projectLoader = Create(logger);
+#else
             IProjectLoader projectLoader = Create(msbuildExeFileInfo, logger);
+#endif
 
             try
             {
@@ -99,6 +103,14 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
             });
         }
 
+#if NET46
+        /// <summary>
+        /// Creates an appropriate instance of a class that implements <see cref="IProjectLoader" />.
+        /// </summary>
+        /// <param name="logger">An <see cref="ISlnGenLogger" /> object to use for logging.</param>
+        /// <returns>An <see cref="IProjectLoader" /> object that can be used to load MSBuild projects.</returns>
+        private static IProjectLoader Create(ISlnGenLogger logger)
+#else
         /// <summary>
         /// Creates an appropriate instance of a class that implements <see cref="IProjectLoader" />.
         /// </summary>
@@ -106,6 +118,7 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
         /// <param name="logger">An <see cref="ISlnGenLogger" /> object to use for logging.</param>
         /// <returns>An <see cref="IProjectLoader" /> object that can be used to load MSBuild projects.</returns>
         private static IProjectLoader Create(FileInfo msbuildExePath, ISlnGenLogger logger)
+#endif
         {
 #if !NET46
             FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(msbuildExePath.FullName);
@@ -116,7 +129,6 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
                 return new ProjectGraphProjectLoader(logger);
             }
 #endif
-
             return new LegacyProjectLoader(logger);
         }
     }

@@ -25,14 +25,14 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 },
             };
 
-            using (MemoryStream stream = new MemoryStream())
-            {
-                slnfFile.Save(stream);
+            using MemoryStream stream = new MemoryStream();
 
-                string actual = Encoding.UTF8.GetString(stream.ToArray());
+            slnfFile.Save(stream);
 
-                actual.ShouldBe(
-                    @"{
+            string actual = Encoding.UTF8.GetString(stream.ToArray());
+
+            actual.ShouldBe(
+                @"{
   ""solution"": {
     ""path"": ""..\\..\\..\\foo.sln"",
     ""projects"": [
@@ -41,8 +41,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
     ]
   }
 }",
-                    StringCompareShould.IgnoreLineEndings);
-            }
+                StringCompareShould.IgnoreLineEndings);
         }
     }
 }

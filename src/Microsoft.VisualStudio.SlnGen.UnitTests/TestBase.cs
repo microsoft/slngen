@@ -21,8 +21,6 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             }
         }
 
-        protected string MSBuildPath { get; }
-
         public void Dispose()
         {
             Dispose(true);

@@ -6,6 +6,7 @@ using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,6 +14,9 @@ using System.Reflection;
 
 namespace Microsoft.VisualStudio.SlnGen.Tasks
 {
+    /// <summary>
+    /// Represents a tool task that execute SlnGen.
+    /// </summary>
     public sealed class SlnGenToolTask : ToolTask
     {
         /// <summary>
@@ -82,6 +86,12 @@ namespace Microsoft.VisualStudio.SlnGen.Tasks
         public bool InheritGlobalProperties { get; set; }
 
         /// <summary>
+        /// Gets or sets the path to the MSBuild directory.
+        /// </summary>
+        [Required]
+        public string MSBuildBinPath { get; set; }
+
+        /// <summary>
         /// Gets or sets the full path to the project being built.
         /// </summary>
         [Required]
@@ -92,6 +102,19 @@ namespace Microsoft.VisualStudio.SlnGen.Tasks
 
         /// <inheritdoc />
         protected override string ToolName => "slngen";
+
+        public override bool Execute()
+        {
+            Dictionary<string, string> environmentVariables = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process).Cast<DictionaryEntry>().OrderBy(i => (string)i.Key).ToDictionary(i => (string)i.Key, i => (string)i.Value, StringComparer.OrdinalIgnoreCase);
+
+            environmentVariables.TryGetValue("PATH", out string path);
+
+            environmentVariables["PATH"] = $"{MSBuildBinPath}{Path.PathSeparator}{path ?? string.Empty}";
+
+            EnvironmentVariables = environmentVariables.Select(i => $"{i.Key}={i.Value}").ToArray();
+
+            return base.Execute();
+        }
 
         /// <inheritdoc />
         protected override string GenerateCommandLineCommands()
@@ -122,7 +145,7 @@ namespace Microsoft.VisualStudio.SlnGen.Tasks
         }
 
         /// <inheritdoc />
-        protected override string GenerateFullPathToTool() => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "slngen.exe");
+        protected override string GenerateFullPathToTool() => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) !, "slngen.exe");
 
         /// <inheritdoc />
         protected override bool ValidateParameters()

@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation.
 //
 // Licensed under the MIT license.
-
+#if NETFRAMEWORK
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
@@ -17,9 +17,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 {
     public sealed class SlnGenTests : TestBase
     {
-#if NETFRAMEWORK
-        [Fact(Skip = "Temporarily disabled until this works in AzureDevOps")]
-#endif
+        [Fact]
         public void ProjectReferencesDeterminedInCrossTargetingBuild()
         {
             Dictionary<string, string> globalProperties = new Dictionary<string, string>
@@ -79,7 +77,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 .ItemProjectReference(projectC, condition: "'$(TargetFramework)' == 'net46'")
                 .ItemProjectReference(projectD, condition: "'$(TargetFramework)' == 'net46'")
                 .Save()
-                .TryBuild("SlnGen", out bool result, out BuildOutput buildOutput, out IDictionary<string, TargetResult> targetOutputs);
+                .TryBuild("SlnGen", out bool result, out BuildOutput buildOutput, out _);
 
             result.ShouldBeTrue(buildOutput.GetConsoleLog());
 
@@ -99,9 +97,8 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             });
         }
 
-#if NETFRAMEWORK
-        [Fact(Skip = "Temporarily disabled until this works in AzureDevOps")]
-#endif
+        [Fact]
+
         public void SingleProject()
         {
             Dictionary<string, string> globalProperties = new Dictionary<string, string>
@@ -122,7 +119,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 .Import(Path.Combine(Environment.CurrentDirectory, "buildMultiTargeting", "Microsoft.VisualStudio.SlnGen.targets"), condition: "'$(IsCrossTargetingBuild)' == 'true'")
                 .Save();
 
-            ProjectCreator.Templates
+            ProjectCreator project = ProjectCreator.Templates
                 .SdkCsproj(
                     Path.Combine(TestRootPath, "ProjectA", "ProjectA.csproj"),
                     targetFramework: "netcoreapp2.0",
@@ -135,6 +132,28 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             KeyValuePair<string, TargetResult> targetOutput = targetOutputs.ShouldHaveSingleItem();
 
             targetOutput.Key.ShouldBe("SlnGen");
+
+            FileInfo expected = new FileInfo(Path.Combine(Path.ChangeExtension(project.FullPath, ".sln")));
+
+            expected.Exists.ShouldBeTrue();
+
+            SolutionFile solutionFile = SolutionFile.Parse(expected.FullName);
+
+            solutionFile.SolutionConfigurations
+                .Select(i => i.FullName)
+                .ShouldBe(new[]
+                {
+                    "Debug|Any CPU",
+                    "Release|Any CPU",
+                });
+
+            solutionFile.ProjectsInOrder
+                .Select(i => i.AbsolutePath)
+                .ShouldBe(new[]
+                {
+                    project.FullPath,
+                });
         }
     }
 }
+#endif

@@ -152,7 +152,14 @@ namespace Microsoft.VisualStudio.SlnGen
             };
         }
 
-        internal static IReadOnlyList<string> GetConfigurations(Project project, string projectFileExtension, in bool isUsingMicrosoftNETSdk)
+        /// <summary>
+        /// Gets the configurations for the specified project.
+        /// </summary>
+        /// <param name="project">The <see cref="Project" /> to get the configuration for.</param>
+        /// <param name="projectFileExtension">The project file's extension.</param>
+        /// <param name="isUsingMicrosoftNETSdk">True if the project is using the Microsoft.NET.Sdk MSBuild project SDK.</param>
+        /// <returns>A <see cref="IReadOnlyList{String}" /> containing the configurations that the project supports.</returns>
+        internal static IReadOnlyList<string> GetConfigurations(Project project, string projectFileExtension, bool isUsingMicrosoftNETSdk)
         {
             if (string.Equals(projectFileExtension, ".vcxproj"))
             {
@@ -320,10 +327,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            if (fileExists == null)
-            {
-                fileExists = File.Exists;
-            }
+            fileExists ??= File.Exists;
 
             foreach (string solutionItem in project.GetItems(MSBuildItemNames.SlnGenSolutionItem).Select(i => i.GetMetadataValue("FullPath")).Where(i => !i.IsNullOrWhiteSpace()))
             {

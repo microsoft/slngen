@@ -114,14 +114,16 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <param name="arguments">The current <see cref="ProgramArguments" />.</param>
         /// <param name="projects">A <see cref="IEnumerable{String}" /> containing the entry projects.</param>
         /// <param name="logger">A <see cref="ISlnGenLogger" /> to use for logging.</param>
-        /// <returns>A <see cref="Tuple{String, Int32, Int32, Guid}" /> with the full path to the solution file, the count of custom project type GUIDs used, the count of solution ites, and the solution GUID.</returns>
+        /// <returns>A <see cref="Tuple{String, Int32, Int32, Guid}" /> with the full path to the solution file, the count of custom project type GUIDs used, the count of solution items, and the solution GUID.</returns>
         public static (string solutionFileFullPath, int customProjectTypeGuidCount, int solutionItemCount, Guid solutionGuid) GenerateSolutionFile(ProgramArguments arguments, IEnumerable<Project> projects, ISlnGenLogger logger)
         {
-            Project project = projects.First();
+            List<Project> projectList = projects.ToList();
 
-            IReadOnlyDictionary<string, Guid> customProjectTypeGuids = SlnProject.GetCustomProjectTypeGuids(project);
+            Project firstProject = projectList.First();
 
-            IReadOnlyCollection<string> solutionItems = SlnProject.GetSolutionItems(project, logger).ToList();
+            IReadOnlyDictionary<string, Guid> customProjectTypeGuids = SlnProject.GetCustomProjectTypeGuids(firstProject);
+
+            IReadOnlyCollection<string> solutionItems = SlnProject.GetSolutionItems(firstProject, logger).ToList();
 
             string solutionFileFullPath = arguments.SolutionFileFullPath?.LastOrDefault();
 
@@ -131,12 +133,12 @@ namespace Microsoft.VisualStudio.SlnGen
 
                 if (solutionDirectoryFullPath.IsNullOrWhiteSpace())
                 {
-                    solutionDirectoryFullPath = project.DirectoryPath;
+                    solutionDirectoryFullPath = firstProject.DirectoryPath;
                 }
 
-                string solutionFileName = Path.ChangeExtension(Path.GetFileName(project.FullPath), "sln");
+                string solutionFileName = Path.ChangeExtension(Path.GetFileName(firstProject.FullPath), "sln");
 
-                solutionFileFullPath = Path.Combine(solutionDirectoryFullPath, solutionFileName);
+                solutionFileFullPath = Path.Combine(solutionDirectoryFullPath!, solutionFileName);
             }
 
             logger.LogMessageHigh($"Generating Visual Studio solution \"{solutionFileFullPath}\" ...");
@@ -166,7 +168,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 arguments.LoadProjectsInVisualStudio = new[] { bool.TrueString };
             }
 
-            solution.AddProjects(projects, customProjectTypeGuids, arguments.IgnoreMainProject ? null : project.FullPath);
+            solution.AddProjects(projectList, customProjectTypeGuids, arguments.IgnoreMainProject ? null : firstProject.FullPath);
 
             solution.AddSolutionItems(solutionItems);
 
@@ -319,14 +321,14 @@ namespace Microsoft.VisualStudio.SlnGen
 
             if (!directoryName.IsNullOrWhiteSpace())
             {
-                Directory.CreateDirectory(directoryName);
+                Directory.CreateDirectory(directoryName!);
             }
 
-            using (FileStream fileStream = File.Create(path))
-            using (StreamWriter writer = new StreamWriter(fileStream, Encoding.Unicode))
-            {
-                Save(writer, useFolders, collapseFolders);
-            }
+            using FileStream fileStream = File.Create(path);
+
+            using StreamWriter writer = new StreamWriter(fileStream, Encoding.Unicode);
+
+            Save(writer, useFolders, collapseFolders);
         }
 
         /// <summary>
@@ -461,22 +463,15 @@ namespace Microsoft.VisualStudio.SlnGen
                 .Select(i => i.ToSolutionPlatform())
                 .Select(platform =>
                 {
-                    switch (platform.ToLowerInvariant())
+                    return platform.ToLowerInvariant() switch
                     {
-                        case "any cpu":
-                        case "x64":
-                        case "x86":
-                            return platform;
-
-                        case "amd64":
-                            return "x64";
-
-                        case "win32":
-                            return "x86";
-
-                        default:
-                            return null;
-                    }
+                        "any cpu" => platform,
+                        "x64" => platform,
+                        "x86" => platform,
+                        "amd64" => "x64",
+                        "win32" => "x86",
+                        _ => null
+                    };
                 })
                 .Where(i => i != null)
                 .OrderBy(i => i)

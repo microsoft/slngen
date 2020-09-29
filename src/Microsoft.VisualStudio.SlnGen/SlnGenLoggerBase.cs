@@ -13,8 +13,8 @@ namespace Microsoft.VisualStudio.SlnGen
     /// </summary>
     public abstract class SlnGenLoggerBase : ISlnGenLogger
     {
-        private int _hasLoggedErrors = 0;
-        private int _projectId = 0;
+        private int _hasLoggedErrors;
+        private int _projectId;
 
         /// <inheritdoc />
         public bool HasLoggedErrors => _hasLoggedErrors != 0;

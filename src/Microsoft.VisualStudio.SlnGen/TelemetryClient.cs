@@ -47,7 +47,7 @@ namespace Microsoft.VisualStudio.SlnGen
             {
                 _telemetrySession?.DisposeToNetworkAsync(CancellationToken.None).Wait(TimeSpan.FromSeconds(2));
             }
-            catch (AggregateException e) when (e?.InnerException is PlatformNotSupportedException)
+            catch (AggregateException e) when (e.InnerException is PlatformNotSupportedException)
             {
                 // Ignored
             }
@@ -103,7 +103,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <summary>
         /// Posts an exception event to the telemetry pipeline if available.
         /// </summary>
-        /// <param name="exception">The <see cref="Exception" /> that occured.</param>
+        /// <param name="exception">The <see cref="Exception" /> that occurred.</param>
         /// <returns><code>true</code> if the event was successfully posted, otherwise <code>false</code>.</returns>
         public bool PostException(Exception exception)
         {

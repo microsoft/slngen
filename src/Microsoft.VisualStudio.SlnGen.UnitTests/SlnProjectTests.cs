@@ -164,7 +164,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         }
 
         [Fact]
-        public void ParseCustomProjectTypeGuidsDeduplicatesList()
+        public void ParseCustomProjectTypeGuidsDeDuplicatesList()
         {
             Guid expectedProjectTypeGuid = new Guid("C139C737-2894-46A0-B1EB-DDD052FD8DCB");
 
@@ -352,10 +352,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         {
             if (!isDeployable.IsNullOrWhiteSpace())
             {
-                if (globalProperties == null)
-                {
-                    globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                }
+                globalProperties ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
                 globalProperties[MSBuildPropertyNames.SlnGenIsDeployable] = isDeployable;
             }
@@ -385,10 +382,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         {
             string fullPath = GetTempFileName(extension);
 
-            if (globalProperties == null)
-            {
-                globalProperties = new Dictionary<string, string>();
-            }
+            globalProperties ??= new Dictionary<string, string>();
 
             if (!projectGuid.IsNullOrWhiteSpace())
             {
@@ -401,59 +395,6 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             }
 
             return MockProject.Create(fullPath, globalProperties);
-        }
-
-        private sealed class TestProject : IDisposable
-        {
-            private readonly Dictionary<string, string> _savedEnvironmentVariables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-            private TestProject()
-            {
-                SetEnvironmentVariables(new Dictionary<string, string>
-                {
-                    { "Configuration", null },
-                    { "Platform", null },
-                });
-            }
-
-            public Project Project { get; private set; }
-
-            public static TestProject Create(IDictionary<string, string> globalProperties = null)
-            {
-                return new TestProject
-                {
-                    Project = ProjectCreator.Templates.LegacyCsproj(
-                        path: Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.proj"),
-                        projectCollection: new ProjectCollection(globalProperties),
-                        defaultPlatform: "x64",
-                        projectCreator: projectCreator => projectCreator
-                            .PropertyGroup(" '$(Configuration)|$(Platform)' == 'Release|amd64' ")
-                            .PropertyGroup(" '$(Configuration)|$(Platform)' == 'Debug|x64' ")),
-                };
-            }
-
-            public void Dispose()
-            {
-                if (File.Exists(Project.FullPath))
-                {
-                    File.Delete(Project.FullPath);
-                }
-
-                foreach (KeyValuePair<string, string> variable in _savedEnvironmentVariables)
-                {
-                    Environment.SetEnvironmentVariable(variable.Key, variable.Value, EnvironmentVariableTarget.Process);
-                }
-            }
-
-            private void SetEnvironmentVariables(Dictionary<string, string> variables)
-            {
-                foreach (KeyValuePair<string, string> variable in variables)
-                {
-                    _savedEnvironmentVariables[variable.Key] = variable.Value;
-
-                    Environment.SetEnvironmentVariable(variable.Key, variable.Value, EnvironmentVariableTarget.Process);
-                }
-            }
         }
     }
 }

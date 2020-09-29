@@ -35,9 +35,9 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
         public void CopyMetadataTo(ITaskItem destinationItem)
         {
-            foreach (KeyValuePair<string, string> metadatum in this)
+            foreach (KeyValuePair<string, string> metadata in this)
             {
-                destinationItem.SetMetadata(metadatum.Key, metadatum.Value);
+                destinationItem.SetMetadata(metadata.Key, metadata.Value);
             }
         }
 
