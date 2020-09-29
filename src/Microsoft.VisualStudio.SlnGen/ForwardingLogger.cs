@@ -22,23 +22,23 @@ namespace Microsoft.VisualStudio.SlnGen
         private static readonly Lazy<ProcessBinaryLoggerDelegate> ProcessBinaryLoggerDelegateLazy = new Lazy<ProcessBinaryLoggerDelegate>(
             () => Delegate.CreateDelegate(
                 typeof(ProcessBinaryLoggerDelegate),
-                typeof(MSBuildApp).GetMethod("ProcessBinaryLogger", BindingFlags.Static | BindingFlags.NonPublic)) as ProcessBinaryLoggerDelegate);
+                typeof(MSBuildApp).GetMethod("ProcessBinaryLogger", BindingFlags.Static | BindingFlags.NonPublic) !) as ProcessBinaryLoggerDelegate);
 
         private static readonly Lazy<ProcessLoggerSwitchDelegate> ProcessLoggerSwitchDelegateLazy = new Lazy<ProcessLoggerSwitchDelegate>(
             () => Delegate.CreateDelegate(
                 typeof(ProcessLoggerSwitchDelegate),
-                typeof(MSBuildApp).GetMethod("ProcessLoggerSwitch", BindingFlags.Static | BindingFlags.NonPublic)) as ProcessLoggerSwitchDelegate);
+                typeof(MSBuildApp).GetMethod("ProcessLoggerSwitch", BindingFlags.Static | BindingFlags.NonPublic) !) as ProcessLoggerSwitchDelegate);
 
         private static readonly Lazy<ProcessVerbositySwitchDelegate> ProcessVerbositySwitchDelegateLazy = new Lazy<ProcessVerbositySwitchDelegate>(
             () => Delegate.CreateDelegate(
                 typeof(ProcessVerbositySwitchDelegate),
-                typeof(MSBuildApp).GetMethod("ProcessVerbositySwitch", BindingFlags.Static | BindingFlags.NonPublic)) as ProcessVerbositySwitchDelegate);
+                typeof(MSBuildApp).GetMethod("ProcessVerbositySwitch", BindingFlags.Static | BindingFlags.NonPublic) !) as ProcessVerbositySwitchDelegate);
 
         private readonly bool _noWarn;
 
         private IEventSource _eventSource;
         private int _hasLoggedErrors;
-        private int _projectId = 0;
+        private int _projectId;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ForwardingLogger"/> class.

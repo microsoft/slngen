@@ -9,6 +9,7 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 using Microsoft.VisualStudio.SlnGen.ProjectLoading;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -18,6 +19,9 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.VisualStudio.SlnGen
 {
+    /// <summary>
+    /// Represents the main logic of the application.
+    /// </summary>
     public static class Program
     {
         private static readonly TelemetryClient TelemetryClient;
@@ -32,8 +36,14 @@ namespace Microsoft.VisualStudio.SlnGen
             TelemetryClient = new TelemetryClient();
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="ProgramArguments" /> of the current application.
+        /// </summary>
         public static ProgramArguments Arguments { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the current build environment is CoreXT.
+        /// </summary>
         public static bool IsCorext { get; set; }
 
         /// <summary>
@@ -41,10 +51,21 @@ namespace Microsoft.VisualStudio.SlnGen
         /// </summary>
         public static bool IsNetCore { get; } = !RuntimeInformation.FrameworkDescription.StartsWith(".NET Framework", StringComparison.Ordinal);
 
+        /// <summary>
+        /// Gets or sets the <see cref="FileInfo" /> of MSBuild.exe.
+        /// </summary>
         public static FileInfo MSBuildExeFileInfo { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="VisualStudioInstance" /> to use.
+        /// </summary>
         public static VisualStudioInstance VisualStudio { get; set; }
 
+        /// <summary>
+        /// Executes the program with the specified command-line arguments.
+        /// </summary>
+        /// <param name="args">An array of <see cref="string" /> containing the command-line arguments.</param>
+        /// <returns>Zero if the program executed successfully, otherwise a non-zero value.</returns>
         public static int Main(string[] args)
         {
             if (!TryLocateMSBuild(out VisualStudioInstance instance, out FileInfo msBuildExeFileInfo, out string error))
@@ -64,7 +85,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 // It also can be different per instance of Visual Studio so when running unit tests it always needs to match that instance of MSBuild
                 // The code below runs this EXE in an AppDomain as if its MSBuild.exe so the assembly search location is next to MSBuild.exe and all binding redirects are used
                 // allowing this process to evaluate MSBuild projects as if it is MSBuild.exe
-                var thisAssembly = Assembly.GetExecutingAssembly();
+                Assembly thisAssembly = Assembly.GetExecutingAssembly();
 
                 AppDomain appDomain = AppDomain.CreateDomain(
                     thisAssembly.FullName,
@@ -72,7 +93,7 @@ namespace Microsoft.VisualStudio.SlnGen
                     info: new AppDomainSetup
                     {
                         ApplicationBase = MSBuildExeFileInfo.DirectoryName,
-                        ConfigurationFile = Path.Combine(MSBuildExeFileInfo.DirectoryName, Path.ChangeExtension(MSBuildExeFileInfo.Name, ".exe.config")),
+                        ConfigurationFile = Path.Combine(MSBuildExeFileInfo.DirectoryName!, Path.ChangeExtension(MSBuildExeFileInfo.Name, ".exe.config")),
                     });
 
                 return appDomain
@@ -84,6 +105,12 @@ namespace Microsoft.VisualStudio.SlnGen
             return Execute(args, PhysicalConsole.Singleton);
         }
 
+        /// <summary>
+        /// Executes the current application with the specified arguments and console.
+        /// </summary>
+        /// <param name="arguments">The <see cref="ProgramArguments" /> to use.</param>
+        /// <param name="console">A <see cref="IConsole" /> to use.</param>
+        /// <returns>Zero if the program successfully executed, otherwise non-zero.</returns>
         internal static int Execute(ProgramArguments arguments, IConsole console)
         {
             MSBuildFeatureFlags featureFlags = new MSBuildFeatureFlags
@@ -175,6 +202,13 @@ namespace Microsoft.VisualStudio.SlnGen
             return 0;
         }
 
+        /// <summary>
+        /// Executes the current application with the specified arguments and console.
+        /// </summary>
+        /// <param name="args">An array of <see cref="string" /> containing the command-line arguments.</param>
+        /// <param name="console">A <see cref="IConsole" /> to use.</param>
+        /// <param name="execute">A <see cref="Func{ProgramArguments, IConsole, Int32}" /> representing a function to run.</param>
+        /// <returns>Zero if the program successfully executed, otherwise non-zero.</returns>
         internal static int Execute(string[] args, IConsole console, Func<ProgramArguments, IConsole, int> execute)
         {
             ProgramArguments.Execute = execute;
@@ -310,6 +344,21 @@ namespace Microsoft.VisualStudio.SlnGen
             }
         }
 
+        private static bool TryFindMSBuildOnPath(out string msbuildExePath)
+        {
+            msbuildExePath = (Environment.GetEnvironmentVariable("PATH") ?? string.Empty)
+                .Split(Path.PathSeparator)
+                .Where(i => !string.IsNullOrWhiteSpace(i))
+                .Select(i => new DirectoryInfo(i.Trim()))
+                .Where(i => i.Exists)
+                .Select(i => new FileInfo(Path.Combine(i.FullName, "MSBuild.exe")))
+                .Where(i => i.Exists)
+                .Select(i => i.FullName)
+                .FirstOrDefault();
+
+            return !string.IsNullOrWhiteSpace(msbuildExePath);
+        }
+
         /// <summary>
         /// Attempts to locate MSBuild based on the current environment.
         /// </summary>
@@ -338,7 +387,7 @@ namespace Microsoft.VisualStudio.SlnGen
                         return false;
                     }
 
-                    msbuildExeFileInfo = new FileInfo(Path.Combine(msbuildToolsPath, "MSBuild.exe"));
+                    msbuildExeFileInfo = new FileInfo(Path.Combine(msbuildToolsPath!, "MSBuild.exe"));
 
                     if (!Version.TryParse(Environment.GetEnvironmentVariable("VisualStudioVersion") ?? string.Empty, out Version visualStudioVersion))
                     {
@@ -369,9 +418,21 @@ namespace Microsoft.VisualStudio.SlnGen
 
             if (vsInstallDirEnvVar.IsNullOrWhiteSpace())
             {
-                error = "SlnGen must run from a Visual Studio Developer Command prompt and requires the %VSINSTALLDIR% environment variable to be set.";
+                if (!TryFindMSBuildOnPath(out string msbuildExePath))
+                {
+                    error = "SlnGen must run from a Visual Studio Developer Command prompt and requires the %VSINSTALLDIR% environment variable to be set or MSBuild.exe must be in the PATH.";
 
-                return false;
+                    error += $"{Environment.NewLine}PATH={Environment.GetEnvironmentVariable("PATH")}";
+
+                    foreach (DictionaryEntry dictionaryEntry in Environment.GetEnvironmentVariables().Cast<DictionaryEntry>().Where(i => ((string)i.Key).StartsWith("v", StringComparison.OrdinalIgnoreCase)).OrderBy(i => i.Key))
+                    {
+                        error += $"{Environment.NewLine}{dictionaryEntry.Key}={dictionaryEntry.Value}";
+                    }
+
+                    return false;
+                }
+
+                vsInstallDirEnvVar = Path.GetDirectoryName(msbuildExePath);
             }
 
             if (!Directory.Exists(vsInstallDirEnvVar))
@@ -383,12 +444,26 @@ namespace Microsoft.VisualStudio.SlnGen
 
             instance = VisualStudioConfiguration.GetInstanceForPath(vsInstallDirEnvVar);
 
+            if (instance == null)
+            {
+                error = $"Unable to find the path to Visual Studio based on the directory \"{vsInstallDirEnvVar}\".";
+
+                return false;
+            }
+
             msbuildExeFileInfo = new FileInfo(Path.Combine(
                 instance.InstallationPath,
                 "MSBuild",
                 instance.InstallationVersion.Major >= 16 ? "Current" : "15.0",
                 "Bin",
                 "MSBuild.exe"));
+
+            if (!msbuildExeFileInfo.Exists)
+            {
+                error = $"Unable to find MSBuild at \"{msbuildExeFileInfo.FullName}\".";
+
+                return false;
+            }
 
             return true;
         }

@@ -51,7 +51,28 @@ namespace Microsoft.VisualStudio.SlnGen
             }
         }
 
+        /// <summary>
+        /// Gets an <see cref="IEnumerable{SlnFolder}" /> containing the current folders.
+        /// </summary>
         public IEnumerable<SlnFolder> Folders => EnumerateFolders(_rootFolder);
+
+        private static void CollapseFolders(IReadOnlyCollection<SlnFolder> folders)
+        {
+            foreach (SlnFolder folder in folders)
+            {
+                CollapseFolders(folder.Folders);
+            }
+
+            foreach (SlnFolder folderWithSingleChild in folders.Where(i => i.Folders.Count == 1))
+            {
+                SlnFolder child = folderWithSingleChild.Folders.First();
+
+                folderWithSingleChild.Name = $"{folderWithSingleChild.Name} {Separator} {child.Name}";
+                folderWithSingleChild.Projects.AddRange(child.Projects);
+                folderWithSingleChild.Folders.Clear();
+                folderWithSingleChild.Folders.AddRange(child.Folders);
+            }
+        }
 
         private static SlnFolder GetRootFolder(IEnumerable<SlnProject> projects)
         {
@@ -90,24 +111,6 @@ namespace Microsoft.VisualStudio.SlnGen
             return new SlnFolder(commonPath.TrimEnd(Path.DirectorySeparatorChar));
         }
 
-        private static void CollapseFolders(IReadOnlyCollection<SlnFolder> folders)
-        {
-            foreach (SlnFolder folder in folders)
-            {
-                CollapseFolders(folder.Folders);
-            }
-
-            foreach (SlnFolder folderWithSingleChild in folders.Where(i => i.Folders.Count == 1))
-            {
-                SlnFolder child = folderWithSingleChild.Folders.First();
-
-                folderWithSingleChild.Name = $"{folderWithSingleChild.Name} {Separator} {child.Name}";
-                folderWithSingleChild.Projects.AddRange(child.Projects);
-                folderWithSingleChild.Folders.Clear();
-                folderWithSingleChild.Folders.AddRange(child.Folders);
-            }
-        }
-
         private static bool RemoveLeaves(SlnFolder folder)
         {
             // Check if we are a leave node
@@ -143,7 +146,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
             DirectoryInfo directoryInfo = fileInfo.Directory;
 
-            if (_pathToSlnFolderMap.TryGetValue(directoryInfo.FullName, out SlnFolder childFolder))
+            if (_pathToSlnFolderMap.TryGetValue(directoryInfo!.FullName, out SlnFolder childFolder))
             {
                 childFolder.Projects.Add(project);
 
@@ -158,30 +161,33 @@ namespace Microsoft.VisualStudio.SlnGen
 
             directoryInfo = directoryInfo.Parent;
 
-            while (!string.Equals(directoryInfo.FullName, _rootFolder.FullPath, StringComparison.OrdinalIgnoreCase))
+            if (directoryInfo != null)
             {
-                if (!_pathToSlnFolderMap.TryGetValue(directoryInfo.FullName, out SlnFolder folder1))
+                while (directoryInfo != null && !string.Equals(directoryInfo.FullName, _rootFolder.FullPath, StringComparison.OrdinalIgnoreCase))
                 {
-                    folder1 = new SlnFolder(directoryInfo.FullName);
-                    _pathToSlnFolderMap.Add(directoryInfo.FullName, folder1);
+                    if (!_pathToSlnFolderMap.TryGetValue(directoryInfo.FullName, out SlnFolder folder1))
+                    {
+                        folder1 = new SlnFolder(directoryInfo.FullName);
+                        _pathToSlnFolderMap.Add(directoryInfo.FullName, folder1);
+                    }
+
+                    childFolder.Parent = folder1;
+
+                    if (!folder1.Folders.Contains(childFolder))
+                    {
+                        folder1.Folders.Add(childFolder);
+                    }
+
+                    directoryInfo = directoryInfo.Parent;
+
+                    childFolder = folder1;
                 }
 
-                childFolder.Parent = folder1;
-
-                if (!folder1.Folders.Contains(childFolder))
+                if (!_rootFolder.Folders.Contains(childFolder))
                 {
-                    folder1.Folders.Add(childFolder);
+                    _rootFolder.Folders.Add(childFolder);
+                    childFolder.Parent = _rootFolder;
                 }
-
-                directoryInfo = directoryInfo.Parent;
-
-                childFolder = folder1;
-            }
-
-            if (!_rootFolder.Folders.Contains(childFolder))
-            {
-                _rootFolder.Folders.Add(childFolder);
-                childFolder.Parent = _rootFolder;
             }
         }
 

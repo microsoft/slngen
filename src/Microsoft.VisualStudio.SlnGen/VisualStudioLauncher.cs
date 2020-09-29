@@ -24,6 +24,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <param name="visualStudioInstance">A <see cref="VisualStudioInstance" /> object representing which instance of Visual Studio to launch.</param>
         /// <param name="solutionFileFullPath">The full path to the solution file.</param>
         /// <param name="logger">A <see cref="ISlnGenLogger" /> to use for logging.</param>
+        /// <returns>true if Visual Studio was launched, otherwise false.</returns>
         public static bool TryLaunch(ProgramArguments arguments, VisualStudioInstance visualStudioInstance, string solutionFileFullPath, ISlnGenLogger logger)
         {
             if (!arguments.ShouldLaunchVisualStudio())
@@ -81,7 +82,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
                 processStartInfo = new ProcessStartInfo
                 {
-                    FileName = devEnvFullPath,
+                    FileName = devEnvFullPath!,
                     UseShellExecute = false,
                 };
 

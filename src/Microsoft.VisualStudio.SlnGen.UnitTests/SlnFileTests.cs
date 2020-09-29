@@ -257,32 +257,6 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             projectInSolution.ProjectGuid.ShouldBe(projectGuid.ToString("B").ToUpperInvariant());
         }
 
-        [Fact(Skip = "Disabling for now, will fix platforms and configurations in future commit")]
-        public void LotsOfProjects()
-        {
-            /*
-            const int projectCount = 1000;
-
-            SlnProject[] projects = new SlnProject[projectCount];
-
-            string[] configurations = { "Debug", "Release" };
-            string[] platforms = { "x64", "x86", "Any CPU", "amd64" };
-
-            Random randomGenerator = new Random(Guid.NewGuid().GetHashCode());
-
-            for (int i = 0; i < projectCount; i++)
-            {
-                // pick random and shuffled configurations and platforms
-                List<string> projectConfigurations = configurations.OrderBy(a => Guid.NewGuid()).Take(randomGenerator.Next(1, configurations.Length)).ToList();
-                List<string> projectPlatforms = platforms.OrderBy(a => Guid.NewGuid()).Take(randomGenerator.Next(1, platforms.Length)).ToList();
-                projects[i] = new SlnProject(
-                    GetTempFileName(), $"Project{i:D6}", Guid.NewGuid(), Guid.NewGuid(), projectConfigurations, projectPlatforms, isMainProject: i == 0, isDeployable: false);
-            }
-
-            ValidateProjectInSolution(projects);
-            */
-        }
-
         [Fact]
         public void MultipleProjects()
         {
@@ -374,11 +348,11 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         {
             FileInfo solutionFilePath = new FileInfo(GetTempFileName());
 
-            FileInfo projectFilePath = new FileInfo(Path.Combine(solutionFilePath.DirectoryName, @"src\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj"));
+            FileInfo projectFilePath = new FileInfo(Path.Combine(solutionFilePath.DirectoryName!, @"src\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj"));
 
-            Directory.CreateDirectory(projectFilePath.DirectoryName);
+            Directory.CreateDirectory(projectFilePath.DirectoryName!);
 
-            File.WriteAllText(projectFilePath.FullName, "<Project />");
+            File.WriteAllText(projectFilePath.FullName, @"<Project />");
 
             File.WriteAllText(
                 solutionFilePath.FullName,
@@ -449,7 +423,7 @@ EndGlobal
                 },
             };
 
-            void Action(SlnProject slnProject, ProjectInSolution projectInSolution)
+            static void Action(SlnProject slnProject, ProjectInSolution projectInSolution)
             {
                 if (slnProject.IsMainProject)
                 {
@@ -467,10 +441,10 @@ EndGlobal
         [Fact]
         public void WithFoldersIgnoreMainProject()
         {
-            var root = Path.GetTempPath();
-            var projectName1 = Path.GetFileName(Path.GetTempFileName());
-            var projectName2 = Path.GetFileName(Path.GetTempFileName());
-            var projectName3 = Path.GetFileName(Path.GetTempFileName());
+            string root = Path.GetTempPath();
+            string projectName1 = Path.GetFileName(Path.GetTempFileName());
+            string projectName2 = Path.GetFileName(Path.GetTempFileName());
+            string projectName3 = Path.GetFileName(Path.GetTempFileName());
             Project[] projects =
             {
                 new Project
@@ -496,7 +470,7 @@ EndGlobal
 
             SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
 
-            foreach (var slnProject in solutionFile.ProjectsInOrder)
+            foreach (ProjectInSolution slnProject in solutionFile.ProjectsInOrder)
             {
                 if (slnProject.ProjectName == projectName1)
                 {
@@ -516,10 +490,10 @@ EndGlobal
         [Fact]
         public void WithFoldersDoNotIgnoreMainProject()
         {
-            var root = Path.GetTempPath();
-            var projectName1 = Path.GetFileName(Path.GetTempFileName());
-            var projectName2 = Path.GetFileName(Path.GetTempFileName());
-            var projectName3 = Path.GetFileName(Path.GetTempFileName());
+            string root = Path.GetTempPath();
+            string projectName1 = Path.GetFileName(Path.GetTempFileName());
+            string projectName2 = Path.GetFileName(Path.GetTempFileName());
+            string projectName3 = Path.GetFileName(Path.GetTempFileName());
             Project[] projects =
             {
                 new Project
@@ -545,7 +519,7 @@ EndGlobal
 
             SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
 
-            foreach (var slnProject in solutionFile.ProjectsInOrder)
+            foreach (ProjectInSolution slnProject in solutionFile.ProjectsInOrder)
             {
                 if (slnProject.ProjectName == projectName1)
                 {
@@ -609,7 +583,7 @@ EndGlobal
         {
             projectConfigurationsInSolution.TryGetValue(key, out ProjectConfigurationInSolution projectConfigurationInSolution).ShouldBeTrue();
 
-            projectConfigurationInSolution.ConfigurationName.ShouldBe(expectedConfiguration);
+            projectConfigurationInSolution!.ConfigurationName.ShouldBe(expectedConfiguration);
             projectConfigurationInSolution.PlatformName.ShouldBe(expectedPlatform);
             projectConfigurationInSolution.IncludeInBuild.ShouldBe(expectedIncludeInBuild);
         }

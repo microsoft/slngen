@@ -15,8 +15,6 @@ namespace Microsoft.VisualStudio.SlnGen
     /// </summary>
     public sealed class ProgramArguments
     {
-        internal static Func<ProgramArguments, IConsole, int> Execute = (arguments, console) => Program.Execute(arguments, console);
-
         /// <summary>
         /// Gets or sets the binary logger arguments.
         /// </summary>
@@ -259,8 +257,92 @@ Examples:
         public string[] Verbosity { get; set; }
 
         /// <summary>
+        /// Gets or sets a <see cref="Func{ProgramArguments,IConsole,Int32}" /> to execute.
+        /// </summary>
+        internal static Func<ProgramArguments, IConsole, int> Execute { get; set; } = Program.Execute;
+
+        /// <summary>
+        /// Gets a value indicating whether or not folders should be collapsed.
+        /// </summary>
+        /// <returns>true if folders should be collapsed, otherwise false.</returns>
+        public bool EnableCollapseFolders() => GetBoolean(CollapseFolders);
+
+        /// <summary>
+        /// Gets a value indicating whether or not folders should be created in the solution.
+        /// </summary>
+        /// <returns>true if folders should be used, otherwise false.</returns>
+        public bool EnableFolders() => GetBoolean(Folders);
+
+        /// <summary>
+        /// Gets a value indicating whether or not shell execute should be used when launching the solution.
+        /// </summary>
+        /// <returns>true if shell executed should be used, otherwise false.</returns>
+        public bool EnableShellExecute() => GetBoolean(ShellExecute, defaultValue: true);
+
+        /// <summary>
+        /// Gets the Configuration values based on what was specified as command-line arguments.
+        /// </summary>
+        /// <returns>An <see cref="IReadOnlyCollection{T}" /> containing the unique values for Configuration.</returns>
+        public IReadOnlyCollection<string> GetConfigurations() => Configuration.SplitValues();
+
+        /// <summary>
+        /// Gets the global properties to use when evaluating projects.
+        /// </summary>
+        /// <returns>An <see cref="IDictionary{String,String}" /> containing the global properties to use when evaluating projects.</returns>
+        public IDictionary<string, string> GetGlobalProperties()
+        {
+            IDictionary<string, string> globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [MSBuildPropertyNames.IsSlnGen] = bool.TrueString,
+                [MSBuildPropertyNames.BuildingProject] = bool.FalseString,
+                [MSBuildPropertyNames.DesignTimeBuild] = bool.TrueString,
+                [MSBuildPropertyNames.ExcludeRestorePackageImports] = bool.TrueString,
+            };
+
+            if (Property != null)
+            {
+                foreach (KeyValuePair<string, string> item in Property.SelectMany(i => i.SplitProperties()))
+                {
+                    globalProperties[item.Key] = item.Value;
+                }
+            }
+
+            return globalProperties;
+        }
+
+        /// <summary>
+        /// Gets the Platform values based on what was specified as command-line arguments.
+        /// </summary>
+        /// <returns>An <see cref="IReadOnlyCollection{T}" /> containing the unique values for Platform.</returns>
+        public IReadOnlyCollection<string> GetPlatforms() => Platform.SplitValues();
+
+        /// <summary>
+        /// Executes the current program.
+        /// </summary>
+        /// <param name="console">The <see cref="IConsole" /> to use.</param>
+        /// <returns>Zero if the program executed successfully, otherwise non-zero.</returns>
+        public int OnExecute(IConsole console)
+        {
+            return Execute(this, console);
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether or not Visual Studio should be launched.
+        /// </summary>
+        /// <returns>True if Visual Studio should be launched, otherwise false.</returns>
+        public bool ShouldLaunchVisualStudio() => GetBoolean(LaunchVisualStudio, defaultValue: true);
+
+        /// <summary>
+        /// Gets a value indicating whether or not projects should be loaded in Visual Studio.
+        /// </summary>
+        /// <returns>True if projects should be loaded in Visual Studio, otherwise false.</returns>
+        public bool ShouldLoadProjectsInVisualStudio() => GetBoolean(LoadProjectsInVisualStudio, defaultValue: true);
+
+        /// <summary>
         /// Gets specified projects or all projects in the current working directory.
         /// </summary>
+        /// <param name="logger"> A <see cref="ISlnGenLogger" /> to use.</param>
+        /// <param name="projectEntryPaths">Receives a <see cref="IReadOnlyList{String}" /> containing the project entry paths.</param>
         /// <returns>An <see cref="IEnumerable{String}" /> containing the full paths to projects to generate a solution for.</returns>
         public bool TryGetEntryProjectPaths(ISlnGenLogger logger, out IReadOnlyList<string> projectEntryPaths)
         {
@@ -303,58 +385,6 @@ Examples:
 
             return result.Count > 0;
         }
-
-        public bool EnableCollapseFolders() => GetBoolean(CollapseFolders);
-
-        public bool EnableFolders() => GetBoolean(Folders);
-
-        public bool EnableShellExecute() => GetBoolean(ShellExecute, defaultValue: true);
-
-        /// <summary>
-        /// Gets the Configuration values based on what was specified as command-line arguments.
-        /// </summary>
-        /// <returns>An <see cref="IReadOnlyCollection{T}" /> containing the unique values for Configuration.</returns>
-        public IReadOnlyCollection<string> GetConfigurations() => Configuration.SplitValues();
-
-        /// <summary>
-        /// Gets the global properties to use when evaluating projects.
-        /// </summary>
-        /// <returns>An <see cref="IDictionary{String,String}" /> containing the global properties to use when evaluating projects.</returns>
-        public IDictionary<string, string> GetGlobalProperties()
-        {
-            IDictionary<string, string> globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            {
-                [MSBuildPropertyNames.IsSlnGen] = bool.TrueString,
-                [MSBuildPropertyNames.BuildingProject] = bool.FalseString,
-                [MSBuildPropertyNames.DesignTimeBuild] = bool.TrueString,
-                [MSBuildPropertyNames.ExcludeRestorePackageImports] = bool.TrueString,
-            };
-
-            if (Property != null)
-            {
-                foreach (KeyValuePair<string, string> item in Property.SelectMany(i => i.SplitProperties()))
-                {
-                    globalProperties[item.Key] = item.Value;
-                }
-            }
-
-            return globalProperties;
-        }
-
-        /// <summary>
-        /// Gets the Platform values based on what was specified as command-line arguments.
-        /// </summary>
-        /// <returns>An <see cref="IReadOnlyCollection{T}" /> containing the unique values for Platform.</returns>
-        public IReadOnlyCollection<string> GetPlatforms() => Platform.SplitValues();
-
-        public int OnExecute(IConsole console)
-        {
-            return Execute(this, console);
-        }
-
-        public bool ShouldLaunchVisualStudio() => GetBoolean(LaunchVisualStudio, defaultValue: true);
-
-        public bool ShouldLoadProjectsInVisualStudio() => GetBoolean(LoadProjectsInVisualStudio, defaultValue: true);
 
         private bool GetBoolean(string[] values, bool defaultValue = false)
         {

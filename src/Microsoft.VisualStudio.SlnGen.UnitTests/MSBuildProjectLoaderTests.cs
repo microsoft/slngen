@@ -79,7 +79,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         {
             string projectA = GetTempFileName();
 
-            File.WriteAllText(projectA, "Invalid XML");
+            File.WriteAllText(projectA, @"Invalid XML");
 
             ProjectCreator dirsProj = ProjectCreator
                 .Create(GetTempFileName())

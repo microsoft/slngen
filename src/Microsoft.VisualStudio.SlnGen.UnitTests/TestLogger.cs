@@ -35,7 +35,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             ErrorMessages?.Add(message);
 
-            base.LogError(message, code);
+            base.LogError(message, code, file, lineNumber, columnNumber);
         }
 
         public override void LogMessageHigh(string message, params object[] args) => HighImportanceMessages.Add(string.Format(CultureInfo.CurrentCulture, message, args));
