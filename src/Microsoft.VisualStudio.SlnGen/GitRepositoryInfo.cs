@@ -65,6 +65,7 @@ namespace Microsoft.VisualStudio.SlnGen
                     FileName = "git",
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
+                    RedirectStandardError = true,
                     WorkingDirectory = Environment.CurrentDirectory,
                 },
             };
