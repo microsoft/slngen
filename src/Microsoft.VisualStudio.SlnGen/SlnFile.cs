@@ -328,16 +328,17 @@ namespace Microsoft.VisualStudio.SlnGen
 
             using StreamWriter writer = new StreamWriter(fileStream, Encoding.Unicode);
 
-            Save(writer, useFolders, collapseFolders);
+            Save(path, writer, useFolders, collapseFolders);
         }
 
         /// <summary>
         /// Saves the Visual Studio solution to a file.
         /// </summary>
+        /// <param name="rootPath">A root path for the solution to make other paths relative to.</param>
         /// <param name="writer">The <see cref="TextWriter" /> to save the solution file to.</param>
         /// <param name="useFolders">Specifies if folders should be created.</param>
         /// <param name="collapseFolders">An optional value indicating whether or not folders containing a single item should be collapsed into their parent folder.</param>
-        internal void Save(TextWriter writer, bool useFolders, bool collapseFolders = false)
+        internal void Save(string rootPath, TextWriter writer, bool useFolders, bool collapseFolders = false)
         {
             writer.WriteLine(Header, _fileFormatVersion);
 
@@ -345,7 +346,7 @@ namespace Microsoft.VisualStudio.SlnGen
             {
                 writer.WriteLine($@"Project(""{SlnFolder.FolderProjectTypeGuid}"") = ""Solution Items"", ""Solution Items"", ""{Guid.NewGuid().ToSolutionString()}"" ");
                 writer.WriteLine("	ProjectSection(SolutionItems) = preProject");
-                foreach (string solutionItem in SolutionItems)
+                foreach (string solutionItem in SolutionItems.Select(i => i.ToRelativePath(rootPath)))
                 {
                     writer.WriteLine($"		{solutionItem} = {solutionItem}");
                 }
@@ -356,7 +357,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
             foreach (SlnProject project in _projects.OrderBy(i => i.FullPath))
             {
-                writer.WriteLine($@"Project(""{project.ProjectTypeGuid.ToSolutionString()}"") = ""{project.Name}"", ""{project.FullPath}"", ""{project.ProjectGuid.ToSolutionString()}""");
+                writer.WriteLine($@"Project(""{project.ProjectTypeGuid.ToSolutionString()}"") = ""{project.Name}"", ""{project.FullPath.ToRelativePath(rootPath)}"", ""{project.ProjectGuid.ToSolutionString()}""");
                 writer.WriteLine("EndProject");
             }
 
@@ -368,7 +369,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
                 foreach (SlnFolder folder in hierarchy.Folders)
                 {
-                    writer.WriteLine($@"Project(""{folder.ProjectTypeGuid}"") = ""{folder.Name}"", ""{folder.FullPath}"", ""{folder.FolderGuid.ToSolutionString()}""");
+                    writer.WriteLine($@"Project(""{folder.ProjectTypeGuid}"") = ""{folder.Name}"", ""{folder.FullPath.ToRelativePath(rootPath)}"", ""{folder.FolderGuid.ToSolutionString()}""");
                     writer.WriteLine("EndProject");
                 }
             }
