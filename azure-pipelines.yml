@@ -22,7 +22,7 @@ trigger:
 pr:
   branches:
     include:
-    - master
+    - 'master'
     - 'rel/*'
   paths:
     exclude:

@@ -87,7 +87,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             SolutionFile solutionFile = SolutionFile.Parse(expectedSolutionFilePath);
 
-            solutionFile.ProjectsInOrder.Select(i => i.AbsolutePath).ShouldBe(new string[]
+            solutionFile.ProjectsInOrder.Select(i => Path.GetFullPath(i.AbsolutePath)).ShouldBe(new string[]
             {
                 projectA,
                 projectB,
