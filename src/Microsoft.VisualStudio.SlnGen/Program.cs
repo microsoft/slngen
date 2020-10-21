@@ -137,7 +137,7 @@ namespace Microsoft.VisualStudio.SlnGen
             };
 
             using (ProjectCollection projectCollection = new ProjectCollection(
-                globalProperties: null,
+                globalProperties: arguments.GetGlobalProperties(),
                 loggers: new ILogger[]
                 {
                     forwardingLogger,
