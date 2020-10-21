@@ -70,6 +70,11 @@ namespace Microsoft.VisualStudio.SlnGen
         public const string SlnGenDevEnvFullPath = nameof(SlnGenDevEnvFullPath);
 
         /// <summary>
+        /// Represents the SlnGenFolder property.
+        /// </summary>
+        public const string SlnGenFolder = nameof(SlnGenFolder);
+
+        /// <summary>
         /// Represents the SlnGenFolders property.
         /// </summary>
         public const string SlnGenFolders = nameof(SlnGenFolders);

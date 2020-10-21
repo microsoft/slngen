@@ -70,6 +70,11 @@ namespace Microsoft.VisualStudio.SlnGen
         public IReadOnlyList<string> Configurations { get; set; } = Array.Empty<string>();
 
         /// <summary>
+        /// Gets or sets the folder path the project resides in.
+        /// </summary>
+        public string Folder { get; set; }
+
+        /// <summary>
         /// Gets or sets the full path to the project file.
         /// </summary>
         public string FullPath { get; set; }
@@ -141,6 +146,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
             return new SlnProject
             {
+                Folder = GetProjectFolder(project),
                 FullPath = project.FullPath,
                 Name = name,
                 ProjectGuid = GetProjectGuid(project, isUsingMicrosoftNETSdk),
@@ -356,6 +362,13 @@ namespace Microsoft.VisualStudio.SlnGen
                 &&
                 !project.GetPropertyValue(MSBuildPropertyNames.IsTraversalProject).Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase);  // Filter out traversal projects by looking for an IsTraversal property
         }
+
+        /// <summary>
+        /// Returns whether a project should be included in the solution or not.
+        /// </summary>
+        /// <param name="project">The project.</param>
+        /// <returns><code>true</code> if it should be included, false otherwise.</returns>
+        private static string GetProjectFolder(Project project) => project.GetPropertyValue(MSBuildPropertyNames.SlnGenFolder);
 
         private static IReadOnlyList<string> GetPlatforms(Project project, string projectFileExtension, bool isUsingMicrosoftNETSdk)
         {
