@@ -137,7 +137,7 @@ namespace Microsoft.VisualStudio.SlnGen
             };
 
             using (ProjectCollection projectCollection = new ProjectCollection(
-                globalProperties: arguments.GetGlobalProperties(),
+                globalProperties: null,
                 loggers: new ILogger[]
                 {
                     forwardingLogger,
@@ -168,7 +168,7 @@ namespace Microsoft.VisualStudio.SlnGen
                         return 1;
                     }
 
-                    (TimeSpan evaluationTime, int evaluationCount) = ProjectLoader.LoadProjects(MSBuildExeFileInfo, projectCollection, projectEntryPaths, null, forwardingLogger);
+                    (TimeSpan evaluationTime, int evaluationCount) = ProjectLoader.LoadProjects(MSBuildExeFileInfo, projectCollection, projectEntryPaths, arguments.GetGlobalProperties(), forwardingLogger);
 
                     if (forwardingLogger.HasLoggedErrors)
                     {
