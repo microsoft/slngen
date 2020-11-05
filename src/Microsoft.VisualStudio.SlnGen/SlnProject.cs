@@ -110,6 +110,11 @@ namespace Microsoft.VisualStudio.SlnGen
         public Guid ProjectTypeGuid { get; set; }
 
         /// <summary>
+        /// Gets or sets the name of a solution folder to place the project in.
+        /// </summary>
+        public string SolutionFolder { get; set; }
+
+        /// <summary>
         /// Creates a solution project from the specified MSBuild project.
         /// </summary>
         /// <param name="project">The <see cref="Project " /> from MSBuild to create a solution project for.</param>
@@ -141,14 +146,15 @@ namespace Microsoft.VisualStudio.SlnGen
 
             return new SlnProject
             {
+                Configurations = GetConfigurations(project, projectFileExtension, isUsingMicrosoftNETSdk),
                 FullPath = project.FullPath,
-                Name = name,
-                ProjectGuid = GetProjectGuid(project, isUsingMicrosoftNETSdk),
-                ProjectTypeGuid = GetProjectTypeGuid(projectFileExtension, isUsingMicrosoftNETSdk, customProjectTypeGuids),
                 IsDeployable = GetIsDeployable(project, projectFileExtension),
                 IsMainProject = isMainProject,
-                Configurations = GetConfigurations(project, projectFileExtension, isUsingMicrosoftNETSdk),
+                Name = name,
                 Platforms = GetPlatforms(project, projectFileExtension, isUsingMicrosoftNETSdk),
+                ProjectGuid = GetProjectGuid(project, isUsingMicrosoftNETSdk),
+                ProjectTypeGuid = GetProjectTypeGuid(projectFileExtension, isUsingMicrosoftNETSdk, customProjectTypeGuids),
+                SolutionFolder = project.GetPropertyValueOrDefault(MSBuildPropertyNames.SlnGenSolutionFolder, string.Empty),
             };
         }
 

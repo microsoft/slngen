@@ -100,6 +100,11 @@ namespace Microsoft.VisualStudio.SlnGen
         public const string SlnGenSolutionFileFullPath = nameof(SlnGenSolutionFileFullPath);
 
         /// <summary>
+        /// Represents the name of a solution folder to place the project in.
+        /// </summary>
+        public const string SlnGenSolutionFolder = nameof(SlnGenSolutionFolder);
+
+        /// <summary>
         /// Represents the SlnGenUseShellExecute property.
         /// </summary>
         public const string SlnGenUseShellExecute = nameof(SlnGenUseShellExecute);

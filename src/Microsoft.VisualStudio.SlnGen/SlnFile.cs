@@ -172,7 +172,19 @@ namespace Microsoft.VisualStudio.SlnGen
 
             solution.AddSolutionItems(solutionItems);
 
-            solution.Save(solutionFileFullPath, arguments.EnableFolders(), arguments.EnableCollapseFolders());
+            if (!arguments.EnableFolders())
+            {
+                foreach (SlnProject project in solution._projects.Distinct(new EqualityComparer<SlnProject>((x, y) => string.Equals(x.SolutionFolder, y.SolutionFolder)))
+                    .Where(i => !string.IsNullOrWhiteSpace(i.SolutionFolder) && i.SolutionFolder.Contains(Path.DirectorySeparatorChar)))
+                {
+                    logger.LogError($"The value of SlnGenSolutionFolder \"{project.SolutionFolder}\" cannot contain directory separators.");
+                }
+            }
+
+            if (!logger.HasLoggedErrors)
+            {
+                solution.Save(solutionFileFullPath, arguments.EnableFolders(), arguments.EnableCollapseFolders());
+            }
 
             return (solutionFileFullPath, customProjectTypeGuids.Count, solutionItems.Count, solution.SolutionGuid);
         }
@@ -365,18 +377,25 @@ namespace Microsoft.VisualStudio.SlnGen
 
             if (useFolders && _projects.Any(i => !i.IsMainProject))
             {
-                hierarchy = new SlnHierarchy(_projects, collapseFolders);
+                hierarchy = SlnHierarchy.CreateFromProjectDirectories(_projects, collapseFolders);
+            }
+            else if (_projects.Any(i => !string.IsNullOrWhiteSpace(i.SolutionFolder)))
+            {
+                hierarchy = SlnHierarchy.CreateFromProjectSolutionFolder(_projects);
+            }
 
+            if (hierarchy != null)
+            {
                 foreach (SlnFolder folder in hierarchy.Folders)
                 {
-                    writer.WriteLine($@"Project(""{folder.ProjectTypeGuid}"") = ""{folder.Name}"", ""{folder.FullPath.ToRelativePath(rootPath)}"", ""{folder.FolderGuid.ToSolutionString()}""");
+                    writer.WriteLine($@"Project(""{folder.ProjectTypeGuid}"") = ""{folder.Name}"", ""{(useFolders ? folder.FullPath.ToRelativePath(rootPath) : folder.Name)}"", ""{folder.FolderGuid.ToSolutionString()}""");
                     writer.WriteLine("EndProject");
                 }
             }
 
             writer.WriteLine("Global");
 
-            if (useFolders && _projects.Count > 1 && hierarchy != null)
+            if (hierarchy != null)
             {
                 writer.WriteLine(@"	GlobalSection(NestedProjects) = preSolution");
 
@@ -387,7 +406,10 @@ namespace Microsoft.VisualStudio.SlnGen
                         writer.WriteLine($@"		{project.ProjectGuid.ToSolutionString()} = {folder.FolderGuid.ToSolutionString()}");
                     }
 
-                    writer.WriteLine($@"		{folder.FolderGuid.ToSolutionString()} = {folder.Parent.FolderGuid.ToSolutionString()}");
+                    if (useFolders)
+                    {
+                        writer.WriteLine($@"		{folder.FolderGuid.ToSolutionString()} = {folder.Parent.FolderGuid.ToSolutionString()}");
+                    }
                 }
 
                 writer.WriteLine("	EndGlobalSection");

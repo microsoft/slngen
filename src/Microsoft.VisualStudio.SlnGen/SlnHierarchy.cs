@@ -33,28 +33,68 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <summary>
         /// Initializes a new instance of the <see cref="SlnHierarchy" /> class.
         /// </summary>
-        /// <param name="projects">The set of projects that should be placed in the hierarchy.</param>
-        /// <param name="collapseFolders">An optional value indicating whether or not folders containing a single item should be collapsed into their parent folder.</param>
-        public SlnHierarchy(IReadOnlyList<SlnProject> projects, bool collapseFolders = false)
+        private SlnHierarchy(SlnFolder rootFolder)
         {
-            _rootFolder = GetRootFolder(projects);
-
-            foreach (SlnProject project in projects.Where(i => !i.IsMainProject))
-            {
-                CreateHierarchy(project);
-            }
-
-            if (collapseFolders)
-            {
-                CollapseFolders(_rootFolder.Folders);
-                RemoveLeaves(_rootFolder);
-            }
+            _rootFolder = rootFolder ?? throw new ArgumentNullException(nameof(rootFolder));
         }
 
         /// <summary>
         /// Gets an <see cref="IEnumerable{SlnFolder}" /> containing the current folders.
         /// </summary>
         public IEnumerable<SlnFolder> Folders => EnumerateFolders(_rootFolder);
+
+        /// <summary>
+        /// Creates a <see cref="SlnHierarchy" /> based on the directory structure of the specified projects.
+        /// </summary>
+        /// <param name="projects">The set of projects that should be placed in the hierarchy.</param>
+        /// <param name="collapseFolders">An optional value indicating whether or not folders containing a single item should be collapsed into their parent folder.</param>
+        /// <returns>A <see cref="SlnHierarchy" /> based on the directory structure of the specified projects.</returns>
+        public static SlnHierarchy CreateFromProjectDirectories(IReadOnlyList<SlnProject> projects, bool collapseFolders = false)
+        {
+            SlnFolder rootFolder = GetRootFolder(projects);
+
+            SlnHierarchy hierarchy = new SlnHierarchy(rootFolder);
+
+            foreach (SlnProject project in projects.Where(i => !i.IsMainProject))
+            {
+                CreateHierarchy(hierarchy, project);
+            }
+
+            if (collapseFolders)
+            {
+                CollapseFolders(rootFolder.Folders);
+                RemoveLeaves(rootFolder);
+            }
+
+            return hierarchy;
+        }
+
+        /// <summary>
+        /// Creates a hierarchy based on solution folders declared by projects.
+        /// </summary>
+        /// <param name="projects">A <see cref="IReadOnlyList{T}" /> of projects.</param>
+        /// <returns>A <see cref="SlnHierarchy" /> object containing solution folders and projects.</returns>
+        public static SlnHierarchy CreateFromProjectSolutionFolder(IReadOnlyList<SlnProject> projects)
+        {
+            SlnHierarchy hierarchy = new SlnHierarchy(new SlnFolder(string.Empty));
+
+            foreach (SlnProject project in projects.Where(i => !string.IsNullOrWhiteSpace(i.SolutionFolder)))
+            {
+                if (!hierarchy._pathToSlnFolderMap.TryGetValue(project.SolutionFolder, out SlnFolder folder))
+                {
+                    folder = new SlnFolder(project.SolutionFolder)
+                    {
+                        Parent = hierarchy._rootFolder,
+                    };
+
+                    hierarchy._rootFolder.Folders.Add(folder);
+                }
+
+                folder.Projects.Add(project);
+            }
+
+            return hierarchy;
+        }
 
         private static void CollapseFolders(IReadOnlyCollection<SlnFolder> folders)
         {
@@ -71,6 +111,57 @@ namespace Microsoft.VisualStudio.SlnGen
                 folderWithSingleChild.Projects.AddRange(child.Projects);
                 folderWithSingleChild.Folders.Clear();
                 folderWithSingleChild.Folders.AddRange(child.Folders);
+            }
+        }
+
+        private static void CreateHierarchy(SlnHierarchy hierarchy, SlnProject project)
+        {
+            FileInfo fileInfo = new FileInfo(project.FullPath);
+
+            DirectoryInfo directoryInfo = fileInfo.Directory;
+
+            if (hierarchy._pathToSlnFolderMap.TryGetValue(directoryInfo!.FullName, out SlnFolder childFolder))
+            {
+                childFolder.Projects.Add(project);
+
+                return;
+            }
+
+            childFolder = new SlnFolder(directoryInfo.FullName);
+
+            childFolder.Projects.Add(project);
+
+            hierarchy._pathToSlnFolderMap.Add(directoryInfo.FullName, childFolder);
+
+            directoryInfo = directoryInfo.Parent;
+
+            if (directoryInfo != null)
+            {
+                while (directoryInfo != null && !string.Equals(directoryInfo.FullName, hierarchy._rootFolder.FullPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!hierarchy._pathToSlnFolderMap.TryGetValue(directoryInfo.FullName, out SlnFolder folder1))
+                    {
+                        folder1 = new SlnFolder(directoryInfo.FullName);
+                        hierarchy._pathToSlnFolderMap.Add(directoryInfo.FullName, folder1);
+                    }
+
+                    childFolder.Parent = folder1;
+
+                    if (!folder1.Folders.Contains(childFolder))
+                    {
+                        folder1.Folders.Add(childFolder);
+                    }
+
+                    directoryInfo = directoryInfo.Parent;
+
+                    childFolder = folder1;
+                }
+
+                if (!hierarchy._rootFolder.Folders.Contains(childFolder))
+                {
+                    hierarchy._rootFolder.Folders.Add(childFolder);
+                    childFolder.Parent = hierarchy._rootFolder;
+                }
             }
         }
 
@@ -140,68 +231,20 @@ namespace Microsoft.VisualStudio.SlnGen
             return false;
         }
 
-        private void CreateHierarchy(SlnProject project)
-        {
-            FileInfo fileInfo = new FileInfo(project.FullPath);
-
-            DirectoryInfo directoryInfo = fileInfo.Directory;
-
-            if (_pathToSlnFolderMap.TryGetValue(directoryInfo!.FullName, out SlnFolder childFolder))
-            {
-                childFolder.Projects.Add(project);
-
-                return;
-            }
-
-            childFolder = new SlnFolder(directoryInfo.FullName);
-
-            childFolder.Projects.Add(project);
-
-            _pathToSlnFolderMap.Add(directoryInfo.FullName, childFolder);
-
-            directoryInfo = directoryInfo.Parent;
-
-            if (directoryInfo != null)
-            {
-                while (directoryInfo != null && !string.Equals(directoryInfo.FullName, _rootFolder.FullPath, StringComparison.OrdinalIgnoreCase))
-                {
-                    if (!_pathToSlnFolderMap.TryGetValue(directoryInfo.FullName, out SlnFolder folder1))
-                    {
-                        folder1 = new SlnFolder(directoryInfo.FullName);
-                        _pathToSlnFolderMap.Add(directoryInfo.FullName, folder1);
-                    }
-
-                    childFolder.Parent = folder1;
-
-                    if (!folder1.Folders.Contains(childFolder))
-                    {
-                        folder1.Folders.Add(childFolder);
-                    }
-
-                    directoryInfo = directoryInfo.Parent;
-
-                    childFolder = folder1;
-                }
-
-                if (!_rootFolder.Folders.Contains(childFolder))
-                {
-                    _rootFolder.Folders.Add(childFolder);
-                    childFolder.Parent = _rootFolder;
-                }
-            }
-        }
-
         private IEnumerable<SlnFolder> EnumerateFolders(SlnFolder folder)
         {
             foreach (SlnFolder child in folder.Folders)
             {
-                foreach (SlnFolder enumerateFolder in EnumerateFolders(child))
+                foreach (SlnFolder enumerateFolder in EnumerateFolders(child).Where(i => !string.IsNullOrWhiteSpace(i.Name)))
                 {
                     yield return enumerateFolder;
                 }
             }
 
-            yield return folder;
+            if (!string.IsNullOrWhiteSpace(folder.Name))
+            {
+                yield return folder;
+            }
         }
     }
 }

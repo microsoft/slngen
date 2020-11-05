@@ -34,7 +34,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 },
             };
 
-            SlnHierarchy hierarchy = new SlnHierarchy(projects);
+            SlnHierarchy hierarchy = SlnHierarchy.CreateFromProjectDirectories(projects);
 
             hierarchy.Folders.Select(i => i.FullPath).ShouldBe(new[]
             {
@@ -56,7 +56,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             List<SlnProject> projects = root.GetAllProjects();
 
-            SlnHierarchy hierarchy = new SlnHierarchy(projects);
+            SlnHierarchy hierarchy = SlnHierarchy.CreateFromProjectDirectories(projects);
 
             hierarchy.Folders.Select(i => i.FullPath).OrderBy(s => s)
                 .ShouldBe(root.GetAllFolders().Select(f => f.FullPath).OrderBy(s => s));
@@ -94,7 +94,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             rootExpected.Projects.Add(bar1);
             rootExpected.AddSubDirectory($"foo1 {SlnHierarchy.Separator} foo2 {SlnHierarchy.Separator} baz3").Projects.Add(baz3);
 
-            SlnHierarchy hierarchy = new SlnHierarchy(root.GetAllProjects(), collapseFolders: true);
+            SlnHierarchy hierarchy = SlnHierarchy.CreateFromProjectDirectories(root.GetAllProjects(), collapseFolders: true);
 
             SlnFolder[] resultFolders = hierarchy.Folders.OrderBy(f => f.FullPath).ToArray();
             DummyFolder[] expectedFolders = rootExpected.GetAllFolders().OrderBy(f => f.FullPath).ToArray();
