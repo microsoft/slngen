@@ -348,11 +348,20 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         {
             FileInfo solutionFilePath = new FileInfo(GetTempFileName());
 
-            FileInfo projectFilePath = new FileInfo(Path.Combine(solutionFilePath.DirectoryName!, @"src\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj"));
+            Dictionary<string, Guid> projects = new Dictionary<string, Guid>
+            {
+                [@"src\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj"] = new Guid("C8D336E5-9E65-4D34-BA9A-DB58936947CF"),
+                [@"test\Microsoft.VisualStudio.SlnGen.UnitTests\Microsoft.VisualStudio.SlnGen.UnitTests.csproj"] = new Guid("B55ACBF0-DC34-44BA-8535-8F81325B6D70"),
+            };
 
-            Directory.CreateDirectory(projectFilePath.DirectoryName!);
+            Dictionary<FileInfo, Guid> projectFiles = projects.ToDictionary(i => new FileInfo(Path.Combine(solutionFilePath.DirectoryName!, i.Key)), i => i.Value);
 
-            File.WriteAllText(projectFilePath.FullName, @"<Project />");
+            foreach (KeyValuePair<FileInfo, Guid> item in projectFiles)
+            {
+                Directory.CreateDirectory(item.Key.DirectoryName!);
+
+                File.WriteAllText(item.Key.FullName, @"<Project />");
+            }
 
             File.WriteAllText(
                 solutionFilePath.FullName,
@@ -362,6 +371,12 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.29011.400
 MinimumVisualStudioVersion = 10.0.40219.1
 Project(""{9A19103F-16F7-4668-BE54-9A1E7A4F7556}"") = ""Microsoft.VisualStudio.SlnGen"", ""src\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj"", ""{C8D336E5-9E65-4D34-BA9A-DB58936947CF}""
+EndProject
+Project(""{9A19103F-16F7-4668-BE54-9A1E7A4F7556}"") = ""Microsoft.VisualStudio.SlnGen.UnitTests"", ""test\Microsoft.VisualStudio.SlnGen.UnitTests\Microsoft.VisualStudio.SlnGen.UnitTests.csproj"", ""{B55ACBF0-DC34-44BA-8535-8F81325B6D70}""
+EndProject
+Project(""{2150E333-8FDC-42A3-9474-1A3956D46DE8}"") = ""FolderA"", ""FolderA"", ""{9C915FE4-72A5-4368-8979-32B3983E6041}""
+EndProject
+Project(""{2150E333-8FDC-42A3-9474-1A3956D46DE8}"") = ""FolderB"", ""FolderB"", ""{D3A9F802-38CC-4F8D-8DE9-8DF9C8B7EADC}""
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -373,9 +388,17 @@ Global
 		{C8D336E5-9E65-4D34-BA9A-DB58936947CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C8D336E5-9E65-4D34-BA9A-DB58936947CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C8D336E5-9E65-4D34-BA9A-DB58936947CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B55ACBF0-DC34-44BA-8535-8F81325B6D70}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B55ACBF0-DC34-44BA-8535-8F81325B6D70}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B55ACBF0-DC34-44BA-8535-8F81325B6D70}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B55ACBF0-DC34-44BA-8535-8F81325B6D70}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C8D336E5-9E65-4D34-BA9A-DB58936947CF} = {9C915FE4-72A5-4368-8979-32B3983E6041}
+		{B55ACBF0-DC34-44BA-8535-8F81325B6D70} = {D3A9F802-38CC-4F8D-8DE9-8DF9C8B7EADC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CFFC4187-96EE-4465-B5B3-0BAFD3C14BB6}
@@ -386,10 +409,7 @@ EndGlobal
 
             solutionGuid.ShouldBe(Guid.Parse("CFFC4187-96EE-4465-B5B3-0BAFD3C14BB6"));
 
-            projectGuidsByPath.ShouldBe(new List<KeyValuePair<string, Guid>>
-            {
-                new KeyValuePair<string, Guid>(projectFilePath.FullName, Guid.Parse("{C8D336E5-9E65-4D34-BA9A-DB58936947CF}")),
-            });
+            projectGuidsByPath.ShouldBe(projectFiles.Select(i => new KeyValuePair<string, Guid>(i.Key.FullName, i.Value)));
         }
 
         [Fact]
@@ -534,6 +554,62 @@ EndGlobal
                     slnProject.ParentProjectGuid.ShouldNotBeNull();
                 }
             }
+        }
+
+        [Fact]
+        public void ProjectSolutionFolders()
+        {
+            string root = Path.GetTempPath();
+            string projectName1 = Path.GetFileName(Path.GetTempFileName());
+            string projectName2 = Path.GetFileName(Path.GetTempFileName());
+            string projectName3 = Path.GetFileName(Path.GetTempFileName());
+            string projectName4 = Path.GetFileName(Path.GetTempFileName());
+            Project[] projects =
+            {
+                new Project
+                {
+                    FullPath = Path.Combine(root, "SubFolder1", "Project1", projectName1),
+                },
+                new Project
+                {
+                    FullPath = Path.Combine(root, "SubFolder2", "Project2", projectName2),
+                },
+                new Project
+                {
+                    FullPath = Path.Combine(root, "SubFolder3", "Project3", projectName3),
+                },
+                new Project
+                {
+                    FullPath = Path.Combine(root, "SubFolder4", "Project4", projectName4),
+                },
+            };
+
+            projects[0].SetProperty(MSBuildPropertyNames.SlnGenSolutionFolder, "FolderA");
+            projects[1].SetProperty(MSBuildPropertyNames.SlnGenSolutionFolder, "FolderB");
+            projects[2].SetProperty(MSBuildPropertyNames.SlnGenSolutionFolder, "FolderB");
+
+            string solutionFilePath = GetTempFileName();
+
+            SlnFile slnFile = new SlnFile();
+
+            slnFile.AddProjects(projects, new Dictionary<string, Guid>(), projects[1].FullPath);
+            slnFile.Save(solutionFilePath, useFolders: false);
+
+            SolutionFile s = SolutionFile.Parse(solutionFilePath);
+
+            ProjectInSolution project1 = s.ProjectsByGuid.FirstOrDefault(i => i.Value.ProjectName.Equals(Path.GetFileNameWithoutExtension(projectName1))).Value;
+            ProjectInSolution project2 = s.ProjectsByGuid.FirstOrDefault(i => i.Value.ProjectName.Equals(Path.GetFileNameWithoutExtension(projectName2))).Value;
+            ProjectInSolution project3 = s.ProjectsByGuid.FirstOrDefault(i => i.Value.ProjectName.Equals(Path.GetFileNameWithoutExtension(projectName3))).Value;
+            ProjectInSolution project4 = s.ProjectsByGuid.FirstOrDefault(i => i.Value.ProjectName.Equals(Path.GetFileNameWithoutExtension(projectName4))).Value;
+            ProjectInSolution folderA = s.ProjectsByGuid.FirstOrDefault(i => i.Value.ProjectName.Equals("FolderA")).Value;
+            ProjectInSolution folderB = s.ProjectsByGuid.FirstOrDefault(i => i.Value.ProjectName.Equals("FolderB")).Value;
+
+            project1.ParentProjectGuid.ShouldBe(folderA.ProjectGuid);
+            project2.ParentProjectGuid.ShouldBe(folderB.ProjectGuid);
+            project3.ParentProjectGuid.ShouldBe(folderB.ProjectGuid);
+            project4.ParentProjectGuid.ShouldBeNull();
+            folderA.ProjectType.ShouldBe(SolutionProjectType.SolutionFolder);
+            folderB.ProjectType.ShouldBe(SolutionProjectType.SolutionFolder);
         }
 
         private void ValidateProjectInSolution(Action<SlnProject, ProjectInSolution> customValidator, SlnProject[] projects, bool folders)

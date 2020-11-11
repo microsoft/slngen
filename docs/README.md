@@ -122,6 +122,7 @@ Use the following properties and items to customize the generated Solution file.
 | `IncludeInSolutionFile` | Indicates whether or not a project should be included in a generated Solution file.                               | `true` or `false` | `true` |
 | `SlnGenFolders`         | Indicates whether or not a hierarchy of folders should be created.  If `false`, the projects are in a flat list. | `true` or `false` | `true` |
 | `SlnGenIsDeployable`    | Indicates whether or not a project is considered deployable by Visual Studio.                                     | `true` or `false` | `false` <br />Service Fabric projects are automatically set to `true` |
+| `SlnGenSolutionFolder   | Specifies a solution folder to place the project in.  `SlnGenFolders` must be `false`.                            | | |
 
 | Item | Description |
 |------|-------------|
