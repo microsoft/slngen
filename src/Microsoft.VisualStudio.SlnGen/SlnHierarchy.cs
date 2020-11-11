@@ -87,6 +87,8 @@ namespace Microsoft.VisualStudio.SlnGen
                         Parent = hierarchy._rootFolder,
                     };
 
+                    hierarchy._pathToSlnFolderMap.Add(project.SolutionFolder, folder);
+
                     hierarchy._rootFolder.Folders.Add(folder);
                 }
 
