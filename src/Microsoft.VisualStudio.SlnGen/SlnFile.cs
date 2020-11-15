@@ -338,7 +338,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
             using FileStream fileStream = File.Create(path);
 
-            using StreamWriter writer = new StreamWriter(fileStream, Encoding.Unicode);
+            using StreamWriter writer = new StreamWriter(fileStream, Encoding.UTF8);
 
             Save(path, writer, useFolders, collapseFolders);
         }
