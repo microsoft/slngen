@@ -89,11 +89,11 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             solutionFile.ProjectsInOrder.Select(i => Path.GetFullPath(i.AbsolutePath)).ShouldBe(new string[]
             {
+                mainProject,
                 projectA,
                 projectB,
                 projectC,
                 projectD,
-                mainProject,
             });
         }
 

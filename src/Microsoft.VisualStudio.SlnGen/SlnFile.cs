@@ -308,8 +308,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
                         return project;
                     })
-                    .Where(i => i != null)
-                    .OrderBy(i => i.FullPath));
+                    .Where(i => i != null));
         }
 
         /// <summary>
@@ -367,7 +366,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 writer.WriteLine("EndProject");
             }
 
-            foreach (SlnProject project in _projects.OrderBy(i => i.FullPath))
+            foreach (SlnProject project in _projects.OrderBy(i => i.IsMainProject ? 0 : 1).ThenBy(i => i.FullPath))
             {
                 writer.WriteLine($@"Project(""{project.ProjectTypeGuid.ToSolutionString()}"") = ""{project.Name}"", ""{project.FullPath.ToRelativePath(rootPath)}"", ""{project.ProjectGuid.ToSolutionString()}""");
                 writer.WriteLine("EndProject");
