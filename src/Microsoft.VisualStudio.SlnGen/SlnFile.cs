@@ -394,26 +394,6 @@ namespace Microsoft.VisualStudio.SlnGen
 
             writer.WriteLine("Global");
 
-            if (hierarchy != null)
-            {
-                writer.WriteLine(@"	GlobalSection(NestedProjects) = preSolution");
-
-                foreach (SlnFolder folder in hierarchy.Folders.Where(i => i.Parent != null))
-                {
-                    foreach (SlnProject project in folder.Projects)
-                    {
-                        writer.WriteLine($@"		{project.ProjectGuid.ToSolutionString()} = {folder.FolderGuid.ToSolutionString()}");
-                    }
-
-                    if (useFolders)
-                    {
-                        writer.WriteLine($@"		{folder.FolderGuid.ToSolutionString()} = {folder.Parent.FolderGuid.ToSolutionString()}");
-                    }
-                }
-
-                writer.WriteLine("	EndGlobalSection");
-            }
-
             writer.WriteLine("	GlobalSection(SolutionConfigurationPlatforms) = preSolution");
 
             HashSet<string> solutionPlatforms = Platforms != null && Platforms.Any()
@@ -471,6 +451,26 @@ namespace Microsoft.VisualStudio.SlnGen
             writer.WriteLine("	GlobalSection(SolutionProperties) = preSolution");
             writer.WriteLine("		HideSolutionNode = FALSE");
             writer.WriteLine("	EndGlobalSection");
+
+            if (hierarchy != null)
+            {
+                writer.WriteLine(@"	GlobalSection(NestedProjects) = preSolution");
+
+                foreach (SlnFolder folder in hierarchy.Folders.Where(i => i.Parent != null))
+                {
+                    foreach (SlnProject project in folder.Projects)
+                    {
+                        writer.WriteLine($@"		{project.ProjectGuid.ToSolutionString()} = {folder.FolderGuid.ToSolutionString()}");
+                    }
+
+                    if (useFolders)
+                    {
+                        writer.WriteLine($@"		{folder.FolderGuid.ToSolutionString()} = {folder.Parent.FolderGuid.ToSolutionString()}");
+                    }
+                }
+
+                writer.WriteLine("	EndGlobalSection");
+            }
 
             writer.WriteLine("	GlobalSection(ExtensibilityGlobals) = postSolution");
             writer.WriteLine($"		SolutionGuid = {SolutionGuid.ToSolutionString()}");
