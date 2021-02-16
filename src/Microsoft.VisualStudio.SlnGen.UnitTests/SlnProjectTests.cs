@@ -70,7 +70,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 [MSBuildPropertyNames.UsingMicrosoftNETSdk] = bool.TrueString,
             });
 
-            actualProject.ProjectGuid.ShouldNotBeNull();
+            actualProject.ProjectGuid.ShouldNotBe(default);
 
             Guid.TryParse(actualProject.ProjectGuid.ToSolutionString(), out _).ShouldBeTrue();
         }

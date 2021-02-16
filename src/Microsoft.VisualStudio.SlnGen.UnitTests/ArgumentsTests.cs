@@ -19,7 +19,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             exitCode.ShouldBe(0, console.AllOutput);
 
-            console.Output.ShouldContain("Usage: ", console.Output);
+            console.Output.ShouldContain("Usage: ", Case.Sensitive, console.Output);
         }
 
         [Fact]
@@ -55,7 +55,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             exitCode.ShouldBe(0, console.Output);
 
-            console.OutputLines.First().ShouldStartWith("Usage: ", console.Output);
+            console.OutputLines.First().ShouldStartWith("Usage: ", Case.Sensitive, console.Output);
         }
     }
 }
