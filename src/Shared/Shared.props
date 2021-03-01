@@ -1,0 +1,47 @@
+﻿<Project>
+  <PropertyGroup>
+    <AssemblyName>slngen</AssemblyName>
+    <AssemblyTitle>SlnGen</AssemblyTitle>
+    <RootNamespace>Microsoft.VisualStudio.SlnGen</RootNamespace>
+    <ArtifactsPath>$(BaseArtifactsPath)\$(MSBuildProjectName)</ArtifactsPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PackageId>$(MSBuildProjectName)</PackageId>
+    <Title>Microsoft SlnGen</Title>
+    <Description>Package that contains a tool for generating Visual Studio solution files.</Description>
+    <PackageTags>SlnGen SLN Solution Visual Studio</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <DevelopmentDependency>true</DevelopmentDependency>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <PackageReference>
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" />
+    <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" NoWarn="NU1701" />
+    <PackageReference Include="Microsoft.Build.Runtime" IncludeAssets="None" PrivateAssets="All" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" NoWarn="NU1701" />
+    <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.VisualStudio.Telemetry" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Shared\**\*.cs" />
+    <EmbeddedResource Include="..\Shared\*.resx" />
+    <Compile Update="..\Shared\Strings.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Strings.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileFullPath)" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.VisualStudio.SlnGen.UnitTests" />
+  </ItemGroup>
+  <ItemGroup>
+    <FilesToSign Include="$(TargetPath)" Authenticode="Microsoft400" StrongName="StrongName" />
+  </ItemGroup>
+</Project>

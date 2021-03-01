@@ -5,6 +5,7 @@
 using Microsoft.VisualStudio.Telemetry;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,20 +23,23 @@ namespace Microsoft.VisualStudio.SlnGen
         /// </summary>
         public TelemetryClient()
         {
-            // Only enable telemetry if the user has opted into it in Visual Studio
-            TelemetryService.DefaultSession.UseVsIsOptedIn();
-
-            if (TelemetryService.DefaultSession.IsOptedIn)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                _telemetrySession = TelemetryService.DefaultSession;
+                // Only enable telemetry if the user has opted into it in Visual Studio
+                TelemetryService.DefaultSession.UseVsIsOptedIn();
 
-                GitRepositoryInfo repositoryInfo = GitRepositoryInfo.GetRepoInfoForCurrentDirectory();
-
-                if (repositoryInfo?.Origin != null)
+                if (TelemetryService.DefaultSession.IsOptedIn)
                 {
-                    TelemetryContext context = _telemetrySession.CreateContext("GitRepository");
+                    _telemetrySession = TelemetryService.DefaultSession;
 
-                    context.SharedProperties["VS.TeamFoundation.Git.OriginRemoteUrlHashV2"] = new TelemetryPiiProperty(repositoryInfo.Origin);
+                    GitRepositoryInfo repositoryInfo = GitRepositoryInfo.GetRepoInfoForCurrentDirectory();
+
+                    if (repositoryInfo?.Origin != null)
+                    {
+                        TelemetryContext context = _telemetrySession.CreateContext("GitRepository");
+
+                        context.SharedProperties["VS.TeamFoundation.Git.OriginRemoteUrlHashV2"] = new TelemetryPiiProperty(repositoryInfo.Origin);
+                    }
                 }
             }
         }

@@ -198,6 +198,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 return path;
             }
 
+#if NETFRAMEWORK
             using FileStream stream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
             StringBuilder stringBuilder = new StringBuilder(NativeMethods.GetFinalPathNameByHandle(stream.SafeFileHandle, null, 0, 0));
@@ -205,6 +206,9 @@ namespace Microsoft.VisualStudio.SlnGen
             NativeMethods.GetFinalPathNameByHandle(stream.SafeFileHandle, stringBuilder, stringBuilder.Capacity, 0);
 
             return stringBuilder.ToString(4, stringBuilder.Capacity - 5);
+#else
+            return fullPath;
+#endif
         }
 
         /// <summary>

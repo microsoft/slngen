@@ -6,12 +6,25 @@ using Microsoft.Build.Framework;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading;
 
 namespace Microsoft.VisualStudio.SlnGen.UnitTests
 {
-    internal class TestLogger : SlnGenLoggerBase
+    internal class TestLogger : ISlnGenLogger
     {
         private const int DefaultListSize = 100;
+
+        private int _hasLoggedErrors;
+        private int _projectId;
+
+        /// <inheritdoc />
+        public bool HasLoggedErrors => _hasLoggedErrors != 0;
+
+        /// <inheritdoc />
+        public int NextProjectId => Interlocked.Increment(ref _projectId);
+
+        /// <inheritdoc />
+        public bool IsDiagnostic { get; set; }
 
         public List<string> ErrorMessages { get; } = new List<string>(DefaultListSize);
 
@@ -29,23 +42,29 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
         public List<BuildWarningEventArgs> Warnings { get; } = new List<BuildWarningEventArgs>(DefaultListSize);
 
-        public override void LogError(string message, string code = null, string file = null, int lineNumber = 0, int columnNumber = 0)
+        public void LogError(string message, string code = null, string file = null, int lineNumber = 0, int columnNumber = 0)
         {
             Errors?.Add(new BuildErrorEventArgs(null, code, file, lineNumber, columnNumber, 0, 0, message, null, null));
 
             ErrorMessages?.Add(message);
 
-            base.LogError(message, code, file, lineNumber, columnNumber);
+            Interlocked.Exchange(ref _hasLoggedErrors, 1);
         }
 
-        public override void LogMessageHigh(string message, params object[] args) => HighImportanceMessages.Add(string.Format(CultureInfo.CurrentCulture, message, args));
+        /// <inheritdoc />
+        public void LogEvent(BuildEventArgs eventArgs)
+        {
+            throw new System.NotImplementedException();
+        }
 
-        public override void LogMessageLow(string message, params object[] args) => LowImportanceMessages.Add(string.Format(CultureInfo.CurrentCulture, message, args));
+        public void LogMessageHigh(string message, params object[] args) => HighImportanceMessages.Add(string.Format(CultureInfo.CurrentCulture, message, args));
 
-        public override void LogMessageNormal(string message, params object[] args) => NormalImportanceMessages.Add(string.Format(CultureInfo.CurrentCulture, message, args));
+        public void LogMessageLow(string message, params object[] args) => LowImportanceMessages.Add(string.Format(CultureInfo.CurrentCulture, message, args));
 
-        public override void LogTelemetry(string eventName, IDictionary<string, string> properties) => Telemetry.Add(new Tuple<string, IDictionary<string, string>>(eventName, properties));
+        public void LogMessageNormal(string message, params object[] args) => NormalImportanceMessages.Add(string.Format(CultureInfo.CurrentCulture, message, args));
 
-        public override void LogWarning(string message, string code = null, string file = null, int lineNumber = 0, int columnNumber = 0) => Warnings?.Add(new BuildWarningEventArgs(null, code, file, lineNumber, columnNumber, 0, 0, message, null, null));
+        public void LogTelemetry(string eventName, IDictionary<string, string> properties) => Telemetry.Add(new Tuple<string, IDictionary<string, string>>(eventName, properties));
+
+        public void LogWarning(string message, string code = null, string file = null, int lineNumber = 0, int columnNumber = 0) => Warnings?.Add(new BuildWarningEventArgs(null, code, file, lineNumber, columnNumber, 0, 0, message, null, null));
     }
 }
