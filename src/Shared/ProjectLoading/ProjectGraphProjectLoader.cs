@@ -17,10 +17,7 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
     /// </summary>
     internal class ProjectGraphProjectLoader : IProjectLoader
     {
-        private static readonly ProjectLoadSettings DefaultProjectLoadSettings = ProjectLoadSettings.DoNotEvaluateElementsWithFalseCondition
-            | ProjectLoadSettings.IgnoreEmptyImports
-            | ProjectLoadSettings.IgnoreInvalidImports
-            | ProjectLoadSettings.IgnoreMissingImports;
+        private static readonly ProjectLoadSettings DefaultProjectLoadSettings = ProjectLoadSettings.DoNotEvaluateElementsWithFalseCondition;
 
         private readonly ISlnGenLogger _logger;
 

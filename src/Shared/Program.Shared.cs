@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation.
+// Copyright (c) Microsoft Corporation.
 //
 // Licensed under the MIT license.
 
@@ -9,7 +9,6 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 using Microsoft.VisualStudio.SlnGen.ProjectLoading;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -19,10 +18,7 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.VisualStudio.SlnGen
 {
-    /// <summary>
-    /// Represents the main logic of the application.
-    /// </summary>
-    public static class Program
+    public static partial class Program
     {
         private static readonly TelemetryClient TelemetryClient;
 
@@ -42,24 +38,14 @@ namespace Microsoft.VisualStudio.SlnGen
         public static ProgramArguments Arguments { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the current build environment is CoreXT.
+        /// Gets the current <see cref="DevelopmentEnvironment" />.
         /// </summary>
-        public static bool IsCorext { get; set; }
+        public static DevelopmentEnvironment CurrentDevelopmentEnvironment { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether or not the current runtime framework is .NET Core.
         /// </summary>
         public static bool IsNetCore { get; } = !RuntimeInformation.FrameworkDescription.StartsWith(".NET Framework", StringComparison.Ordinal);
-
-        /// <summary>
-        /// Gets or sets the <see cref="FileInfo" /> of MSBuild.exe.
-        /// </summary>
-        public static FileInfo MSBuildExeFileInfo { get; set; }
-
-        /// <summary>
-        /// Gets or sets the <see cref="VisualStudioInstance" /> to use.
-        /// </summary>
-        public static VisualStudioInstance VisualStudio { get; set; }
 
         /// <summary>
         /// Executes the program with the specified command-line arguments.
@@ -68,17 +54,19 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <returns>Zero if the program executed successfully, otherwise a non-zero value.</returns>
         public static int Main(string[] args)
         {
-            if (!TryLocateMSBuild(out VisualStudioInstance instance, out FileInfo msBuildExeFileInfo, out string error))
+            CurrentDevelopmentEnvironment = LoadDevelopmentEnvironment();
+
+            if (!CurrentDevelopmentEnvironment.Success || CurrentDevelopmentEnvironment.Errors.Count > 0)
             {
-                Console.BackgroundColor = ConsoleColor.Black;
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.Error.WriteLine(error);
+                foreach (string error in CurrentDevelopmentEnvironment.Errors)
+                {
+                    WriteError(error);
+                }
+
                 return -1;
             }
 
-            VisualStudio = instance;
-            MSBuildExeFileInfo = msBuildExeFileInfo;
-
+#if NETFRAMEWORK
             if (AppDomain.CurrentDomain.IsDefaultAppDomain())
             {
                 // MSBuild.exe.config has binding redirects that change from time to time and its very hard to make sure that NuGet.Build.Tasks.Console.exe.config is correct.
@@ -92,8 +80,8 @@ namespace Microsoft.VisualStudio.SlnGen
                     securityInfo: null,
                     info: new AppDomainSetup
                     {
-                        ApplicationBase = MSBuildExeFileInfo.DirectoryName,
-                        ConfigurationFile = Path.Combine(MSBuildExeFileInfo.DirectoryName!, Path.ChangeExtension(MSBuildExeFileInfo.Name, ".exe.config")),
+                        ApplicationBase = CurrentDevelopmentEnvironment.MSBuildExe.DirectoryName,
+                        ConfigurationFile = Path.Combine(CurrentDevelopmentEnvironment.MSBuildExe.DirectoryName!, Path.ChangeExtension(CurrentDevelopmentEnvironment.MSBuildExe.Name, ".exe.config")),
                     });
 
                 return appDomain
@@ -101,8 +89,22 @@ namespace Microsoft.VisualStudio.SlnGen
                         thisAssembly.Location,
                         args);
             }
-
+#endif
             return Execute(args, PhysicalConsole.Singleton);
+        }
+
+        /// <summary>
+        /// Executes the current application with the specified arguments and console.
+        /// </summary>
+        /// <param name="args">An array of <see cref="string" /> containing the command-line arguments.</param>
+        /// <param name="console">A <see cref="IConsole" /> to use.</param>
+        /// <param name="execute">A <see cref="Func{ProgramArguments, IConsole, Int32}" /> representing a function to run.</param>
+        /// <returns>Zero if the program successfully executed, otherwise non-zero.</returns>
+        internal static int Execute(string[] args, IConsole console, Func<ProgramArguments, IConsole, int> execute)
+        {
+            ProgramArguments.Execute = execute;
+
+            return Execute(args, console);
         }
 
         /// <summary>
@@ -119,7 +121,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 LoadAllFilesAsReadOnly = true,
                 MSBuildSkipEagerWildCardEvaluationRegexes = true,
                 UseSimpleProjectRootElementCacheConcurrency = true,
-                MSBuildExePath = MSBuildExeFileInfo.FullName,
+                MSBuildExePath = CurrentDevelopmentEnvironment.MSBuildExe != null ? CurrentDevelopmentEnvironment.MSBuildExe.FullName : CurrentDevelopmentEnvironment.MSBuildDll.FullName,
             };
 
             LoggerVerbosity verbosity = ForwardingLogger.ParseLoggerVerbosity(arguments.Verbosity?.LastOrDefault());
@@ -136,27 +138,20 @@ namespace Microsoft.VisualStudio.SlnGen
                 Verbosity = verbosity,
             };
 
-            using (ProjectCollection projectCollection = new ProjectCollection(
-                globalProperties: null,
-                loggers: new ILogger[]
-                {
-                    forwardingLogger,
-                },
-                remoteLoggers: null,
-                toolsetDefinitionLocations: ToolsetDefinitionLocations.Default,
-                maxNodeCount: 1,
-#if NET46
-                onlyLogCriticalEvents: false))
-#else
-                onlyLogCriticalEvents: false,
-                loadProjectsReadOnly: true))
-#endif
+            using (ProjectCollection projectCollection = GetProjectCollection(forwardingLogger))
             {
                 try
                 {
                     forwardingLogger.LogMessageLow("Command Line Arguments: {0}", Environment.CommandLine);
 
-                    forwardingLogger.LogMessageLow("Using MSBuild from \"{0}\"", MSBuildExeFileInfo);
+#if !NETFRAMEWORK
+                    forwardingLogger.LogMessageLow("Using .NET Core MSBuild from \"{0}\"", CurrentDevelopmentEnvironment.MSBuildDll);
+#endif
+
+                    if (CurrentDevelopmentEnvironment.MSBuildExe != null)
+                    {
+                        forwardingLogger.LogMessageLow("Using .NET Framework MSBuild from \"{0}\"", CurrentDevelopmentEnvironment.MSBuildExe);
+                    }
 
                     foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies().Where(i => i.FullName.StartsWith("Microsoft.Build")))
                     {
@@ -168,7 +163,7 @@ namespace Microsoft.VisualStudio.SlnGen
                         return 1;
                     }
 
-                    (TimeSpan evaluationTime, int evaluationCount) = ProjectLoader.LoadProjects(MSBuildExeFileInfo, projectCollection, projectEntryPaths, arguments.GetGlobalProperties(), forwardingLogger);
+                    (TimeSpan evaluationTime, int evaluationCount) = ProjectLoader.LoadProjects(CurrentDevelopmentEnvironment.MSBuildExe, projectCollection, projectEntryPaths, arguments.GetGlobalProperties(), forwardingLogger);
 
                     if (forwardingLogger.HasLoggedErrors)
                     {
@@ -179,7 +174,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
                     featureFlags.Dispose();
 
-                    if (!VisualStudioLauncher.TryLaunch(arguments, VisualStudio, solutionFileFullPath, forwardingLogger))
+                    if (!VisualStudioLauncher.TryLaunch(arguments, CurrentDevelopmentEnvironment.VisualStudio, solutionFileFullPath, forwardingLogger))
                     {
                         return 1;
                     }
@@ -200,20 +195,6 @@ namespace Microsoft.VisualStudio.SlnGen
             }
 
             return 0;
-        }
-
-        /// <summary>
-        /// Executes the current application with the specified arguments and console.
-        /// </summary>
-        /// <param name="args">An array of <see cref="string" /> containing the command-line arguments.</param>
-        /// <param name="console">A <see cref="IConsole" /> to use.</param>
-        /// <param name="execute">A <see cref="Func{ProgramArguments, IConsole, Int32}" /> representing a function to run.</param>
-        /// <returns>Zero if the program successfully executed, otherwise non-zero.</returns>
-        internal static int Execute(string[] args, IConsole console, Func<ProgramArguments, IConsole, int> execute)
-        {
-            ProgramArguments.Execute = execute;
-
-            return Execute(args, console);
         }
 
         private static int Execute(string[] args, IConsole console)
@@ -319,7 +300,7 @@ namespace Microsoft.VisualStudio.SlnGen
                             ["EntryProjectCount"] = arguments.Projects?.Length.ToString(),
                             ["Folders"] = arguments.EnableFolders().ToString(),
                             ["CollapseFolders"] = arguments.EnableCollapseFolders().ToString(),
-                            ["IsCoreXT"] = IsCorext.ToString(),
+                            ["IsCoreXT"] = CurrentDevelopmentEnvironment.IsCorext.ToString(),
                             ["IsNetCore"] = IsNetCore.ToString(),
                             ["LaunchVisualStudio"] = arguments.ShouldLaunchVisualStudio().ToString(),
                             ["SolutionFileFullPathSpecified"] = (!arguments.SolutionFileFullPath?.LastOrDefault().IsNullOrWhiteSpace()).ToString(),
@@ -359,19 +340,8 @@ namespace Microsoft.VisualStudio.SlnGen
             return !string.IsNullOrWhiteSpace(msbuildExePath);
         }
 
-        /// <summary>
-        /// Attempts to locate MSBuild based on the current environment.
-        /// </summary>
-        /// <param name="instance">Receives a <see cref="VisualStudioInstance" /> if one could be found.</param>
-        /// <param name="msbuildExeFileInfo">Receives the path to MSBuild if it could be found.</param>
-        /// <param name="error">Receives an error message when the method is unable to find an instance of MSBuild.</param>
-        /// <returns><code>true</code> if an instance of MSBuild could be found, otherwise <code>false</code>.</returns>
-        private static bool TryLocateMSBuild(out VisualStudioInstance instance, out FileInfo msbuildExeFileInfo, out string error)
+        private static DevelopmentEnvironment LoadDevelopmentEnvironment()
         {
-            instance = null;
-            msbuildExeFileInfo = null;
-            error = null;
-
             string msbuildToolset = Environment.GetEnvironmentVariable("MSBuildToolset")?.Trim();
 
             if (!msbuildToolset.IsNullOrWhiteSpace())
@@ -380,92 +350,22 @@ namespace Microsoft.VisualStudio.SlnGen
 
                 if (!msbuildToolsPath.IsNullOrWhiteSpace())
                 {
-                    if (IsNetCore)
-                    {
-                        error = "The .NET Core version of SlnGen is not supported in CoreXT.  You must use the .NET Framework version via the SlnGen.Corext package";
-
-                        return false;
-                    }
-
-                    msbuildExeFileInfo = new FileInfo(Path.Combine(msbuildToolsPath!, "MSBuild.exe"));
-
-                    if (!Version.TryParse(Environment.GetEnvironmentVariable("VisualStudioVersion") ?? string.Empty, out Version visualStudioVersion))
-                    {
-                        error = "The VisualStudioVersion environment variable must be set in CoreXT";
-
-                        return false;
-                    }
-
-                    if (visualStudioVersion.Major <= 14)
-                    {
-                        error = "MSBuild.Corext version 15.0 or greater is required";
-
-                        return false;
-                    }
-
-                    instance = VisualStudioConfiguration.GetLaunchableInstances()
-                        .Where(i => !i.IsBuildTools && i.HasMSBuild && i.InstallationVersion.Major == visualStudioVersion.Major)
-                        .OrderByDescending(i => i.InstallationVersion)
-                        .FirstOrDefault();
-
-                    IsCorext = true;
-
-                    return true;
+                    return LoadDevelopmentEnvironmentFromCoreXT(msbuildToolsPath);
                 }
             }
 
-            string vsInstallDirEnvVar = Environment.GetEnvironmentVariable("VSINSTALLDIR") ?? Environment.GetEnvironmentVariable("VSAPPIDDIR");
+            return LoadDevelopmentEnvironmentFromCurrentWindow();
+        }
 
-            if (vsInstallDirEnvVar.IsNullOrWhiteSpace())
-            {
-                if (!TryFindMSBuildOnPath(out string msbuildExePath))
-                {
-                    error = "SlnGen must run from a Visual Studio Developer Command prompt and requires the %VSINSTALLDIR% environment variable to be set or MSBuild.exe must be in the PATH.";
+        private static void WriteError(string message, params object[] args)
+        {
+            Console.BackgroundColor = ConsoleColor.Black;
 
-                    error += $"{Environment.NewLine}PATH={Environment.GetEnvironmentVariable("PATH")}";
+            Console.ForegroundColor = ConsoleColor.Red;
 
-                    foreach (DictionaryEntry dictionaryEntry in Environment.GetEnvironmentVariables().Cast<DictionaryEntry>().Where(i => ((string)i.Key).StartsWith("v", StringComparison.OrdinalIgnoreCase)).OrderBy(i => i.Key))
-                    {
-                        error += $"{Environment.NewLine}{dictionaryEntry.Key}={dictionaryEntry.Value}";
-                    }
+            Console.Error.WriteLine(message, args);
 
-                    return false;
-                }
-
-                vsInstallDirEnvVar = Path.GetDirectoryName(msbuildExePath);
-            }
-
-            if (!Directory.Exists(vsInstallDirEnvVar))
-            {
-                error = $"The current Visual Studio Developer Command prompt is configured against a Visual Studio directory that does not exist ({vsInstallDirEnvVar}).";
-
-                return false;
-            }
-
-            instance = VisualStudioConfiguration.GetInstanceForPath(vsInstallDirEnvVar);
-
-            if (instance == null)
-            {
-                error = $"Unable to find the path to Visual Studio based on the directory \"{vsInstallDirEnvVar}\".";
-
-                return false;
-            }
-
-            msbuildExeFileInfo = new FileInfo(Path.Combine(
-                instance.InstallationPath,
-                "MSBuild",
-                instance.InstallationVersion.Major >= 16 ? "Current" : "15.0",
-                "Bin",
-                "MSBuild.exe"));
-
-            if (!msbuildExeFileInfo.Exists)
-            {
-                error = $"Unable to find MSBuild at \"{msbuildExeFileInfo.FullName}\".";
-
-                return false;
-            }
-
-            return true;
+            Console.ResetColor();
         }
     }
 }

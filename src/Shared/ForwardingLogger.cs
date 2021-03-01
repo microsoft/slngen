@@ -19,20 +19,36 @@ namespace Microsoft.VisualStudio.SlnGen
     /// </summary>
     public class ForwardingLogger : EventArgsDispatcher, IEventSource2, ILogger, ISlnGenLogger
     {
+        private static readonly Lazy<ProcessBinaryLoggerDelegate2> ProcessBinaryLoggerDelegate2Lazy = new Lazy<ProcessBinaryLoggerDelegate2>(
+            () => Delegate.CreateDelegate(
+                typeof(ProcessBinaryLoggerDelegate2),
+                ProcessBinaryLoggerMethodLazy.Value!) as ProcessBinaryLoggerDelegate2);
+
         private static readonly Lazy<ProcessBinaryLoggerDelegate> ProcessBinaryLoggerDelegateLazy = new Lazy<ProcessBinaryLoggerDelegate>(
             () => Delegate.CreateDelegate(
                 typeof(ProcessBinaryLoggerDelegate),
-                typeof(MSBuildApp).GetMethod("ProcessBinaryLogger", BindingFlags.Static | BindingFlags.NonPublic) !) as ProcessBinaryLoggerDelegate);
+                ProcessBinaryLoggerMethodLazy.Value!) as ProcessBinaryLoggerDelegate);
+
+        private static readonly Lazy<MethodInfo> ProcessBinaryLoggerMethodLazy = new Lazy<MethodInfo>(
+                    () => typeof(MSBuildApp).GetMethod("ProcessBinaryLogger", BindingFlags.Static | BindingFlags.NonPublic));
+
+        private static readonly Lazy<ProcessLoggerSwitchDelegate2> ProcessLoggerSwitchDelegate2Lazy = new Lazy<ProcessLoggerSwitchDelegate2>(
+            () => Delegate.CreateDelegate(
+                typeof(ProcessLoggerSwitchDelegate2),
+                ProcessLoggerSwitchMethodLazy.Value!) as ProcessLoggerSwitchDelegate2);
 
         private static readonly Lazy<ProcessLoggerSwitchDelegate> ProcessLoggerSwitchDelegateLazy = new Lazy<ProcessLoggerSwitchDelegate>(
             () => Delegate.CreateDelegate(
                 typeof(ProcessLoggerSwitchDelegate),
-                typeof(MSBuildApp).GetMethod("ProcessLoggerSwitch", BindingFlags.Static | BindingFlags.NonPublic) !) as ProcessLoggerSwitchDelegate);
+                ProcessLoggerSwitchMethodLazy.Value!) as ProcessLoggerSwitchDelegate);
+
+        private static readonly Lazy<MethodInfo> ProcessLoggerSwitchMethodLazy = new Lazy<MethodInfo>(
+            () => typeof(MSBuildApp).GetMethod("ProcessLoggerSwitch", BindingFlags.Static | BindingFlags.NonPublic));
 
         private static readonly Lazy<ProcessVerbositySwitchDelegate> ProcessVerbositySwitchDelegateLazy = new Lazy<ProcessVerbositySwitchDelegate>(
             () => Delegate.CreateDelegate(
                 typeof(ProcessVerbositySwitchDelegate),
-                typeof(MSBuildApp).GetMethod("ProcessVerbositySwitch", BindingFlags.Static | BindingFlags.NonPublic) !) as ProcessVerbositySwitchDelegate);
+                typeof(MSBuildApp).GetMethod("ProcessVerbositySwitch", BindingFlags.Static | BindingFlags.NonPublic)) as ProcessVerbositySwitchDelegate);
 
         private readonly bool _noWarn;
 
@@ -61,7 +77,11 @@ namespace Microsoft.VisualStudio.SlnGen
 
         private delegate void ProcessBinaryLoggerDelegate(string[] parameters, ArrayList loggers, ref LoggerVerbosity verbosity);
 
+        private delegate void ProcessBinaryLoggerDelegate2(string[] parameters, List<ILogger> loggers, ref LoggerVerbosity verbosity);
+
         private delegate ArrayList ProcessLoggerSwitchDelegate(string[] parameters, LoggerVerbosity verbosity);
+
+        private delegate List<ILogger> ProcessLoggerSwitchDelegate2(string[] parameters, LoggerVerbosity verbosity);
 
         private delegate LoggerVerbosity ProcessVerbositySwitchDelegate(string value);
 
@@ -95,12 +115,21 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <returns>An <see cref="IEnumerable{ILogger}" /> containing the loggers.</returns>
         public static IEnumerable<ILogger> ParseBinaryLoggerParameters(string parameters)
         {
-            ArrayList loggers = new ArrayList();
+            IEnumerable loggers;
 
             LoggerVerbosity loggerVerbosity = LoggerVerbosity.Normal;
             try
             {
-                ProcessBinaryLoggerDelegateLazy.Value(new[] { parameters }, loggers, ref loggerVerbosity);
+                if (ProcessBinaryLoggerMethodLazy.Value.GetParameters()[1].ParameterType != typeof(ArrayList))
+                {
+                    loggers = new List<ILogger>();
+                    ProcessBinaryLoggerDelegate2Lazy.Value(new[] { parameters }, (List<ILogger>)loggers, ref loggerVerbosity);
+                }
+                else
+                {
+                    loggers = new ArrayList();
+                    ProcessBinaryLoggerDelegateLazy.Value(new[] { parameters }, (ArrayList)loggers, ref loggerVerbosity);
+                }
             }
             catch (Exception e)
             {
@@ -127,10 +156,12 @@ namespace Microsoft.VisualStudio.SlnGen
                 yield break;
             }
 
-            ArrayList loggers;
+            IEnumerable loggers;
             try
             {
-                loggers = ProcessLoggerSwitchDelegateLazy.Value(parameters, LoggerVerbosity.Normal);
+                loggers = ProcessLoggerSwitchMethodLazy.Value.ReturnType == typeof(ArrayList)
+                    ? ProcessLoggerSwitchDelegateLazy.Value(parameters, LoggerVerbosity.Normal)
+                    : ProcessLoggerSwitchDelegate2Lazy.Value(parameters, LoggerVerbosity.Normal);
             }
             catch (Exception e)
             {

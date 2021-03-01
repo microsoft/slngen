@@ -7,13 +7,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.VisualStudio.SlnGen
 {
     /// <summary>
     /// Represents the command-line arguments for this application.
     /// </summary>
-    public sealed class ProgramArguments
+    public sealed partial class ProgramArguments
     {
         /// <summary>
         /// Gets or sets the binary logger arguments.
@@ -135,7 +136,7 @@ Some additional available parameters are:
             "--launch",
             CommandOptionType.MultipleValue,
             ValueName = "true|false",
-            Description = "Launch Visual Studio after generating the Solution file.  Default: true")]
+            Description = "Launch Visual Studio after generating the Solution file.  Default: true on Windows")]
         public string[] LaunchVisualStudio { get; set; }
 
         /// <summary>
@@ -330,7 +331,7 @@ Examples:
         /// Gets a value indicating whether or not Visual Studio should be launched.
         /// </summary>
         /// <returns>True if Visual Studio should be launched, otherwise false.</returns>
-        public bool ShouldLaunchVisualStudio() => GetBoolean(LaunchVisualStudio, defaultValue: true);
+        public bool ShouldLaunchVisualStudio() => GetBoolean(LaunchVisualStudio, defaultValue: RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
 
         /// <summary>
         /// Gets a value indicating whether or not projects should be loaded in Visual Studio.
