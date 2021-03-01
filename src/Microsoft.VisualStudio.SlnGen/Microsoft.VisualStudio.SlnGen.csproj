@@ -10,9 +10,6 @@
   </PropertyGroup>
   <Import Project="..\Shared\Shared.props" />
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Utilities.Internal" />
-  </ItemGroup>
-  <ItemGroup>
     <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\$(TargetFramework)\MSBuild.exe" Private="false" />
   </ItemGroup>
   <ItemGroup>
