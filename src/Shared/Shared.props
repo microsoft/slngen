@@ -13,11 +13,6 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <DevelopmentDependency>true</DevelopmentDependency>
   </PropertyGroup>
-  <ItemDefinitionGroup>
-    <PackageReference>
-      <PrivateAssets>All</PrivateAssets>
-    </PackageReference>
-  </ItemDefinitionGroup>
   <ItemGroup>
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" />
     <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" NoWarn="NU1701" />
