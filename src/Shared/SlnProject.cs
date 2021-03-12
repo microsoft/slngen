@@ -62,6 +62,7 @@ namespace Microsoft.VisualStudio.SlnGen
             [ProjectFileExtensions.NuProj] = new Guid(VisualStudioProjectTypeGuids.NuProj),
             [ProjectFileExtensions.Scope] = new Guid(VisualStudioProjectTypeGuids.ScopeProject),
             [ProjectFileExtensions.Wix] = new Guid(VisualStudioProjectTypeGuids.Wix),
+            [ProjectFileExtensions.SqlServerDb] = new Guid(VisualStudioProjectTypeGuids.SqlServerDbProject),
         };
 
         /// <summary>
