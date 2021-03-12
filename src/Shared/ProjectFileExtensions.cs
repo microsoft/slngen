@@ -68,5 +68,10 @@ namespace Microsoft.VisualStudio.SlnGen
         /// WiX projects (.wixproj).
         /// </summary>
         public const string Wix = ".wixproj";
+
+        /// <summary>
+        /// SQL Server database projects (.sqlproj).
+        /// </summary>
+        public const string SqlServerDb = ".sqlproj";
     }
 }
