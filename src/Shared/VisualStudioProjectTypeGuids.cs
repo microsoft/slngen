@@ -73,5 +73,10 @@ namespace Microsoft.VisualStudio.SlnGen
         /// WiX projects (.wixproj).
         /// </summary>
         public const string Wix = "930C7802-8A8C-48F9-8165-68863BCCD9DD";
+
+        /// <summary>
+        /// SQL Server database projects (.sqlproj).
+        /// </summary>
+        public const string SqlServerDbProject = "00D1A9C2-B5F0-4AF3-8072-F6C62B433612";
     }
 }
