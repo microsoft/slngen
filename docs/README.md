@@ -148,17 +148,17 @@ Use the following properties and items to customize the generated Solution file.
 SlnGen knows about the following project types:
 * Azure SDK projects (.ccproj)
 * Azure Service Fabric projects (.sfproj)
-* Visual C++ projects (.vcxproj)
 * C# projects (.csproj)
 * F# projects (.fsproj)
-* Visual J# projects (.vjsproj)
 * Legacy C++ projects (.vcproj)
 * Native projects (.nativeProj)
 * NuProj projects (.nuproj)
 * Scope SDK projects (.scopeproj)
-* Visual Basic projects (.vbproj)
-* WiX projects (.wixproj)
 * SQL Server database projects (.sqlproj)
+* Visual Basic projects (.vbproj)
+* Visual C++ projects (.vcxproj)
+* Visual J# projects (.vjsproj)
+* WiX projects (.wixproj)
 
 To add to this list or override an item, specify an `SlnGenCustomProjectTypeGuid` item in your projects.
 
