@@ -3,6 +3,7 @@
 // Licensed under the MIT license.
 
 using McMaster.Extensions.CommandLineUtils;
+using Microsoft.Extensions.FileSystemGlobbing;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -369,7 +370,8 @@ Examples:
             }
             else
             {
-                foreach (string projectPath in Projects.Select(Path.GetFullPath))
+                var expanded = ExpandWildcards(Projects);
+                foreach (string projectPath in expanded.Select(Path.GetFullPath))
                 {
                     if (!File.Exists(projectPath))
                     {
@@ -385,6 +387,33 @@ Examples:
             }
 
             return result.Count > 0;
+        }
+
+        private static IEnumerable<string> ExpandWildcards(IEnumerable<string> paths)
+        {
+            var results = new List<string>();
+            var wild = new List<string>();
+
+            foreach (var p in paths)
+            {
+                if (p.Contains("*", StringComparison.OrdinalIgnoreCase))
+                {
+                    wild.Add(p);
+                }
+                else
+                {
+                    results.Add(p);
+                }
+            }
+
+            if (wild.Count > 0)
+            {
+                var m = new Matcher(StringComparison.OrdinalIgnoreCase);
+                m.AddIncludePatterns(wild);
+                results.AddRange(m.GetResultsInFullPath(Environment.CurrentDirectory));
+            }
+
+            return results;
         }
 
         private bool GetBoolean(string[] values, bool defaultValue = false)

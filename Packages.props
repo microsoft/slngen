@@ -18,6 +18,7 @@
     <PackageReference Update="Shouldly" Version="4.0.3" />
     <PackageReference Update="xunit" Version="2.4.1" />
     <PackageReference Update="xunit.runner.visualstudio" Version="2.4.3" />
+    <PackageReference Update="Microsoft.Extensions.FileSystemGlobbing" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net46'">
