@@ -21,7 +21,6 @@
     <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" PrivateAssets="All" />
     <PackageReference Include="Microsoft.VisualStudio.Telemetry" />
     <PackageReference Include="Microsoft.VisualStudio.Utilities.Internal" />
-    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Shared\**\*.cs" />

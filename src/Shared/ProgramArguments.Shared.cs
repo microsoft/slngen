@@ -3,12 +3,15 @@
 // Licensed under the MIT license.
 
 using McMaster.Extensions.CommandLineUtils;
-using Microsoft.Extensions.FileSystemGlobbing;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+
+#if !NETFRAMEWORK
+using Microsoft.Extensions.FileSystemGlobbing;
+#endif
 
 namespace Microsoft.VisualStudio.SlnGen
 {
@@ -391,6 +394,9 @@ Examples:
 
         private static IEnumerable<string> ExpandWildcards(IEnumerable<string> paths)
         {
+#if NETFRAMEWORK
+            return paths;
+#else
             var results = new List<string>();
             var wild = new List<string>();
 
@@ -414,6 +420,7 @@ Examples:
             }
 
             return results;
+#endif
         }
 
         private bool GetBoolean(string[] values, bool defaultValue = false)
