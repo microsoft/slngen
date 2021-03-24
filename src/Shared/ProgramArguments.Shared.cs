@@ -392,7 +392,7 @@ Examples:
             return result.Count > 0;
         }
 
-        private static IEnumerable<string> ExpandWildcards(IEnumerable<string> paths)
+        internal static IEnumerable<string> ExpandWildcards(IEnumerable<string> paths)
         {
 #if NETFRAMEWORK
             return paths;

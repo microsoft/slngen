@@ -11,6 +11,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 {
     public class ExtensionMethodsTests
     {
+#if NETFRAMEWORK
         [Fact]
         public void ToFullPathInCorrectCaseDirectory()
         {
@@ -50,6 +51,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 directory.Delete(recursive: true);
             }
         }
+#endif
 
         [Theory]
         [InlineData(@"C:\RootFolder\SubFolder\MoreSubFolder\LastFolder\SomeFile.txt", @"C:\RootFolder\SubFolder\Sibling\Child\", @"..\..\MoreSubFolder\LastFolder\SomeFile.txt")]

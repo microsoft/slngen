@@ -3,6 +3,8 @@
 // Licensed under the MIT license.
 
 using Shouldly;
+using System;
+using System.IO;
 using System.Linq;
 using Xunit;
 
@@ -57,5 +59,51 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             console.OutputLines.First().ShouldStartWith("Usage: ", Case.Sensitive, console.Output);
         }
+
+#if !NETFRAMEWORK
+        [Fact]
+        public void ExpandWildcards()
+        {
+            var root = Path.GetTempPath();
+            var work = Directory.CreateDirectory(Path.Combine(root, "work" + Environment.ProcessId.ToString()));
+
+            try
+            {
+                // directory tree
+                _ = Directory.CreateDirectory(Path.Combine(work.FullName, "t1"));
+                _ = Directory.CreateDirectory(Path.Combine(work.FullName, "t1", "t2"));
+                _ = Directory.CreateDirectory(Path.Combine(work.FullName, "t1", "t2", "t3"));
+                _ = Directory.CreateDirectory(Path.Combine(work.FullName, "t4"));
+
+                // sprinkle some files around
+                File.WriteAllText(Path.Combine(work.FullName, "1.csproj"), string.Empty);
+                File.WriteAllText(Path.Combine(work.FullName, "2.csproj"), string.Empty);
+                File.WriteAllText(Path.Combine(work.FullName, "XXX"), string.Empty);
+                File.WriteAllText(Path.Combine(work.FullName, "t1", "3.csproj"), string.Empty);
+                File.WriteAllText(Path.Combine(work.FullName, "t1", "XXX"), string.Empty);
+                File.WriteAllText(Path.Combine(work.FullName, "t1", "t2", "4.csproj"), string.Empty);
+                File.WriteAllText(Path.Combine(work.FullName, "t1", "t2", "5.csproj"), string.Empty);
+                File.WriteAllText(Path.Combine(work.FullName, "t1", "t2", "t3", "6.csproj"), string.Empty);
+
+                var old = Environment.CurrentDirectory;
+                Environment.CurrentDirectory = work.FullName;
+                var result = ProgramArguments.ExpandWildcards(new[] { "**\\*.csproj" });
+                Environment.CurrentDirectory = old;
+
+                var files = result.Select(x => Path.GetFileName(x)).ToArray();
+                Array.Sort(files);
+
+                Assert.Equal(6, files.Length);
+                for (int i = 0; i < files.Length; i++)
+                {
+                    Assert.Equal(files[i], $"{i + 1}.csproj");
+                }
+            }
+            finally
+            {
+                Directory.Delete(work.FullName, true);
+            }
+        }
+#endif
     }
 }
