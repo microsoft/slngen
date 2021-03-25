@@ -65,7 +65,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         public void ExpandWildcards()
         {
             var root = Path.GetTempPath();
-            var work = Directory.CreateDirectory(Path.Combine(root, "work" + Environment.ProcessId.ToString()));
+            var work = Directory.CreateDirectory(Path.Combine(root, Environment.ProcessId.ToString()));
 
             try
             {
@@ -90,8 +90,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 var result = ProgramArguments.ExpandWildcards(new[] { "**\\*.csproj" });
                 Environment.CurrentDirectory = old;
 
-                var files = result.Select(x => Path.GetFileName(x)).ToArray();
-                Array.Sort(files);
+                var files = result.Select(x => Path.GetFileName(x)).OrderBy<string, string>(x => x).ToArray();
 
                 Assert.Equal(6, files.Length);
                 for (int i = 0; i < files.Length; i++)
