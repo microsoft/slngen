@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net46;net472</TargetFrameworks>
+    <TargetFrameworks>net461;net472</TargetFrameworks>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.config</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <IncludeReferenceCopyLocalPathsInBuildOutputInPackage>true</IncludeReferenceCopyLocalPathsInBuildOutputInPackage>
     <IsTool>true</IsTool>
@@ -15,7 +15,8 @@
     </PackageReference>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\$(TargetFramework)\MSBuild.exe" Private="false" />
+    <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net46\MSBuild.exe" Private="false" Condition="'$(TargetFramework)' == 'net461'" />
+    <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net472\MSBuild.exe" Private="false" Condition="'$(TargetFramework)' == 'net472'" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

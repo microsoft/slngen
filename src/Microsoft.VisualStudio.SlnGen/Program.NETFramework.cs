@@ -28,7 +28,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 remoteLoggers: null,
                 toolsetDefinitionLocations: ToolsetDefinitionLocations.Default,
                 maxNodeCount: 1,
-#if NET46
+#if NET461
                 onlyLogCriticalEvents: false);
 #else
                 onlyLogCriticalEvents: false,

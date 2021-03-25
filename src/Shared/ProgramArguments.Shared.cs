@@ -3,15 +3,12 @@
 // Licensed under the MIT license.
 
 using McMaster.Extensions.CommandLineUtils;
+using Microsoft.Extensions.FileSystemGlobbing;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-
-#if !NETFRAMEWORK
-using Microsoft.Extensions.FileSystemGlobbing;
-#endif
 
 namespace Microsoft.VisualStudio.SlnGen
 {
@@ -373,8 +370,7 @@ Examples:
             }
             else
             {
-                var expanded = ExpandWildcards(Projects);
-                foreach (string projectPath in expanded.Select(Path.GetFullPath))
+                foreach (string projectPath in ExpandWildcards(Projects).Select(Path.GetFullPath))
                 {
                     if (!File.Exists(projectPath))
                     {
@@ -394,33 +390,31 @@ Examples:
 
         internal static IEnumerable<string> ExpandWildcards(IEnumerable<string> paths)
         {
-#if NETFRAMEWORK
-            return paths;
-#else
-            var results = new List<string>();
-            var wild = new List<string>();
+            List<string> results = new List<string>();
+            List<string> pathsWithWildcards = new List<string>();
 
-            foreach (var p in paths)
+            foreach (string path in paths)
             {
-                if (p.Contains("*", StringComparison.OrdinalIgnoreCase))
+                if (path.Contains("*", StringComparison.OrdinalIgnoreCase))
                 {
-                    wild.Add(p);
+                    pathsWithWildcards.Add(path);
                 }
                 else
                 {
-                    results.Add(p);
+                    results.Add(path);
                 }
             }
 
-            if (wild.Count > 0)
+            if (pathsWithWildcards.Any())
             {
-                var m = new Matcher(StringComparison.OrdinalIgnoreCase);
-                m.AddIncludePatterns(wild);
-                results.AddRange(m.GetResultsInFullPath(Environment.CurrentDirectory));
+                Matcher matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
+
+                matcher.AddIncludePatterns(pathsWithWildcards);
+
+                results.AddRange(matcher.GetResultsInFullPath(Environment.CurrentDirectory));
             }
 
             return results;
-#endif
         }
 
         private bool GetBoolean(string[] values, bool defaultValue = false)

@@ -136,7 +136,7 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
             return new LegacyProjectLoader(logger);
 #endif
 
-#if NET46
+#if NET461
             return new LegacyProjectLoader(logger);
 #endif
         }

@@ -21,7 +21,7 @@
     <PackageReference Update="xunit.runner.visualstudio" Version="2.4.3" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net46'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
     <PackageReference Update="Microsoft.Build" Version="15.9.20" />
     <PackageReference Update="Microsoft.Build.Runtime" Version="15.9.20" />
     <PackageReference Update="Microsoft.Build.Utilities.Core" Version="15.9.20" />
