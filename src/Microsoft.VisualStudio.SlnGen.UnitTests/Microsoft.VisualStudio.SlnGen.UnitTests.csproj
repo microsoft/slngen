@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFrameworks>net472;net5.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <NoWarn>$(NoWarn);SA1600</NoWarn>
   </PropertyGroup>
@@ -14,8 +14,11 @@
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
     <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net5.0'">
+    <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen.Tool\Microsoft.VisualStudio.SlnGen.Tool.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\Microsoft.VisualStudio.SlnGen\*.targets" Link="build\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />

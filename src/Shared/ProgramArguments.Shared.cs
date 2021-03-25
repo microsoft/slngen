@@ -9,6 +9,10 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 
+#if !NETFRAMEWORK
+using Microsoft.Extensions.FileSystemGlobbing;
+#endif
+
 namespace Microsoft.VisualStudio.SlnGen
 {
     /// <summary>
@@ -369,7 +373,8 @@ Examples:
             }
             else
             {
-                foreach (string projectPath in Projects.Select(Path.GetFullPath))
+                var expanded = ExpandWildcards(Projects);
+                foreach (string projectPath in expanded.Select(Path.GetFullPath))
                 {
                     if (!File.Exists(projectPath))
                     {
@@ -385,6 +390,37 @@ Examples:
             }
 
             return result.Count > 0;
+        }
+
+        internal static IEnumerable<string> ExpandWildcards(IEnumerable<string> paths)
+        {
+#if NETFRAMEWORK
+            return paths;
+#else
+            var results = new List<string>();
+            var wild = new List<string>();
+
+            foreach (var p in paths)
+            {
+                if (p.Contains("*", StringComparison.OrdinalIgnoreCase))
+                {
+                    wild.Add(p);
+                }
+                else
+                {
+                    results.Add(p);
+                }
+            }
+
+            if (wild.Count > 0)
+            {
+                var m = new Matcher(StringComparison.OrdinalIgnoreCase);
+                m.AddIncludePatterns(wild);
+                results.AddRange(m.GetResultsInFullPath(Environment.CurrentDirectory));
+            }
+
+            return results;
+#endif
         }
 
         private bool GetBoolean(string[] values, bool defaultValue = false)

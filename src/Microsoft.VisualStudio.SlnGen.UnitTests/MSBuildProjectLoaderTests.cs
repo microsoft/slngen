@@ -17,6 +17,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 {
     public class MSBuildProjectLoaderTests : TestBase
     {
+#if NETFRAMEWORK
         [Fact]
         public void ArgumentNullException_Logger()
         {
@@ -157,5 +158,6 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 new[] { dirsProj.FullPath, projectA.FullPath, projectB.FullPath },
                 ignoreOrder: true);
         }
+#endif
     }
 }
