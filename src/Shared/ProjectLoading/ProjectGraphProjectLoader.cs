@@ -2,7 +2,7 @@
 //
 // Licensed under the MIT license.
 
-#if !NET46
+#if !NET461
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
