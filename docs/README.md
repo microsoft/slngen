@@ -33,7 +33,7 @@ slngen [switches] [project]
 
 | Argument | Description |
 |----------|-------------|
-| <code>project</code> | An optional path to a project to generate a solution file for.  If you don't specify a project file, SlnGen searches the current working directory for a file name extension that ends in proj and uses that file. |
+| <code>project</code> | An optional path to a project to generate a solution file for which can include wildcards like **\*.csproj.  If you don't specify a project file, SlnGen searches the current working directory for a file name extension that ends in proj and uses that file. |
 
 ### Switches
 

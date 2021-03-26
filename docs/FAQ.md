@@ -115,7 +115,7 @@ This will generate an `slngen.binlog` that can be opened with the [MSBuild Struc
 
 With the binary log, ensure that the projects aren't missing any imports and they declare `<ProjectReference />` items.
 
-## How does I get support for SlnGen?
+## How do I get support for SlnGen?
 Please search for existing issues to [see if someone has already reported the issue](https://github.com/microsoft/slngen/issues) and if there is a workaround or solution.  If not, please open a [new issue](https://github.com/microsoft/slngen/issues/new) to be investigated.
 
 If possible, include a binary log.  If not, please include the following:

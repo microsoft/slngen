@@ -205,7 +205,7 @@ Examples:
         [Argument(
             0,
             Name = "project path",
-            Description = "An optional path to a project.  If not specified, all projects in the current directory will be used.")]
+            Description = "An optional path to a project which can include wildcards like **\\*.csproj.  If not specified, all projects in the current directory will be used.")]
         public string[] Projects { get; set; }
 
         /// <summary>
