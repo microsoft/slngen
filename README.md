@@ -13,7 +13,7 @@ SlnGen is a Visual Studio solution file generator.  Visual Studio solutions gene
 To install SlnGen, run the following command:
 
 ```
-dotnet tool install --global Microsoft.VisualStudio.SlnGen.Tool --add-source https://api.nuget.org/v3/index.json
+dotnet tool install --global Microsoft.VisualStudio.SlnGen.Tool --add-source https://api.nuget.org/v3/index.json --ignore-failed-sources
 ```
 
 Once installed, .NET Core will add `slngen` to your PATH so you can run it from any command window:
