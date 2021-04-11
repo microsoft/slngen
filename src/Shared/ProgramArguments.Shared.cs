@@ -205,7 +205,7 @@ Examples:
         [Argument(
             0,
             Name = "project path",
-            Description = "An optional path to a project which can include wildcards like **\\*.csproj.  If not specified, all projects in the current directory will be used.")]
+            Description = "An optional path to a project which can include wildcards like **\\*.csproj or directories which contain projects files.  If not specified, all projects in the current directory will be used.")]
         public string[] Projects { get; set; }
 
         /// <summary>
@@ -352,16 +352,21 @@ Examples:
 
             projectEntryPaths = result;
 
-            if (Projects == null || !Projects.Any())
+            void SearchInDirectory(string directory)
             {
-                logger.LogMessageNormal("Searching \"{0}\" for projects", Environment.CurrentDirectory);
+                logger.LogMessageNormal("Searching \"{0}\" for projects", directory);
 
-                foreach (string projectPath in Directory.EnumerateFiles(Environment.CurrentDirectory, "*.*proj"))
+                foreach (string projectPath in Directory.EnumerateFiles(directory, "*.*proj"))
                 {
                     result.Add(projectPath);
 
                     logger.LogMessageNormal("Generating solution for project \"{0}\"", projectPath);
                 }
+            }
+
+            if (Projects == null || !Projects.Any())
+            {
+                SearchInDirectory(Environment.CurrentDirectory);
 
                 if (result.Count == 0)
                 {
@@ -372,16 +377,22 @@ Examples:
             {
                 foreach (string projectPath in ExpandWildcards(Projects).Select(Path.GetFullPath))
                 {
-                    if (!File.Exists(projectPath))
+                    if (File.Exists(projectPath))
+                    {
+                        logger.LogMessageNormal("Generating solution for project \"{0}\"", projectPath);
+
+                        result.Add(projectPath);
+                    }
+                    else if (Directory.Exists(projectPath))
+                    {
+                        SearchInDirectory(projectPath);
+                    }
+                    else
                     {
                         logger.LogError($"Project file \"{projectPath}\" does not exist");
 
                         continue;
                     }
-
-                    logger.LogMessageNormal("Generating solution for project \"{0}\"", projectPath);
-
-                    result.Add(projectPath);
                 }
             }
 
