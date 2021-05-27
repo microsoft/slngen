@@ -516,7 +516,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
             projectSolutionConfiguration = project.Configurations.First();
 
-            return false;
+            return true;
         }
 
         private bool TryGetProjectSolutionPlatform(string solutionPlatform, SlnProject project, out string projectSolutionPlatform, out string projectBuildPlatform)
