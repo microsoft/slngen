@@ -113,6 +113,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 folderWithSingleChild.Projects.AddRange(child.Projects);
                 folderWithSingleChild.Folders.Clear();
                 folderWithSingleChild.Folders.AddRange(child.Folders);
+                folderWithSingleChild.Folders.ForEach(f => f.Parent = folderWithSingleChild);
             }
         }
 

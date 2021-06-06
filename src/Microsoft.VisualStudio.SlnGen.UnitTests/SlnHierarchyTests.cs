@@ -72,6 +72,31 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         }
 
         [Fact]
+        public void HierarchyWithMultipleSubfoldersUnderACollapsedFolderIsCorrectlyFormed()
+        {
+            DummyFolder root = DummyFolder.CreateRoot(@"D:\foo\");
+            DummyFolder src = root.AddSubDirectory("src");
+            DummyFolder subfolder = src.AddSubDirectory("subfolder");
+            DummyFolder subfolderSrc = subfolder.AddSubDirectory("src");
+            DummyFolder subfolderTests = subfolder.AddSubDirectory("tests");
+            SlnProject project1 = subfolderSrc.AddProjectWithDirectory("project1");
+            SlnProject project1tests = subfolderTests.AddProjectWithDirectory("project1tests");
+            SlnProject project2 = root.AddProjectWithDirectory("project2");
+
+            DummyFolder rootExpected = DummyFolder.CreateRoot(@"D:\foo");
+            DummyFolder subfolderExpected = rootExpected.AddSubDirectory($"src {SlnHierarchy.Separator} subfolder");
+            DummyFolder project1Expected = subfolderExpected.AddSubDirectory($"src {SlnHierarchy.Separator} project1");
+            project1Expected.Projects.Add(project1);
+            DummyFolder project1testsExpected = subfolderExpected.AddSubDirectory($"tests {SlnHierarchy.Separator} project1tests");
+            project1testsExpected.Projects.Add(project1tests);
+            rootExpected.Projects.Add(project2);
+
+            SlnHierarchy hierarchy = SlnHierarchy.CreateFromProjectDirectories(root.GetAllProjects(), collapseFolders: true);
+
+            CompareFolders(rootExpected.GetAllFolders(), hierarchy.Folders);
+        }
+
+        [Fact]
         public void HierarchyWithCollapsedFoldersIsCorrectlyFormed()
         {
             DummyFolder root = DummyFolder.CreateRoot(@"D:\zoo\foo");
@@ -96,8 +121,13 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             SlnHierarchy hierarchy = SlnHierarchy.CreateFromProjectDirectories(root.GetAllProjects(), collapseFolders: true);
 
-            SlnFolder[] resultFolders = hierarchy.Folders.OrderBy(f => f.FullPath).ToArray();
-            DummyFolder[] expectedFolders = rootExpected.GetAllFolders().OrderBy(f => f.FullPath).ToArray();
+            CompareFolders(rootExpected.GetAllFolders(), hierarchy.Folders);
+        }
+
+        private static void CompareFolders(IEnumerable<DummyFolder> expected, IEnumerable<SlnFolder> result)
+        {
+            SlnFolder[] resultFolders = result.OrderBy(f => f.FullPath).ToArray();
+            DummyFolder[] expectedFolders = expected.OrderBy(f => f.FullPath).ToArray();
 
             resultFolders.Length.ShouldBe(expectedFolders.Length);
 
@@ -115,20 +145,25 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 // Verify that expected and results child folders match
                 resultFolder.Folders.Count.ShouldBe(expectedFolder.Folders.Count);
                 resultFolder.Folders.ShouldAllBe(p => expectedFolder.Folders.Exists(f => f.Name == p.Name));
+
+                // Verify that the parent folders match
+                resultFolder.Parent?.FullPath.ShouldBe(expectedFolder.Parent?.FullPath);
             }
         }
 
         private class DummyFolder
         {
-            private DummyFolder(string path)
+            private DummyFolder(string path, DummyFolder parent)
             {
                 FileInfo fileInfo = new FileInfo(path);
 
                 Folders = new List<DummyFolder>();
                 Projects = new List<SlnProject>();
 
-                FullPath = path;
+                FullPath = fileInfo.FullName.Split(new[] { $" {SlnHierarchy.Separator} " }, StringSplitOptions.None)[0];
                 Name = fileInfo.Name;
+
+                Parent = parent;
             }
 
             public List<DummyFolder> Folders { get; }
@@ -139,9 +174,11 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             public List<SlnProject> Projects { get; }
 
+            public DummyFolder Parent { get; }
+
             public static DummyFolder CreateRoot(string rootPath)
             {
-                return new DummyFolder(rootPath);
+                return new DummyFolder(rootPath, null);
             }
 
             public SlnProject AddProjectWithDirectory(string name)
@@ -153,7 +190,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             {
                 string path = Path.Combine(FullPath, folderName);
 
-                DummyFolder childFolder = new DummyFolder(path);
+                DummyFolder childFolder = new DummyFolder(path, this);
 
                 Folders.Add(childFolder);
 
