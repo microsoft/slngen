@@ -72,6 +72,30 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         }
 
         [Fact]
+        public void SingleFolderWithProjectsShouldNotCollapseIntoParentFolderWithProjects()
+        {
+            DummyFolder root = DummyFolder.CreateRoot(@"D:\foo\");
+            DummyFolder src = root.AddSubDirectory("src");
+            DummyFolder subfolder = src.AddSubDirectory("subfolder");
+            SlnProject project1 = subfolder.AddProjectWithDirectory("project1");
+            SlnProject project1Tests = subfolder.AddProjectWithDirectory("project1Tests");
+            SlnProject project2 = src.AddProjectWithDirectory("project2");
+            SlnProject project3 = root.AddProjectWithDirectory("project3");
+
+            DummyFolder rootExpected = DummyFolder.CreateRoot(@"D:\foo");
+            DummyFolder srcExpected = rootExpected.AddSubDirectory("src");
+            DummyFolder subfolderExpected = srcExpected.AddSubDirectory("subfolder");
+            subfolderExpected.Projects.Add(project1);
+            subfolderExpected.Projects.Add(project1Tests);
+            srcExpected.Projects.Add(project2);
+            rootExpected.Projects.Add(project3);
+
+            SlnHierarchy hierarchy = SlnHierarchy.CreateFromProjectDirectories(root.GetAllProjects(), collapseFolders: true);
+
+            CompareFolders(rootExpected.GetAllFolders(), hierarchy.Folders);
+        }
+
+        [Fact]
         public void HierarchyWithMultipleSubfoldersUnderACollapsedFolderIsCorrectlyFormed()
         {
             DummyFolder root = DummyFolder.CreateRoot(@"D:\foo\");
@@ -80,15 +104,15 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             DummyFolder subfolderSrc = subfolder.AddSubDirectory("src");
             DummyFolder subfolderTests = subfolder.AddSubDirectory("tests");
             SlnProject project1 = subfolderSrc.AddProjectWithDirectory("project1");
-            SlnProject project1tests = subfolderTests.AddProjectWithDirectory("project1tests");
+            SlnProject project1Tests = subfolderTests.AddProjectWithDirectory("project1Tests");
             SlnProject project2 = root.AddProjectWithDirectory("project2");
 
             DummyFolder rootExpected = DummyFolder.CreateRoot(@"D:\foo");
             DummyFolder subfolderExpected = rootExpected.AddSubDirectory($"src {SlnHierarchy.Separator} subfolder");
-            DummyFolder project1Expected = subfolderExpected.AddSubDirectory($"src {SlnHierarchy.Separator} project1");
-            project1Expected.Projects.Add(project1);
-            DummyFolder project1testsExpected = subfolderExpected.AddSubDirectory($"tests {SlnHierarchy.Separator} project1tests");
-            project1testsExpected.Projects.Add(project1tests);
+            DummyFolder subfolderSrcExpected = subfolderExpected.AddSubDirectory("src");
+            subfolderSrcExpected.Projects.Add(project1);
+            DummyFolder subfolderTestsExpected = subfolderExpected.AddSubDirectory("tests");
+            subfolderTestsExpected.Projects.Add(project1Tests);
             rootExpected.Projects.Add(project2);
 
             SlnHierarchy hierarchy = SlnHierarchy.CreateFromProjectDirectories(root.GetAllProjects(), collapseFolders: true);
@@ -117,7 +141,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             barQuxExpected.Projects.Add(baz1);
             barQuxExpected.Projects.Add(baz2);
             rootExpected.Projects.Add(bar1);
-            rootExpected.AddSubDirectory($"foo1 {SlnHierarchy.Separator} foo2 {SlnHierarchy.Separator} baz3").Projects.Add(baz3);
+            rootExpected.AddSubDirectory($"foo1 {SlnHierarchy.Separator} foo2").Projects.Add(baz3);
 
             SlnHierarchy hierarchy = SlnHierarchy.CreateFromProjectDirectories(root.GetAllProjects(), collapseFolders: true);
 
