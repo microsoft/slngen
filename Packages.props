@@ -29,7 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <GlobalPackageReference Include="Microsoft.Build.Artifacts" Version="2.0.35" />
+    <GlobalPackageReference Include="Microsoft.Build.Artifacts" Version="2.2.0" />
     <GlobalPackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" />
     <GlobalPackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" />
     <GlobalPackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" Version="0.4.1" />
