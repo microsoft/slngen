@@ -62,8 +62,8 @@ namespace Microsoft.VisualStudio.SlnGen
 
             if (collapseFolders)
             {
-                CollapseFolders(rootFolder.Folders);
                 RemoveLeaves(rootFolder);
+                CollapseFolders(rootFolder.Folders);
             }
 
             return hierarchy;
@@ -105,7 +105,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 CollapseFolders(folder.Folders);
             }
 
-            foreach (SlnFolder folderWithSingleChild in folders.Where(i => i.Folders.Count == 1))
+            foreach (SlnFolder folderWithSingleChild in folders.Where(i => i.Folders.Count == 1 && i.Projects.Count == 0))
             {
                 SlnFolder child = folderWithSingleChild.Folders.First();
 
@@ -113,6 +113,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 folderWithSingleChild.Projects.AddRange(child.Projects);
                 folderWithSingleChild.Folders.Clear();
                 folderWithSingleChild.Folders.AddRange(child.Folders);
+                folderWithSingleChild.Folders.ForEach(f => f.Parent = folderWithSingleChild);
             }
         }
 
@@ -210,9 +211,8 @@ namespace Microsoft.VisualStudio.SlnGen
             if (folder.Folders.Count == 0)
             {
                 // We want to remove leaves that have only a single project. There is no need to keep that
-                // directory as it would be represented by the project file itself. We ignore folders that
-                // contain the Separator character as these are folders which have been collapsed already.
-                return folder.Projects.Count == 1 && !folder.Name.Contains(Separator);
+                // directory as it would be represented by the project file itself.
+                return folder.Projects.Count == 1;
             }
 
             List<SlnFolder> foldersToRemove = new List<SlnFolder>();
