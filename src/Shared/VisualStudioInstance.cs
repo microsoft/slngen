@@ -16,7 +16,7 @@ namespace Microsoft.VisualStudio.SlnGen
     {
         private readonly ISetupInstance2 _instance;
 
-        private readonly ConcurrentDictionary<string, Lazy<object>> _lazyValues = new ConcurrentDictionary<string, Lazy<object>>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, Lazy<object>> _lazyValues = new (StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VisualStudioInstance" /> class.

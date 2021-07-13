@@ -62,14 +62,14 @@
           DependsOnTargets="ResolveReferences">
     <ItemGroup>
       <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('AssetType', 'runtime'))"
-                            TargetPath="$(TargetFramework)\%(Filename)%(Extension)" />
+                            TargetPath="$(TargetFramework)\%(ReferenceCopyLocalPaths.DestinationSubDirectory)%(Filename)%(Extension)" />
 
       <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('CopyLocal', 'true'))"
-                            TargetPath="$(TargetFramework)\%(Filename)%(Extension)" />
+                            TargetPath="$(TargetFramework)\%(ReferenceCopyLocalPaths.DestinationSubDirectory)%(Filename)%(Extension)" />
 
       <BuiltProjectOutputGroupOutput Update="@(BuiltProjectOutputGroupOutput)"
                                      Condition="'%(TargetPath)' == ''"
-                                     TargetPath="$(TargetFramework)\%(Filename)%(Extension)" />
+                                     TargetPath="$(TargetFramework)\%(RecursiveDir)%(Filename)%(Extension)" />
 
       <BuiltProjectOutputGroupOutput Update="@(BuiltProjectOutputGroupOutput)"
                                      Condition="'%(TargetPath)' != ''"

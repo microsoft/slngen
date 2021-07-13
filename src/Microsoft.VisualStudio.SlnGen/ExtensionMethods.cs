@@ -7,14 +7,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace Microsoft.VisualStudio.SlnGen
 {
     /// <summary>
     /// Represents extension methods used by this assembly.
     /// </summary>
-    internal static class ExtensionMethods
+    internal static partial class ExtensionMethods
     {
         /// <summary>
         /// Represents an array of <see cref="char" /> containing an equal sign.
@@ -105,12 +104,6 @@ namespace Microsoft.VisualStudio.SlnGen
             return value == string.Empty ? defaultValue : value;
         }
 
-        /// <inheritdoc cref="string.IsNullOrWhiteSpace" />
-        public static bool IsNullOrWhiteSpace(this string value)
-        {
-            return string.IsNullOrWhiteSpace(value);
-        }
-
         /// <summary>
         /// Determines if a project's property value is considered true.
         /// </summary>
@@ -182,33 +175,6 @@ namespace Microsoft.VisualStudio.SlnGen
             }
 
             return values;
-        }
-
-        /// <summary>
-        /// Returns the absolute path for the specified path string in the correct case according to the file system.
-        /// </summary>
-        /// <param name="path">The string.</param>
-        /// <returns>Full path in correct case.</returns>
-        public static string ToFullPathInCorrectCase(this string path)
-        {
-            string fullPath = Path.GetFullPath(path);
-
-            if (!File.Exists(fullPath))
-            {
-                return path;
-            }
-
-#if NETFRAMEWORK
-            using FileStream stream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-
-            StringBuilder stringBuilder = new StringBuilder(NativeMethods.GetFinalPathNameByHandle(stream.SafeFileHandle, null, 0, 0));
-
-            NativeMethods.GetFinalPathNameByHandle(stream.SafeFileHandle, stringBuilder, stringBuilder.Capacity, 0);
-
-            return stringBuilder.ToString(4, stringBuilder.Capacity - 5);
-#else
-            return fullPath;
-#endif
         }
 
         /// <summary>

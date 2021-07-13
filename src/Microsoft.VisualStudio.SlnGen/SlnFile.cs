@@ -59,12 +59,12 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <summary>
         /// Gets the projects.
         /// </summary>
-        private readonly List<SlnProject> _projects = new List<SlnProject>();
+        private readonly List<SlnProject> _projects = new ();
 
         /// <summary>
         /// A list of absolute paths to include as Solution Items.
         /// </summary>
-        private readonly List<string> _solutionItems = new List<string>();
+        private readonly List<string> _solutionItems = new ();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SlnFile" /> class.

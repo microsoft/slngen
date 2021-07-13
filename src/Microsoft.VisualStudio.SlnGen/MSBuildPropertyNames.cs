@@ -60,6 +60,11 @@ namespace Microsoft.VisualStudio.SlnGen
         public const string ProjectTypeGuid = nameof(ProjectTypeGuid);
 
         /// <summary>
+        /// Represents the SlnGenBinLog property.
+        /// </summary>
+        public const string SlnGenBinLog = nameof(SlnGenBinLog);
+
+        /// <summary>
         /// Represents the SlnGenDebug property.
         /// </summary>
         public const string SlnGenDebug = nameof(SlnGenDebug);

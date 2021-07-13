@@ -13,7 +13,7 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
     /// </summary>
     public sealed class ProjectLoaderStatistics
     {
-        private readonly ConcurrentDictionary<string, TimeSpan> _projectLoadTimes = new ConcurrentDictionary<string, TimeSpan>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, TimeSpan> _projectLoadTimes = new (StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Gets the <see cref="IEnumerable{T}" /> containing the project load times.

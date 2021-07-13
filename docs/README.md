@@ -56,7 +56,8 @@ slngen [switches] [project]
 | <code>--filelogger[:params]</code> | | Provides any extra parameters for file loggers. The same parameters listed for the console logger are available.<br/>Some additional available parameters are:<br/>&nbsp;&nbsp;`LogFile`--path to the log file into which the build log will be written.<br/>&nbsp;&nbsp;`Append`--determines if the build log will be appended to or overwrite the log file.Setting the switch appends the build log to the log file;<br/>&nbsp;&nbsp;&nbsp;&nbsp;Not setting the switch overwrites the contents of an existing log file. The default is not to append to the log file.<br/>&nbsp;&nbsp;`Encoding`--specifies the encoding for the file, for example, UTF-8, Unicode, or ASCII |
 | <code>--binarylogger[:params]</code> | | Serializes all build events to a compressed binary file. By default the file is in the current directory and named `slngen.binlog` and contains the source text of project files, including all imported projects and target files encountered during the build. |
 | <code>--logger:params</code> | | Use this logger to log events from SlnGen. To specify multiple loggers, specify each logger separately.<br/>&nbsp;&nbsp;The `<params>` syntax is:<br/>&nbsp;&nbsp;  `[<class>,]<assembly>[;<parameters>]`<br/>&nbsp;&nbsp;The `<logger class>` syntax is:<br/>&nbsp;&nbsp;  `[<partial or full namespace>.]<logger class name>`<br/>&nbsp;&nbsp;The `<logger assembly>` syntax is:<br/>&nbsp;&nbsp;  `{<assembly name>[,<strong name>] | <assembly file>}`<br/>&nbsp;&nbsp;Logger options specify how SlnGen creates the logger. The `<logger parameters>` are optional, and are passed to the logger exactly as you typed them.|
-  | <code>--nologo</code> | | Disables writing the SlnGen version and copyright information to the console. |
+| <code>--nologo</code> | | Disables writing the SlnGen version and copyright information to the console. |
+| <code>--version</code> | | Display version information only. |
 
 # Getting Started (MSBuild Target)
 SlnGen is an MSBuild target so you will need to add a `<PackageReference />` to all projects that you want use it with.  We recommend that you simply add the `PackageReference` to a common import like [Directory.Build.props](https://docs.microsoft.com/en-us/visualstudio/msbuild/customize-your-build#directorybuildprops-example)
@@ -89,6 +90,7 @@ The following properties only apply when using SlnGen as an MSBuild target.
 | `SlnGenGlobalProperties` | Specifies MSBuild properties to set when loading projects and project references. | | `DesignTimeBuild=true;BuildingProject=false` |
 | `SlnGenInheritGlobalProperties` | Indicates whether or not all global variables specified when loading the initial project should be passed around when loading project references. | `true` or `false` | `true` |
 | `SlnGenGlobalPropertiesToRemove` | Specifies a list of inherited global properties to remove when loading projects. | | |
+| `SlnGenBinLog` | Indicates whether or not SlnGen should emit a binary log. | `true` or `false` | `false` |
 
 
 Command-line argument
@@ -119,10 +121,10 @@ Use the following properties and items to customize the generated Solution file.
 
 | Property | Description | Values | Default |
 |----------|-------------|--------|---------|
-| `IncludeInSolutionFile` | Indicates whether or not a project should be included in a generated Solution file.                               | `true` or `false` | `true` |
+| `IncludeInSolutionFile` | Indicates whether or not a project should be included in a generated Solution file. | `true` or `false` | `true` |
 | `SlnGenFolders`         | Indicates whether or not a hierarchy of folders should be created.  If `false`, the projects are in a flat list. | `true` or `false` | `true` |
-| `SlnGenIsDeployable`    | Indicates whether or not a project is considered deployable by Visual Studio.                                     | `true` or `false` | `false` <br />Service Fabric projects are automatically set to `true` |
-| `SlnGenSolutionFolder   | Specifies a solution folder to place the project in.  `SlnGenFolders` must be `false`.                            | | |
+| `SlnGenIsDeployable`    | Indicates whether or not a project is considered deployable by Visual Studio. | `true` or `false` | `false` <br />Service Fabric projects are automatically set to `true` |
+| `SlnGenSolutionFolder`   | Specifies a solution folder to place the project in.  `SlnGenFolders` must be `false`. | | |
 
 | Item | Description |
 |------|-------------|

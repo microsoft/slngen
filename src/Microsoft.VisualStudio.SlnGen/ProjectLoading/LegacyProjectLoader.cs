@@ -26,7 +26,7 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
         /// <summary>
         /// Stores the list of paths to the projects that are loaded.
         /// </summary>
-        private readonly HashSet<string> _loadedProjects = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private readonly HashSet<string> _loadedProjects = new (StringComparer.OrdinalIgnoreCase);
 
         private readonly ISlnGenLogger _logger;
 
@@ -52,7 +52,7 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
         /// <summary>
         /// Gets a <see cref="ProjectLoaderStatistics" /> object containing project load times.
         /// </summary>
-        public ProjectLoaderStatistics Statistics { get; } = new ProjectLoaderStatistics();
+        public ProjectLoaderStatistics Statistics { get; } = new ();
 
         /// <inheritdoc cref="IProjectLoader.LoadProjects" />
         public void LoadProjects(IEnumerable<string> projectPaths, ProjectCollection projectCollection, IDictionary<string, string> globalProperties)

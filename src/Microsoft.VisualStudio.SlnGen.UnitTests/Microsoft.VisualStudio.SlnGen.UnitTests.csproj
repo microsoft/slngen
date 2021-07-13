@@ -15,11 +15,8 @@
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+  <ItemGroup>
     <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net5.0'">
-    <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen.Tool\Microsoft.VisualStudio.SlnGen.Tool.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\Microsoft.VisualStudio.SlnGen\*.targets" Link="build\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />

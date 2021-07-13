@@ -1,16 +1,64 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
+    <TargetFramework>net5.0</TargetFramework>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>slngen</ToolCommandName>
     <RollForward>LatestMajor</RollForward>
+    <ProjectReferenceBuildTargets>GetTargetPath</ProjectReferenceBuildTargets>
+    <SlnTargetFrameworks>net472;netcoreapp3.1;net5.0;net6.0</SlnTargetFrameworks>
   </PropertyGroup>
   <Import Project="..\Shared\Shared.props" />
   <ItemGroup>
-    <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\netcoreapp2.1\MSBuild.dll" Private="false" />
+    <FilesToSign Include="$(IntermediateOutputPath)$(TargetName)$(TargetExt)"
+                 Authenticode="Microsoft400"
+                 StrongName="StrongName" />
   </ItemGroup>
-  <ItemGroup>
-    <FilesToSign Include="$(IntermediateOutputPath)$(TargetName)$(TargetExt)" Authenticode="Microsoft400" StrongName="StrongName" />
-  </ItemGroup>
-</Project>
+  <Target Name="AddSlnGenProjectReferences"
+          BeforeTargets="BeforeBuild">
+    <ItemGroup>
+      <_SlnTargetFrameworks Include="$(SlnTargetFrameworks)" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj"
+                        AdditionalProperties="TargetFramework=%(_SlnTargetFrameworks.Identity)"
+                        IncludeAssets="None"
+                        OutputItemType="SlnGenBuildOutput"
+                        PrivateAssets="All"
+                        ReferenceOutputAssembly="false"
+                        SkipGetTargetFrameworkProperties="true"
+                        TargetFramework="%(_SlnTargetFrameworks.Identity)" />
+    </ItemGroup>
+  </Target>
+  <Target Name="CopySlnGenToOutputDirectoryAndPackage"
+          AfterTargets="PrepareForRun"
+          DependsOnTargets="ResolveProjectReferences"
+          Condition="@(SlnGenBuildOutput->Count()) > 0">
+    <ItemGroup>
+      <SlnGenFiles Include="%(SlnGenBuildOutput.RootDir)%(SlnGenBuildOutput.Directory)\**"
+                   Exclude="%(SlnGenBuildOutput.RootDir)%(SlnGenBuildOutput.Directory)\ref\**;%(SlnGenBuildOutput.RootDir)%(SlnGenBuildOutput.Directory)\**\*.dev.json;%(SlnGenBuildOutput.RootDir)%(SlnGenBuildOutput.Directory)\**\*.pdb"
+                   TargetFramework="%(SlnGenBuildOutput.TargetFramework)"
+                   TargetPath="%(SlnGenBuildOutput.TargetFramework)\%(RecursiveDir)%(Filename)%(Extension)" />
+
+      <_PackageFiles Include="@(SlnGenFiles)"
+                     TargetFramework="%(SlnGenFiles.TargetFramework)"
+                     Pack="true"
+                     PackagePath="tools/slngen/%(SlnGenFiles.TargetFramework)/%(SlnGenFiles.RecursiveDir)%(SlnGenFiles.Filename)%(SlnGenFiles.Extension)"
+                     BuildAction="None" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(SlnGenFiles)"
+          DestinationFiles="@(SlnGenFiles->'$(OutputPath)..\slngen\%(TargetFramework)\%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
+          OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+          Retries="$(CopyRetryCount)"
+          RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+          UseHardlinksIfPossible="$(CreateHardLinksForCopyLocalIfPossible)"
+          UseSymboliclinksIfPossible="$(CreateSymbolicLinksForCopyLocalIfPossible)">
+      <Output TaskParameter="DestinationFiles"
+              ItemName="FileWritesShareable" />
+      <Output TaskParameter="CopiedFiles"
+              ItemName="ReferencesCopiedInThisBuild" />
+    </Copy>
+  </Target>
+</Project> 

@@ -15,7 +15,7 @@ namespace Microsoft.VisualStudio.SlnGen
     /// <summary>
     /// Represents the command-line arguments for this application.
     /// </summary>
-    public sealed partial class ProgramArguments
+    public sealed class ProgramArguments
     {
         /// <summary>
         /// Gets or sets the binary logger arguments.
@@ -259,6 +259,15 @@ Examples:
         public string[] Verbosity { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether or not the version information should be displayed.
+        /// </summary>
+        [Option(
+            "--version",
+            CommandOptionType.NoValue,
+            Description = @"Display version information only.")]
+        public bool Version { get; set; }
+
+        /// <summary>
         /// Gets or sets a <see cref="Func{ProgramArguments,IConsole,Int32}" /> to execute.
         /// </summary>
         internal static Func<ProgramArguments, IConsole, int> Execute { get; set; } = Program.Execute;
@@ -332,7 +341,7 @@ Examples:
         /// Gets a value indicating whether or not Visual Studio should be launched.
         /// </summary>
         /// <returns>True if Visual Studio should be launched, otherwise false.</returns>
-        public bool ShouldLaunchVisualStudio() => GetBoolean(LaunchVisualStudio, defaultValue: RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
+        public bool ShouldLaunchVisualStudio() => GetBoolean(LaunchVisualStudio, defaultValue: Utility.RunningOnWindows);
 
         /// <summary>
         /// Gets a value indicating whether or not projects should be loaded in Visual Studio.
