@@ -56,35 +56,6 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <returns>Zero if the program executed successfully, otherwise a non-zero value.</returns>
         public static int Main(string[] args)
         {
-            for (int i = 0; i < args.Length; i++)
-            {
-                if (args[i].Equals("/?"))
-                {
-                    args[i] = "--help";
-                }
-
-                if (args[i].Equals("/nologo", StringComparison.OrdinalIgnoreCase) || args[i].Equals("--nologo", StringComparison.OrdinalIgnoreCase))
-                {
-                    NoLogo = true;
-                }
-
-                // Translate / to - or -- for Windows users
-                if (Utility.RunningOnWindows)
-                {
-                    if (args[i][0] == '/')
-                    {
-                        if (args[i].Length == 2 || (i >= 3 && args.Length > i && args[i].Length >= 3 && args[i][2] == ':'))
-                        {
-                            args[i] = $"-{args[i].Substring(1)}";
-                        }
-                        else
-                        {
-                            args[i] = $"--{args[i].Substring(1)}";
-                        }
-                    }
-                }
-            }
-
             CurrentDevelopmentEnvironment = DevelopmentEnvironment.LoadCurrentDevelopmentEnvironment();
 
             if (!CurrentDevelopmentEnvironment.Success || CurrentDevelopmentEnvironment.Errors.Count > 0)
@@ -266,6 +237,35 @@ namespace Microsoft.VisualStudio.SlnGen
         {
             try
             {
+                for (int i = 0; i < args.Length; i++)
+                {
+                    if (args[i].Equals("/?"))
+                    {
+                        args[i] = "--help";
+                    }
+
+                    if (args[i].Equals("/nologo", StringComparison.OrdinalIgnoreCase) || args[i].Equals("--nologo", StringComparison.OrdinalIgnoreCase))
+                    {
+                        NoLogo = true;
+                    }
+
+                    // Translate / to - or -- for Windows users
+                    if (Utility.RunningOnWindows)
+                    {
+                        if (args[i][0] == '/')
+                        {
+                            if (args[i].Length == 2 || (i >= 3 && args.Length > i && args[i].Length >= 3 && args[i][2] == ':'))
+                            {
+                                args[i] = $"-{args[i].Substring(1)}";
+                            }
+                            else
+                            {
+                                args[i] = $"--{args[i].Substring(1)}";
+                            }
+                        }
+                    }
+                }
+
                 if (!NoLogo)
                 {
                     console.WriteLine(

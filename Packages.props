@@ -14,7 +14,7 @@
     <PackageReference Update="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="2.3.2262-g94fae01e" />
     <PackageReference Update="Microsoft.VisualStudio.Telemetry" Version="16.3.176" />
     <PackageReference Update="Microsoft.VisualStudio.Utilities.Internal" Version="16.3.23" />
-    <PackageReference Update="MSBuild.ProjectCreation" Version="2.0.1" />
+    <PackageReference Update="MSBuild.ProjectCreation" Version="4.0.4" />
     <PackageReference Update="Shouldly" Version="4.0.3" />
     <PackageReference Update="System.Collections" Version="4.3.0" />
     <PackageReference Update="System.Configuration.ConfigurationManager" Version="5.0.0" />
