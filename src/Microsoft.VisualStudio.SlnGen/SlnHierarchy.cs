@@ -23,7 +23,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <summary>
         /// Stores a mapping of full paths to <see cref="SlnFolder" /> objects.
         /// </summary>
-        private readonly Dictionary<string, SlnFolder> _pathToSlnFolderMap = new Dictionary<string, SlnFolder>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, SlnFolder> _pathToSlnFolderMap = new (StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Stores the root folder based on a common rooted path for all projects.

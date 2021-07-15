@@ -14,7 +14,7 @@
     <DevelopmentDependency>true</DevelopmentDependency>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="McMaster.Extensions.CommandLineUtils" />
+    <!--<PackageReference Include="McMaster.Extensions.CommandLineUtils" />
     <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" NoWarn="NU1701" />
     <PackageReference Include="Microsoft.Build.Runtime" IncludeAssets="None" PrivateAssets="All" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" NoWarn="NU1701" />
@@ -22,16 +22,11 @@
     <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" PrivateAssets="All" />
     <PackageReference Include="Microsoft.VisualStudio.Telemetry" />
     <PackageReference Include="Microsoft.VisualStudio.Utilities.Internal" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" />-->
+    <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Shared\**\*.cs" />
-    <EmbeddedResource Include="..\Shared\*.resx" />
-    <Compile Update="..\Shared\Strings.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Strings.resx</DependentUpon>
-    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)**\*.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileFullPath)" />

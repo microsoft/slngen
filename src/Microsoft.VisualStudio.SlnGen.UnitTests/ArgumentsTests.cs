@@ -4,6 +4,7 @@
 
 using Shouldly;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Xunit;
@@ -65,7 +66,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         public void ExpandWildcards()
         {
             var root = Path.GetTempPath();
-            var work = Directory.CreateDirectory(Path.Combine(root, Environment.ProcessId.ToString()));
+            var work = Directory.CreateDirectory(Path.Combine(root, Process.GetCurrentProcess().Id.ToString()));
 
             try
             {

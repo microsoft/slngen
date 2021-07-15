@@ -13,7 +13,7 @@ namespace Microsoft.VisualStudio.SlnGen
     /// </summary>
     internal static class VisualStudioConfiguration
     {
-        private static readonly SetupConfiguration SetupConfiguration = new SetupConfiguration();
+        private static readonly SetupConfiguration SetupConfiguration = new ();
 
         /// <summary>
         /// Gets an instance of Visual Studio for the specified path.

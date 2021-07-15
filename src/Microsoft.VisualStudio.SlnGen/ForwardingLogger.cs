@@ -19,36 +19,36 @@ namespace Microsoft.VisualStudio.SlnGen
     /// </summary>
     public class ForwardingLogger : EventArgsDispatcher, IEventSource2, ILogger, ISlnGenLogger
     {
-        private static readonly Lazy<ProcessBinaryLoggerDelegate2> ProcessBinaryLoggerDelegate2Lazy = new Lazy<ProcessBinaryLoggerDelegate2>(
+        private static readonly Lazy<ProcessBinaryLoggerDelegate2> ProcessBinaryLoggerDelegate2Lazy = new (
             () => Delegate.CreateDelegate(
                 typeof(ProcessBinaryLoggerDelegate2),
                 ProcessBinaryLoggerMethodLazy.Value!) as ProcessBinaryLoggerDelegate2);
 
-        private static readonly Lazy<ProcessBinaryLoggerDelegate> ProcessBinaryLoggerDelegateLazy = new Lazy<ProcessBinaryLoggerDelegate>(
+        private static readonly Lazy<ProcessBinaryLoggerDelegate> ProcessBinaryLoggerDelegateLazy = new (
             () => Delegate.CreateDelegate(
                 typeof(ProcessBinaryLoggerDelegate),
                 ProcessBinaryLoggerMethodLazy.Value!) as ProcessBinaryLoggerDelegate);
 
-        private static readonly Lazy<MethodInfo> ProcessBinaryLoggerMethodLazy = new Lazy<MethodInfo>(
+        private static readonly Lazy<MethodInfo> ProcessBinaryLoggerMethodLazy = new (
                     () => typeof(MSBuildApp).GetMethod("ProcessBinaryLogger", BindingFlags.Static | BindingFlags.NonPublic));
 
-        private static readonly Lazy<ProcessLoggerSwitchDelegate2> ProcessLoggerSwitchDelegate2Lazy = new Lazy<ProcessLoggerSwitchDelegate2>(
+        private static readonly Lazy<ProcessLoggerSwitchDelegate2> ProcessLoggerSwitchDelegate2Lazy = new (
             () => Delegate.CreateDelegate(
                 typeof(ProcessLoggerSwitchDelegate2),
                 ProcessLoggerSwitchMethodLazy.Value!) as ProcessLoggerSwitchDelegate2);
 
-        private static readonly Lazy<ProcessLoggerSwitchDelegate> ProcessLoggerSwitchDelegateLazy = new Lazy<ProcessLoggerSwitchDelegate>(
+        private static readonly Lazy<ProcessLoggerSwitchDelegate> ProcessLoggerSwitchDelegateLazy = new (
             () => Delegate.CreateDelegate(
                 typeof(ProcessLoggerSwitchDelegate),
                 ProcessLoggerSwitchMethodLazy.Value!) as ProcessLoggerSwitchDelegate);
 
-        private static readonly Lazy<MethodInfo> ProcessLoggerSwitchMethodLazy = new Lazy<MethodInfo>(
+        private static readonly Lazy<MethodInfo> ProcessLoggerSwitchMethodLazy = new (
             () => typeof(MSBuildApp).GetMethod("ProcessLoggerSwitch", BindingFlags.Static | BindingFlags.NonPublic));
 
-        private static readonly Lazy<ProcessVerbositySwitchDelegate> ProcessVerbositySwitchDelegateLazy = new Lazy<ProcessVerbositySwitchDelegate>(
+        private static readonly Lazy<ProcessVerbositySwitchDelegate> ProcessVerbositySwitchDelegateLazy = new (
             () => Delegate.CreateDelegate(
                 typeof(ProcessVerbositySwitchDelegate),
-                typeof(MSBuildApp).GetMethod("ProcessVerbositySwitch", BindingFlags.Static | BindingFlags.NonPublic)) as ProcessVerbositySwitchDelegate);
+                typeof(MSBuildApp).GetMethod("ProcessVerbositySwitch", BindingFlags.Static | BindingFlags.NonPublic) !) as ProcessVerbositySwitchDelegate);
 
         private readonly bool _noWarn;
 

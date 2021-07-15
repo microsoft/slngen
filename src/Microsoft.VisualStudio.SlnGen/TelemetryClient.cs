@@ -23,7 +23,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// </summary>
         public TelemetryClient()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (Utility.RunningOnWindows)
             {
                 // Only enable telemetry if the user has opted into it in Visual Studio
                 TelemetryService.DefaultSession.UseVsIsOptedIn();

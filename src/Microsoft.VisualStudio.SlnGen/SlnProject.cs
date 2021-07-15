@@ -20,12 +20,12 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <summary>
         /// Represents the default project type GUID for projects that load in the legacy project system.
         /// </summary>
-        public static readonly Guid DefaultLegacyProjectTypeGuid = new Guid(VisualStudioProjectTypeGuids.LegacyCSharpProject);
+        public static readonly Guid DefaultLegacyProjectTypeGuid = new (VisualStudioProjectTypeGuids.LegacyCSharpProject);
 
         /// <summary>
         /// Represents the default project type GUID for projects that load in the NetSdk project system.
         /// </summary>
-        public static readonly Guid DefaultNetSdkProjectTypeGuid = new Guid(VisualStudioProjectTypeGuids.NetSdkCSharpProject);
+        public static readonly Guid DefaultNetSdkProjectTypeGuid = new (VisualStudioProjectTypeGuids.NetSdkCSharpProject);
 
         /// <summary>
         /// Known project type GUIDs for legacy projects.
@@ -34,7 +34,7 @@ namespace Microsoft.VisualStudio.SlnGen
         {
             [string.Empty] = DefaultLegacyProjectTypeGuid,
             [ProjectFileExtensions.CSharp] = DefaultLegacyProjectTypeGuid,
-            [ProjectFileExtensions.VisualBasic] = new Guid(VisualStudioProjectTypeGuids.LegacyVisualBasicProject),
+            [ProjectFileExtensions.VisualBasic] = new (VisualStudioProjectTypeGuids.LegacyVisualBasicProject),
         };
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace Microsoft.VisualStudio.SlnGen
         {
             [string.Empty] = DefaultNetSdkProjectTypeGuid,
             [ProjectFileExtensions.CSharp] = DefaultNetSdkProjectTypeGuid,
-            [ProjectFileExtensions.VisualBasic] = new Guid(VisualStudioProjectTypeGuids.NetSdkVisualBasicProject),
+            [ProjectFileExtensions.VisualBasic] = new (VisualStudioProjectTypeGuids.NetSdkVisualBasicProject),
         };
 
         /// <summary>
@@ -52,17 +52,17 @@ namespace Microsoft.VisualStudio.SlnGen
         /// </summary>
         public static readonly IReadOnlyDictionary<string, Guid> KnownProjectTypeGuids = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase)
         {
-            [ProjectFileExtensions.AzureSdk] = new Guid(VisualStudioProjectTypeGuids.AzureSdk),
-            [ProjectFileExtensions.AzureServiceFabric] = new Guid(VisualStudioProjectTypeGuids.AzureServiceFabric),
-            [ProjectFileExtensions.Cpp] = new Guid(VisualStudioProjectTypeGuids.Cpp),
-            [ProjectFileExtensions.FSharp] = new Guid(VisualStudioProjectTypeGuids.FSharp),
-            [ProjectFileExtensions.JSharp] = new Guid(VisualStudioProjectTypeGuids.JSharp),
-            [ProjectFileExtensions.LegacyCpp] = new Guid(VisualStudioProjectTypeGuids.Cpp),
-            [ProjectFileExtensions.Native] = new Guid(VisualStudioProjectTypeGuids.Cpp),
-            [ProjectFileExtensions.NuProj] = new Guid(VisualStudioProjectTypeGuids.NuProj),
-            [ProjectFileExtensions.Scope] = new Guid(VisualStudioProjectTypeGuids.ScopeProject),
-            [ProjectFileExtensions.Wix] = new Guid(VisualStudioProjectTypeGuids.Wix),
-            [ProjectFileExtensions.SqlServerDb] = new Guid(VisualStudioProjectTypeGuids.SqlServerDbProject),
+            [ProjectFileExtensions.AzureSdk] = new (VisualStudioProjectTypeGuids.AzureSdk),
+            [ProjectFileExtensions.AzureServiceFabric] = new (VisualStudioProjectTypeGuids.AzureServiceFabric),
+            [ProjectFileExtensions.Cpp] = new (VisualStudioProjectTypeGuids.Cpp),
+            [ProjectFileExtensions.FSharp] = new (VisualStudioProjectTypeGuids.FSharp),
+            [ProjectFileExtensions.JSharp] = new (VisualStudioProjectTypeGuids.JSharp),
+            [ProjectFileExtensions.LegacyCpp] = new (VisualStudioProjectTypeGuids.Cpp),
+            [ProjectFileExtensions.Native] = new (VisualStudioProjectTypeGuids.Cpp),
+            [ProjectFileExtensions.NuProj] = new (VisualStudioProjectTypeGuids.NuProj),
+            [ProjectFileExtensions.Scope] = new (VisualStudioProjectTypeGuids.ScopeProject),
+            [ProjectFileExtensions.Wix] = new (VisualStudioProjectTypeGuids.Wix),
+            [ProjectFileExtensions.SqlServerDb] = new (VisualStudioProjectTypeGuids.SqlServerDbProject),
         };
 
         /// <summary>
@@ -139,16 +139,18 @@ namespace Microsoft.VisualStudio.SlnGen
                 return null;
             }
 
-            string name = project.GetPropertyValueOrDefault(MSBuildPropertyNames.AssemblyName, Path.GetFileNameWithoutExtension(project.FullPath));
+            string fullPath = project.FullPath.ToFullPathInCorrectCase();
+
+            string name = project.GetPropertyValueOrDefault(MSBuildPropertyNames.AssemblyName, Path.GetFileNameWithoutExtension(fullPath));
 
             bool isUsingMicrosoftNETSdk = project.IsPropertyValueTrue(MSBuildPropertyNames.UsingMicrosoftNETSdk);
 
-            string projectFileExtension = Path.GetExtension(project.FullPath);
+            string projectFileExtension = Path.GetExtension(fullPath);
 
             return new SlnProject
             {
                 Configurations = GetConfigurations(project, projectFileExtension, isUsingMicrosoftNETSdk),
-                FullPath = project.FullPath,
+                FullPath = fullPath,
                 IsDeployable = GetIsDeployable(project, projectFileExtension),
                 IsMainProject = isMainProject,
                 Name = name,

@@ -44,6 +44,8 @@ namespace Microsoft.VisualStudio.SlnGen.Tasks
         /// </summary>
         private static readonly Lazy<Type> BuildRequestEntryTypeLazy = new Lazy<Type>(() => BuildManagerAssemblyLazy.Value.GetType("Microsoft.Build.BackEnd.BuildRequestEntry", throwOnError: false));
 
+        private static readonly FileInfo ThisAssemblyFileInfo = new FileInfo(Assembly.GetExecutingAssembly().Location);
+
         private readonly Lazy<IDictionary<string, string>> _globalPropertiesLazy;
 
         private readonly Lazy<ProjectInstance> _projectInstanceLazy;
@@ -103,6 +105,7 @@ namespace Microsoft.VisualStudio.SlnGen.Tasks
         /// <inheritdoc />
         protected override string ToolName => "slngen";
 
+        /// <inheritdoc />
         public override bool Execute()
         {
             Dictionary<string, string> environmentVariables = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process).Cast<DictionaryEntry>().OrderBy(i => (string)i.Key).ToDictionary(i => (string)i.Key, i => (string)i.Value, StringComparer.OrdinalIgnoreCase);
@@ -123,9 +126,12 @@ namespace Microsoft.VisualStudio.SlnGen.Tasks
 
             CommandLineBuilder commandLineBuilder = new CommandLineBuilder();
 
+#if !NETFRAMEWORK
+            commandLineBuilder.AppendFileNameIfNotNull(ThisAssemblyFileInfo.FullName);
+#endif
             commandLineBuilder.AppendSwitch("--nologo");
             commandLineBuilder.AppendSwitch("--verbosity:Normal");
-            commandLineBuilder.AppendSwitch("--consolelogger:NoSummary;ForceNoAlign;DisableConsoleColor");
+            commandLineBuilder.AppendSwitch("--consolelogger:NoSummary;ForceNoAlign");
             commandLineBuilder.AppendSwitchIfNotNull("--devenvfullpath:", GetPropertyValue(MSBuildPropertyNames.SlnGenDevEnvFullPath));
             commandLineBuilder.AppendSwitchIfNotNull("--folders:", GetPropertyValue(MSBuildPropertyNames.SlnGenFolders));
             commandLineBuilder.AppendSwitchIfNotNull("--launch:", GetPropertyValue(MSBuildPropertyNames.SlnGenLaunchVisualStudio));
@@ -139,13 +145,25 @@ namespace Microsoft.VisualStudio.SlnGen.Tasks
                 commandLineBuilder.AppendSwitch("--debug");
             }
 
+            if (string.Equals(GetPropertyValue(MSBuildPropertyNames.SlnGenBinLog), bool.TrueString, StringComparison.OrdinalIgnoreCase))
+            {
+                commandLineBuilder.AppendSwitch("--binarylogger");
+            }
+
             commandLineBuilder.AppendFileNameIfNotNull(ProjectFullPath);
 
             return commandLineBuilder.ToString();
         }
 
+#if NETFRAMEWORK
+
         /// <inheritdoc />
-        protected override string GenerateFullPathToTool() => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) !, "slngen.exe");
+        protected override string GenerateFullPathToTool() => ThisAssemblyFileInfo.FullName;
+
+#else
+        /// <inheritdoc />
+        protected override string GenerateFullPathToTool() => "dotnet";
+#endif
 
         /// <inheritdoc />
         protected override bool ValidateParameters()

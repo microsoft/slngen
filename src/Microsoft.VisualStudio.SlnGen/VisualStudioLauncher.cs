@@ -33,7 +33,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 return true;
             }
 
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (!Utility.RunningOnWindows)
             {
                 logger.LogWarning("Launching Visual Studio is not currently supported on your operating system.");
 

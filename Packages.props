@@ -6,17 +6,26 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <PackageReference Update="McMaster.Extensions.CommandLineUtils" Version="3.1.0" />
-    <PackageReference Update="Microsoft.Build" Version="16.8.0" />
-    <PackageReference Update="Microsoft.Build.Runtime" Version="16.8.0" />
-    <PackageReference Update="Microsoft.Build.Utilities.Core" Version="16.8.0" />
+    <PackageReference Update="Microsoft.Build" Version="16.10.0" />
+    <PackageReference Update="Microsoft.Build.Runtime" Version="16.10.0" />
+    <PackageReference Update="Microsoft.Build.Utilities.Core" Version="16.10.0" />
     <PackageReference Update="Microsoft.Extensions.FileSystemGlobbing" Version="5.0.0" />
     <PackageReference Update="Microsoft.NET.Test.Sdk" Version="16.10.0" />
     <PackageReference Update="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="2.3.2262-g94fae01e" />
     <PackageReference Update="Microsoft.VisualStudio.Telemetry" Version="16.3.176" />
     <PackageReference Update="Microsoft.VisualStudio.Utilities.Internal" Version="16.3.23" />
-    <PackageReference Update="MSBuild.ProjectCreation" Version="2.0.1" />
+    <PackageReference Update="MSBuild.ProjectCreation" Version="4.0.4" />
     <PackageReference Update="Shouldly" Version="4.0.3" />
+    <PackageReference Update="System.Collections" Version="4.3.0" />
     <PackageReference Update="System.Configuration.ConfigurationManager" Version="5.0.0" />
+    <PackageReference Update="System.Diagnostics.Debug" Version="4.3.0" />
+    <PackageReference Update="System.IO.FileSystem.Primitives" Version="4.3.0" />
+    <PackageReference Update="System.Resources.ResourceManager" Version="4.3.0" />
+    <PackageReference Update="System.Runtime.Extensions" Version="4.3.0" />
+    <PackageReference Update="System.Runtime.Handles" Version="4.3.0" />
+    <PackageReference Update="System.Runtime.InteropServices" Version="4.3.0" />
+    <PackageReference Update="System.Text.Encoding.Extensions" Version="4.3.0" />
+    <PackageReference Update="System.Threading" Version="4.3.0" />
     <PackageReference Update="xunit" Version="2.4.1" />
     <PackageReference Update="xunit.runner.visualstudio" Version="2.4.3" />
   </ItemGroup>
@@ -25,6 +34,12 @@
     <PackageReference Update="Microsoft.Build" Version="15.9.20" />
     <PackageReference Update="Microsoft.Build.Runtime" Version="15.9.20" />
     <PackageReference Update="Microsoft.Build.Utilities.Core" Version="15.9.20" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
+    <PackageReference Update="Microsoft.Build" Version="16.9.0" />
+    <PackageReference Update="Microsoft.Build.Runtime" Version="16.9.0" />
+    <PackageReference Update="Microsoft.Build.Utilities.Core" Version="16.9.0" />
   </ItemGroup>
 
   <ItemGroup>

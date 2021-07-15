@@ -37,7 +37,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <summary>
         /// Gets a <see cref="List{SlnFolder}" /> of child folders.
         /// </summary>
-        public List<SlnFolder> Folders { get; } = new List<SlnFolder>();
+        public List<SlnFolder> Folders { get; } = new ();
 
         /// <summary>
         /// Gets the full path of the folder.
@@ -57,7 +57,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <summary>
         /// Gets a <see cref="List{SlnProject}" /> of projects in the folder.
         /// </summary>
-        public List<SlnProject> Projects { get; } = new List<SlnProject>();
+        public List<SlnProject> Projects { get; } = new ();
 
         /// <summary>
         /// Gets the project type GUID of the folder.

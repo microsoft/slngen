@@ -47,6 +47,8 @@ namespace Microsoft.VisualStudio.SlnGen
         /// </summary>
         public static bool IsNetCore { get; } = !RuntimeInformation.FrameworkDescription.StartsWith(".NET Framework", StringComparison.Ordinal);
 
+        public static bool NoLogo { get; private set; }
+
         /// <summary>
         /// Executes the program with the specified command-line arguments.
         /// </summary>
@@ -54,13 +56,13 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <returns>Zero if the program executed successfully, otherwise a non-zero value.</returns>
         public static int Main(string[] args)
         {
-            CurrentDevelopmentEnvironment = LoadDevelopmentEnvironment();
+            CurrentDevelopmentEnvironment = DevelopmentEnvironment.LoadCurrentDevelopmentEnvironment();
 
             if (!CurrentDevelopmentEnvironment.Success || CurrentDevelopmentEnvironment.Errors.Count > 0)
             {
                 foreach (string error in CurrentDevelopmentEnvironment.Errors)
                 {
-                    WriteError(error);
+                    Utility.WriteError(error);
                 }
 
                 return -1;
@@ -89,6 +91,20 @@ namespace Microsoft.VisualStudio.SlnGen
                         thisAssembly.Location,
                         args);
             }
+#else
+            AppDomain.CurrentDomain.AssemblyResolve += (sender, eventArgs) =>
+            {
+                AssemblyName assemblyName = new AssemblyName(eventArgs.Name);
+
+                FileInfo candidateFileInfo = new FileInfo(Path.Combine(CurrentDevelopmentEnvironment.MSBuildDll.DirectoryName!, $"{assemblyName.Name}.dll"));
+
+                if (candidateFileInfo.Exists)
+                {
+                    return Assembly.LoadFrom(candidateFileInfo.FullName);
+                }
+
+                return null;
+            };
 #endif
             return Execute(args, PhysicalConsole.Singleton);
         }
@@ -115,13 +131,24 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <returns>Zero if the program successfully executed, otherwise non-zero.</returns>
         internal static int Execute(ProgramArguments arguments, IConsole console)
         {
+            if (arguments.Version)
+            {
+                console.WriteLine(ThisAssembly.AssemblyInformationalVersion);
+
+                return 0;
+            }
+
             MSBuildFeatureFlags featureFlags = new MSBuildFeatureFlags
             {
                 CacheFileEnumerations = true,
                 LoadAllFilesAsReadOnly = true,
                 MSBuildSkipEagerWildCardEvaluationRegexes = true,
                 UseSimpleProjectRootElementCacheConcurrency = true,
-                MSBuildExePath = CurrentDevelopmentEnvironment.MSBuildExe != null ? CurrentDevelopmentEnvironment.MSBuildExe.FullName : CurrentDevelopmentEnvironment.MSBuildDll.FullName,
+#if NETFRAMEWORK
+                MSBuildExePath = CurrentDevelopmentEnvironment.MSBuildExe.FullName,
+#else
+                MSBuildExePath = CurrentDevelopmentEnvironment.MSBuildDll.FullName,
+#endif
             };
 
             LoggerVerbosity verbosity = ForwardingLogger.ParseLoggerVerbosity(arguments.Verbosity?.LastOrDefault());
@@ -157,6 +184,15 @@ namespace Microsoft.VisualStudio.SlnGen
                     {
                         forwardingLogger.LogMessageLow("Loaded assembly: \"{0}\" from \"{1}\"", assembly.FullName, assembly.Location);
                     }
+
+                    forwardingLogger.LogMessageLow("Current development environment:");
+                    forwardingLogger.LogMessageLow("  FrameworkDescription: \"{0}\"", RuntimeInformation.FrameworkDescription);
+                    forwardingLogger.LogMessageLow("  DotNetCoreVersion: \"{0}\"", CurrentDevelopmentEnvironment.DotNetSdkVersion);
+                    forwardingLogger.LogMessageLow("  DotNetSdkMajorVersion: \"{0}\"", CurrentDevelopmentEnvironment.DotNetSdkMajorVersion);
+                    forwardingLogger.LogMessageLow("  IsCorext: \"{0}\"", CurrentDevelopmentEnvironment.IsCorext);
+                    forwardingLogger.LogMessageLow("  MSBuildDll: \"{0}\"", CurrentDevelopmentEnvironment.MSBuildDll);
+                    forwardingLogger.LogMessageLow("  MSBuildExe: \"{0}\"", CurrentDevelopmentEnvironment.MSBuildExe);
+                    forwardingLogger.LogMessageLow("  VisualStudio: \"{0}\"", CurrentDevelopmentEnvironment.VisualStudio?.InstallationPath);
 
                     if (!arguments.TryGetEntryProjectPaths(forwardingLogger, out IReadOnlyList<string> projectEntryPaths))
                     {
@@ -201,8 +237,6 @@ namespace Microsoft.VisualStudio.SlnGen
         {
             try
             {
-                bool noLogo = false;
-
                 for (int i = 0; i < args.Length; i++)
                 {
                     if (args[i].Equals("/?"))
@@ -212,11 +246,11 @@ namespace Microsoft.VisualStudio.SlnGen
 
                     if (args[i].Equals("/nologo", StringComparison.OrdinalIgnoreCase) || args[i].Equals("--nologo", StringComparison.OrdinalIgnoreCase))
                     {
-                        noLogo = true;
+                        NoLogo = true;
                     }
 
                     // Translate / to - or -- for Windows users
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    if (Utility.RunningOnWindows)
                     {
                         if (args[i][0] == '/')
                         {
@@ -232,9 +266,9 @@ namespace Microsoft.VisualStudio.SlnGen
                     }
                 }
 
-                if (!noLogo)
+                if (!NoLogo)
                 {
-                    Console.WriteLine(
+                    console.WriteLine(
                         Strings.Message_Logo,
                         ThisAssembly.AssemblyTitle,
                         ThisAssembly.AssemblyInformationalVersion,
@@ -245,10 +279,9 @@ namespace Microsoft.VisualStudio.SlnGen
             }
             catch (Exception e)
             {
-                if (!TelemetryClient.PostException(e))
-                {
-                    throw;
-                }
+                TelemetryClient.PostException(e);
+
+                Utility.WriteError(e.ToString());
 
                 return 2;
             }
@@ -287,6 +320,22 @@ namespace Microsoft.VisualStudio.SlnGen
             }
         }
 
+        private static ProjectCollection GetProjectCollection(params ILogger[] loggers)
+        {
+            return new ProjectCollection(
+                globalProperties: null,
+                loggers: loggers,
+                remoteLoggers: null,
+                toolsetDefinitionLocations: ToolsetDefinitionLocations.Default,
+                maxNodeCount: 1,
+#if NET461
+                onlyLogCriticalEvents: false);
+#else
+                onlyLogCriticalEvents: false,
+                loadProjectsReadOnly: true);
+#endif
+        }
+
         private static void LogTelemetry(ProgramArguments arguments, TimeSpan evaluationTime, int evaluationCount, int customProjectTypeGuidCount, int solutionItemCount, Guid solutionGuid)
         {
             try
@@ -323,49 +372,6 @@ namespace Microsoft.VisualStudio.SlnGen
             {
                 // Ignored
             }
-        }
-
-        private static bool TryFindMSBuildOnPath(out string msbuildExePath)
-        {
-            msbuildExePath = (Environment.GetEnvironmentVariable("PATH") ?? string.Empty)
-                .Split(Path.PathSeparator)
-                .Where(i => !string.IsNullOrWhiteSpace(i))
-                .Select(i => new DirectoryInfo(i.Trim()))
-                .Where(i => i.Exists)
-                .Select(i => new FileInfo(Path.Combine(i.FullName, "MSBuild.exe")))
-                .Where(i => i.Exists)
-                .Select(i => i.FullName)
-                .FirstOrDefault();
-
-            return !string.IsNullOrWhiteSpace(msbuildExePath);
-        }
-
-        private static DevelopmentEnvironment LoadDevelopmentEnvironment()
-        {
-            string msbuildToolset = Environment.GetEnvironmentVariable("MSBuildToolset")?.Trim();
-
-            if (!msbuildToolset.IsNullOrWhiteSpace())
-            {
-                string msbuildToolsPath = Environment.GetEnvironmentVariable($"MSBuildToolsPath_{msbuildToolset}")?.Trim();
-
-                if (!msbuildToolsPath.IsNullOrWhiteSpace())
-                {
-                    return LoadDevelopmentEnvironmentFromCoreXT(msbuildToolsPath);
-                }
-            }
-
-            return LoadDevelopmentEnvironmentFromCurrentWindow();
-        }
-
-        private static void WriteError(string message, params object[] args)
-        {
-            Console.BackgroundColor = ConsoleColor.Black;
-
-            Console.ForegroundColor = ConsoleColor.Red;
-
-            Console.Error.WriteLine(message, args);
-
-            Console.ResetColor();
         }
     }
 }

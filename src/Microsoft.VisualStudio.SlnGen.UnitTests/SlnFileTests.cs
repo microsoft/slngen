@@ -313,6 +313,62 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         }
 
         [Fact]
+        public void ProjectSolutionFolders()
+        {
+            string root = Path.GetTempPath();
+            string projectName1 = Path.GetFileName(Path.GetTempFileName());
+            string projectName2 = Path.GetFileName(Path.GetTempFileName());
+            string projectName3 = Path.GetFileName(Path.GetTempFileName());
+            string projectName4 = Path.GetFileName(Path.GetTempFileName());
+            Project[] projects =
+            {
+                new Project
+                {
+                    FullPath = Path.Combine(root, "SubFolder1", "Project1", projectName1),
+                },
+                new Project
+                {
+                    FullPath = Path.Combine(root, "SubFolder2", "Project2", projectName2),
+                },
+                new Project
+                {
+                    FullPath = Path.Combine(root, "SubFolder3", "Project3", projectName3),
+                },
+                new Project
+                {
+                    FullPath = Path.Combine(root, "SubFolder4", "Project4", projectName4),
+                },
+            };
+
+            projects[0].SetProperty(MSBuildPropertyNames.SlnGenSolutionFolder, "FolderA");
+            projects[1].SetProperty(MSBuildPropertyNames.SlnGenSolutionFolder, "FolderB");
+            projects[2].SetProperty(MSBuildPropertyNames.SlnGenSolutionFolder, "FolderB");
+
+            string solutionFilePath = GetTempFileName();
+
+            SlnFile slnFile = new SlnFile();
+
+            slnFile.AddProjects(projects, new Dictionary<string, Guid>(), projects[1].FullPath);
+            slnFile.Save(solutionFilePath, useFolders: false);
+
+            SolutionFile s = SolutionFile.Parse(solutionFilePath);
+
+            ProjectInSolution project1 = s.ProjectsByGuid.FirstOrDefault(i => i.Value.ProjectName.Equals(Path.GetFileNameWithoutExtension(projectName1))).Value;
+            ProjectInSolution project2 = s.ProjectsByGuid.FirstOrDefault(i => i.Value.ProjectName.Equals(Path.GetFileNameWithoutExtension(projectName2))).Value;
+            ProjectInSolution project3 = s.ProjectsByGuid.FirstOrDefault(i => i.Value.ProjectName.Equals(Path.GetFileNameWithoutExtension(projectName3))).Value;
+            ProjectInSolution project4 = s.ProjectsByGuid.FirstOrDefault(i => i.Value.ProjectName.Equals(Path.GetFileNameWithoutExtension(projectName4))).Value;
+            ProjectInSolution folderA = s.ProjectsByGuid.FirstOrDefault(i => i.Value.ProjectName.Equals("FolderA")).Value;
+            ProjectInSolution folderB = s.ProjectsByGuid.FirstOrDefault(i => i.Value.ProjectName.Equals("FolderB")).Value;
+
+            project1.ParentProjectGuid.ShouldBe(folderA.ProjectGuid);
+            project2.ParentProjectGuid.ShouldBe(folderB.ProjectGuid);
+            project3.ParentProjectGuid.ShouldBe(folderB.ProjectGuid);
+            project4.ParentProjectGuid.ShouldBeNull();
+            folderA.ProjectType.ShouldBe(SolutionProjectType.SolutionFolder);
+            folderB.ProjectType.ShouldBe(SolutionProjectType.SolutionFolder);
+        }
+
+        [Fact]
         public void SaveToCustomLocationCreatesDirectory()
         {
             DirectoryInfo directoryInfo = new DirectoryInfo(Path.Combine(TestRootPath, "1", "2", "3"));
@@ -459,55 +515,6 @@ EndGlobal
         }
 
         [Fact]
-        public void WithFoldersIgnoreMainProject()
-        {
-            string root = Path.GetTempPath();
-            string projectName1 = Path.GetFileName(Path.GetTempFileName());
-            string projectName2 = Path.GetFileName(Path.GetTempFileName());
-            string projectName3 = Path.GetFileName(Path.GetTempFileName());
-            Project[] projects =
-            {
-                new Project
-                {
-                    FullPath = Path.Combine(root, "SubFolder1", "Project1", projectName1),
-                },
-                new Project
-                {
-                    FullPath = Path.Combine(root, "SubFolder1", "Project2", projectName2),
-                },
-                new Project
-                {
-                    FullPath = Path.Combine(root, "SubFolder2", "Project3", projectName3),
-                },
-            };
-
-            string solutionFilePath = GetTempFileName();
-
-            SlnFile slnFile = new SlnFile();
-
-            slnFile.AddProjects(projects, new Dictionary<string, Guid>());
-            slnFile.Save(solutionFilePath, true);
-
-            SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
-
-            foreach (ProjectInSolution slnProject in solutionFile.ProjectsInOrder)
-            {
-                if (slnProject.ProjectName == projectName1)
-                {
-                    slnProject.ParentProjectGuid.ShouldNotBeNull();
-                }
-                else if (slnProject.ProjectName == projectName2)
-                {
-                    slnProject.ParentProjectGuid.ShouldNotBeNull();
-                }
-                else if (slnProject.ProjectName == projectName3)
-                {
-                    slnProject.ParentProjectGuid.ShouldNotBeNull();
-                }
-            }
-        }
-
-        [Fact]
         public void WithFoldersDoNotIgnoreMainProject()
         {
             string root = Path.GetTempPath();
@@ -557,13 +564,12 @@ EndGlobal
         }
 
         [Fact]
-        public void ProjectSolutionFolders()
+        public void WithFoldersIgnoreMainProject()
         {
             string root = Path.GetTempPath();
             string projectName1 = Path.GetFileName(Path.GetTempFileName());
             string projectName2 = Path.GetFileName(Path.GetTempFileName());
             string projectName3 = Path.GetFileName(Path.GetTempFileName());
-            string projectName4 = Path.GetFileName(Path.GetTempFileName());
             Project[] projects =
             {
                 new Project
@@ -572,44 +578,38 @@ EndGlobal
                 },
                 new Project
                 {
-                    FullPath = Path.Combine(root, "SubFolder2", "Project2", projectName2),
+                    FullPath = Path.Combine(root, "SubFolder1", "Project2", projectName2),
                 },
                 new Project
                 {
-                    FullPath = Path.Combine(root, "SubFolder3", "Project3", projectName3),
-                },
-                new Project
-                {
-                    FullPath = Path.Combine(root, "SubFolder4", "Project4", projectName4),
+                    FullPath = Path.Combine(root, "SubFolder2", "Project3", projectName3),
                 },
             };
-
-            projects[0].SetProperty(MSBuildPropertyNames.SlnGenSolutionFolder, "FolderA");
-            projects[1].SetProperty(MSBuildPropertyNames.SlnGenSolutionFolder, "FolderB");
-            projects[2].SetProperty(MSBuildPropertyNames.SlnGenSolutionFolder, "FolderB");
 
             string solutionFilePath = GetTempFileName();
 
             SlnFile slnFile = new SlnFile();
 
-            slnFile.AddProjects(projects, new Dictionary<string, Guid>(), projects[1].FullPath);
-            slnFile.Save(solutionFilePath, useFolders: false);
+            slnFile.AddProjects(projects, new Dictionary<string, Guid>());
+            slnFile.Save(solutionFilePath, true);
 
-            SolutionFile s = SolutionFile.Parse(solutionFilePath);
+            SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
 
-            ProjectInSolution project1 = s.ProjectsByGuid.FirstOrDefault(i => i.Value.ProjectName.Equals(Path.GetFileNameWithoutExtension(projectName1))).Value;
-            ProjectInSolution project2 = s.ProjectsByGuid.FirstOrDefault(i => i.Value.ProjectName.Equals(Path.GetFileNameWithoutExtension(projectName2))).Value;
-            ProjectInSolution project3 = s.ProjectsByGuid.FirstOrDefault(i => i.Value.ProjectName.Equals(Path.GetFileNameWithoutExtension(projectName3))).Value;
-            ProjectInSolution project4 = s.ProjectsByGuid.FirstOrDefault(i => i.Value.ProjectName.Equals(Path.GetFileNameWithoutExtension(projectName4))).Value;
-            ProjectInSolution folderA = s.ProjectsByGuid.FirstOrDefault(i => i.Value.ProjectName.Equals("FolderA")).Value;
-            ProjectInSolution folderB = s.ProjectsByGuid.FirstOrDefault(i => i.Value.ProjectName.Equals("FolderB")).Value;
-
-            project1.ParentProjectGuid.ShouldBe(folderA.ProjectGuid);
-            project2.ParentProjectGuid.ShouldBe(folderB.ProjectGuid);
-            project3.ParentProjectGuid.ShouldBe(folderB.ProjectGuid);
-            project4.ParentProjectGuid.ShouldBeNull();
-            folderA.ProjectType.ShouldBe(SolutionProjectType.SolutionFolder);
-            folderB.ProjectType.ShouldBe(SolutionProjectType.SolutionFolder);
+            foreach (ProjectInSolution slnProject in solutionFile.ProjectsInOrder)
+            {
+                if (slnProject.ProjectName == projectName1)
+                {
+                    slnProject.ParentProjectGuid.ShouldNotBeNull();
+                }
+                else if (slnProject.ProjectName == projectName2)
+                {
+                    slnProject.ParentProjectGuid.ShouldNotBeNull();
+                }
+                else if (slnProject.ProjectName == projectName3)
+                {
+                    slnProject.ParentProjectGuid.ShouldNotBeNull();
+                }
+            }
         }
 
         private void ValidateProjectInSolution(Action<SlnProject, ProjectInSolution> customValidator, SlnProject[] projects, bool folders)
