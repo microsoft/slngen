@@ -6,7 +6,8 @@ variables:
   BuildConfiguration: 'Debug'
   BuildPlatform: 'Any CPU'
   DotNetCore3Version: '3.x'
-  DotNetCore5Version: '5.x'
+  DotNet5Version: '5.x'
+  DotNet6Version: '6.x'
   MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   SignType: 'Test'
 
@@ -40,26 +41,49 @@ jobs:
       version: '$(DotNetCore3Version)'
 
   - task: UseDotNet@2
-    displayName: 'Install .NET Core $(DotNetCore5Version)'
+    displayName: 'Install .NET $(DotNet5Version)'
     inputs:
-      version: '$(DotNetCore5Version)'
+      version: '$(DotNet5Version)'
+
+  - task: UseDotNet@2
+    displayName: 'Install .NET $(DotNet6Version)'
+    inputs:
+      version: '$(DotNet6Version)'
       includePreviewVersions: true
 
   - task: DotNetCoreCLI@2
     displayName: 'Build Solution'
     inputs:
       command: 'build'
-      projects: 'SlnGen.sln'
       arguments: '$(MSBuildArgs)'
 
-  - task: VSTest@2
+  - task: DotNetCoreCLI@2
+    displayName: 'Run Unit Tests (.NET Framework v4.7.2)'
     inputs:
-      testSelector: 'testAssemblies'
-      testAssemblyVer2: |
-        **\*test*.dll
-        !**\*TestAdapter.dll
-        !**\obj\**
-      searchFolder: '$(System.DefaultWorkingDirectory)'
+      command: 'test'
+      arguments: '--no-restore --no-build --framework net472 "/restore:false"'
+      testRunTitle: 'Windows .NET Framework v4.7.2'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Run Unit Tests (.NET Core 3.1)'
+    inputs:
+      command: 'test'
+      arguments: '--no-restore --no-build --framework netcoreapp3.1 "/restore:false"'
+      testRunTitle: 'Windows .NET Core 3.1'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Run Unit Tests (.NET 5)'
+    inputs:
+      command: 'test'
+      arguments: '--no-restore --no-build --framework net5.0 "/restore:false"'
+      testRunTitle: 'Windows .NET 5.0'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Run Unit Tests (.NET 6)'
+    inputs:
+      command: 'test'
+      arguments: '--no-restore --no-build --framework net6.0 "/restore:false"'
+      testRunTitle: 'Windows .NET 6.0'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifacts'
