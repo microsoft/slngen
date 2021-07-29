@@ -15,6 +15,7 @@
     <PackageReference Update="Microsoft.VisualStudio.Telemetry" Version="16.3.176" />
     <PackageReference Update="Microsoft.VisualStudio.Utilities.Internal" Version="16.3.23" />
     <PackageReference Update="MSBuild.ProjectCreation" Version="4.0.4" />
+    <PackageReference Update="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Update="Shouldly" Version="4.0.3" />
     <PackageReference Update="xunit" Version="2.4.1" />
     <PackageReference Update="xunit.runner.visualstudio" Version="2.4.3" />
