@@ -16,16 +16,6 @@
     <PackageReference Update="Microsoft.VisualStudio.Utilities.Internal" Version="16.3.23" />
     <PackageReference Update="MSBuild.ProjectCreation" Version="4.0.4" />
     <PackageReference Update="Shouldly" Version="4.0.3" />
-    <PackageReference Update="System.Collections" Version="4.3.0" />
-    <PackageReference Update="System.Configuration.ConfigurationManager" Version="5.0.0" />
-    <PackageReference Update="System.Diagnostics.Debug" Version="4.3.0" />
-    <PackageReference Update="System.IO.FileSystem.Primitives" Version="4.3.0" />
-    <PackageReference Update="System.Resources.ResourceManager" Version="4.3.0" />
-    <PackageReference Update="System.Runtime.Extensions" Version="4.3.0" />
-    <PackageReference Update="System.Runtime.Handles" Version="4.3.0" />
-    <PackageReference Update="System.Runtime.InteropServices" Version="4.3.0" />
-    <PackageReference Update="System.Text.Encoding.Extensions" Version="4.3.0" />
-    <PackageReference Update="System.Threading" Version="4.3.0" />
     <PackageReference Update="xunit" Version="2.4.1" />
     <PackageReference Update="xunit.runner.visualstudio" Version="2.4.3" />
   </ItemGroup>
