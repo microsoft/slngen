@@ -21,7 +21,7 @@
     <PackageReference Update="System.Diagnostics.Debug" Version="4.3.0" />
     <PackageReference Update="System.IO.FileSystem.Primitives" Version="4.3.0" />
     <PackageReference Update="System.Resources.ResourceManager" Version="4.3.0" />
-    <PackageReference Update="System.Runtime.Extensions" Version="4.3.0" />
+    <PackageReference Update="System.Runtime.Extensions" Version="4.3.1" />
     <PackageReference Update="System.Runtime.Handles" Version="4.3.0" />
     <PackageReference Update="System.Runtime.InteropServices" Version="4.3.0" />
     <PackageReference Update="System.Text.Encoding.Extensions" Version="4.3.0" />
