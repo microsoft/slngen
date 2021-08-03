@@ -51,11 +51,15 @@ jobs:
       version: '$(DotNet6Version)'
       includePreviewVersions: true
 
-  - task: DotNetCoreCLI@2
+  - task: CmdLine@2
+    inputs:
+      script: 'dotnet --info'
+    
+  - task: VSBuild@1
     displayName: 'Build Solution'
     inputs:
-      command: 'build'
-      arguments: '$(MSBuildArgs)'
+      solution: '**\*.sln'
+      msbuildArgs: '$(MSBuildArgs)'
 
   - task: DotNetCoreCLI@2
     displayName: 'Run Unit Tests (.NET Framework v4.7.2)'

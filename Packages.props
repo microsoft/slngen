@@ -5,18 +5,27 @@
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <PackageReference Update="MSBuild.ProjectCreation" Version="4.0.4" />
     <PackageReference Update="McMaster.Extensions.CommandLineUtils" Version="3.1.0" />
     <PackageReference Update="Microsoft.Build" Version="16.10.0" />
     <PackageReference Update="Microsoft.Build.Runtime" Version="16.10.0" />
     <PackageReference Update="Microsoft.Build.Utilities.Core" Version="16.10.0" />
     <PackageReference Update="Microsoft.Extensions.FileSystemGlobbing" Version="5.0.0" />
     <PackageReference Update="Microsoft.NET.Test.Sdk" Version="16.10.0" />
+    <PackageReference Update="Microsoft.VSSDK.BuildTools" Version="16.10.1053" />
+    <PackageReference Update="Microsoft.VisualStudio.Composition" Version="16.9.20" />
+    <PackageReference Update="Microsoft.VisualStudio.ProjectSystem.SDK" Version="15.8.243" />
+    <PackageReference Update="Microsoft.VisualStudio.SDK" Version="16.0.206" />
     <PackageReference Update="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="2.3.2262-g94fae01e" />
+    <PackageReference Update="Microsoft.VisualStudio.Shell.Interop" Version="16.9.31023.347" />
+    <PackageReference Update="Microsoft.VisualStudio.Shell.Interop.12.1.DesignTime" Version="16.9.31023.347" />
+    <PackageReference Update="Microsoft.VisualStudio.Shell.Interop.16.6.DesignTime" Version="16.9.31024.71" />
     <PackageReference Update="Microsoft.VisualStudio.Telemetry" Version="16.3.176" />
     <PackageReference Update="Microsoft.VisualStudio.Utilities.Internal" Version="16.3.23" />
-    <PackageReference Update="MSBuild.ProjectCreation" Version="4.0.4" />
     <PackageReference Update="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Update="Shouldly" Version="4.0.3" />
+    <PackageReference Update="Shouldly" Version="4.0.3" />
+    <PackageReference Update="VSLangProj165" Version="16.9.31024.71" />
     <PackageReference Update="xunit" Version="2.4.1" />
     <PackageReference Update="xunit.runner.visualstudio" Version="2.4.3" />
   </ItemGroup>
