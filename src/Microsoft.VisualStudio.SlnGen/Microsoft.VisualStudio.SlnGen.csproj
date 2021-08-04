@@ -24,7 +24,6 @@
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" />
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
     <PackageReference Include="Microsoft.VisualStudio.Telemetry" />
-    <PackageReference Include="Microsoft.VisualStudio.Utilities.Internal" />
     <!-- Transitive dependency of M.VS.Telemetry but referencing directly to upgrade the used version to not depend on old runtime packages. -->
     <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>

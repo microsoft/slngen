@@ -9,9 +9,9 @@ namespace Microsoft.VisualStudio.SlnGen.Extension
 {
     internal sealed class SolutionEvents : IVsSolutionEvents
     {
-        private readonly VsPackage _package;
+        private readonly SlnGenPackage _package;
 
-        public SolutionEvents(VsPackage package)
+        public SolutionEvents(SlnGenPackage package)
         {
             _package = package ?? throw new ArgumentNullException(nameof(package));
         }

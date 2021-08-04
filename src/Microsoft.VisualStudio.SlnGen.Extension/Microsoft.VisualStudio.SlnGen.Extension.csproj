@@ -25,6 +25,8 @@
     <StartAction>Program</StartAction>
     <StartProgram Condition="'$(DevEnvDir)' != ''">$(DevEnvDir)devenv.exe</StartProgram>
     <StartArguments>/rootsuffix Exp</StartArguments>
+    <ArtifactsPath>$(BaseArtifactsPath)\$(MSBuildProjectName)</ArtifactsPath>
+    <DefaultArtifactsFileMatch>*vsix</DefaultArtifactsFileMatch>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -52,7 +54,7 @@
     <Compile Include="SolutionEvents.cs" />
     <Compile Include="TraversalConfiguredProject.cs" />
     <Compile Include="TraversalUnconfiguredProject.cs" />
-    <Compile Include="VsPackage.cs" />
+    <Compile Include="SlnGenPackage.cs" />
     <Compile Include="VSPackage.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -70,14 +72,9 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" />
-    <PackageReference Include="Microsoft.VisualStudio.Composition" />
     <PackageReference Include="Microsoft.VisualStudio.ProjectSystem.SDK" />
-    <PackageReference Include="Microsoft.VisualStudio.SDK" ExcludeAssets="Runtime" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.12.1.DesignTime" ExcludeAssets="Runtime" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.16.6.DesignTime" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.VisualStudio.SDK" />
     <PackageReference Include="Microsoft.VSSDK.BuildTools" />
-    <PackageReference Include="VSLangProj165" ExcludeAssets="Runtime" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="VSPackage.resx">
