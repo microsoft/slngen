@@ -20,7 +20,7 @@ namespace Microsoft.VisualStudio.SlnGen.Extension
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
     [ProvideAutoLoad(UIContextGuids80.SolutionExists, PackageAutoLoadFlags.BackgroundLoad)]
     [Guid(PackageGuidString)]
-    public sealed class VsPackage : AsyncPackage
+    public sealed class SlnGenPackage : AsyncPackage
     {
         public const string PackageGuidString = "7f489eef-951a-410b-a5b8-777ee38447d5";
 
@@ -42,12 +42,10 @@ namespace Microsoft.VisualStudio.SlnGen.Extension
 
         public async Task<int> ReloadSolutionAsync(CancellationToken cancellationToken)
         {
-            if (_isSolutionReloading == 1)
+            if (_isSolutionReloading == 1 || Interlocked.Increment(ref _isSolutionReloading) != 1)
             {
                 return 0;
             }
-
-            Interlocked.Increment(ref _isSolutionReloading);
 
             try
             {

@@ -12,18 +12,18 @@ namespace Microsoft.VisualStudio.SlnGen.Extension
     [Export]
     [AppliesTo(UniqueCapability)]
     [ProjectTypeRegistration(
-        projectTypeGuid: VsPackage.ProjectTypeGuid,
-        displayName: "Traversal",
+        projectTypeGuid: SlnGenPackage.ProjectTypeGuid,
+        displayName: Language,
         displayProjectFileExtensions: "#2",
-        defaultProjectExtension: VsPackage.ProjectExtension,
+        defaultProjectExtension: SlnGenPackage.ProjectExtension,
         language: Language,
-        resourcePackageGuid: VsPackage.PackageGuidString,
-        PossibleProjectExtensions = VsPackage.ProjectExtension)]
+        resourcePackageGuid: SlnGenPackage.PackageGuidString,
+        PossibleProjectExtensions = SlnGenPackage.ProjectExtension)]
     internal class TraversalUnconfiguredProject
     {
         internal const string Language = "Traversal";
 
-        internal const string UniqueCapability = "Traversal";
+        internal const string UniqueCapability = Language;
 
         [ImportingConstructor]
         public TraversalUnconfiguredProject(UnconfiguredProject unconfiguredProject)
