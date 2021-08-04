@@ -19,7 +19,7 @@
     <PackageReference Update="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="2.3.2262-g94fae01e" />
     <PackageReference Update="Microsoft.VisualStudio.Shell.Interop" Version="16.9.31023.347" />
     <PackageReference Update="Microsoft.VisualStudio.Shell.Interop.12.1.DesignTime" Version="16.9.31023.347" />
-    <PackageReference Update="Microsoft.VisualStudio.Shell.Interop.16.6.DesignTime" Version="16.9.31024.71" />
+    <PackageReference Update="Microsoft.VisualStudio.Shell.Interop.16.6.DesignTime" Version="16.10.31320.204" />
     <PackageReference Update="Microsoft.VisualStudio.Telemetry" Version="16.3.176" />
     <PackageReference Update="Microsoft.VisualStudio.Utilities.Internal" Version="16.3.23" />
     <PackageReference Update="Newtonsoft.Json" Version="13.0.1" />
