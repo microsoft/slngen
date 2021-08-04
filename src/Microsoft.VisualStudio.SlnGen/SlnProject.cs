@@ -61,8 +61,9 @@ namespace Microsoft.VisualStudio.SlnGen
             [ProjectFileExtensions.Native] = new (VisualStudioProjectTypeGuids.Cpp),
             [ProjectFileExtensions.NuProj] = new (VisualStudioProjectTypeGuids.NuProj),
             [ProjectFileExtensions.Scope] = new (VisualStudioProjectTypeGuids.ScopeProject),
-            [ProjectFileExtensions.Wix] = new (VisualStudioProjectTypeGuids.Wix),
             [ProjectFileExtensions.SqlServerDb] = new (VisualStudioProjectTypeGuids.SqlServerDbProject),
+            [ProjectFileExtensions.Wap] = new (VisualStudioProjectTypeGuids.WapProject),
+            [ProjectFileExtensions.Wix] = new (VisualStudioProjectTypeGuids.Wix),
         };
 
         /// <summary>

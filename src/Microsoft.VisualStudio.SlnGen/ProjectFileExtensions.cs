@@ -60,18 +60,23 @@ namespace Microsoft.VisualStudio.SlnGen
         public const string Scope = ".scopeproj";
 
         /// <summary>
+        /// SQL Server database projects (.sqlproj).
+        /// </summary>
+        public const string SqlServerDb = ".sqlproj";
+
+        /// <summary>
         /// Visual Basic projects (.vbproj).
         /// </summary>
         public const string VisualBasic = ".vbproj";
 
         /// <summary>
+        /// Windows Application Packaging projects (.wapproj).
+        /// </summary>
+        public const string Wap = ".wapproj";
+
+        /// <summary>
         /// WiX projects (.wixproj).
         /// </summary>
         public const string Wix = ".wixproj";
-
-        /// <summary>
-        /// SQL Server database projects (.sqlproj).
-        /// </summary>
-        public const string SqlServerDb = ".sqlproj";
     }
 }
