@@ -12,7 +12,7 @@
     <PackageReference Update="Microsoft.Extensions.FileSystemGlobbing" Version="5.0.0" />
     <PackageReference Update="Microsoft.NET.Test.Sdk" Version="16.10.0" />
     <PackageReference Update="Microsoft.VisualStudio.ProjectSystem.SDK" Version="15.8.243" />
-    <PackageReference Update="Microsoft.VisualStudio.SDK" Version="16.0.206" />
+    <PackageReference Update="Microsoft.VisualStudio.SDK" Version="16.10.31321.278" />
     <PackageReference Update="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="2.3.2262-g94fae01e" />
     <PackageReference Update="Microsoft.VisualStudio.Telemetry" Version="16.3.184" />
     <PackageReference Update="Microsoft.VSSDK.BuildTools" Version="16.10.1055" />
