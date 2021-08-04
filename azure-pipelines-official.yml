@@ -65,12 +65,11 @@ stages:
         signType: '$(SignType)'
         zipSources: false
 
-    - task: DotNetCoreCLI@2
+    - task: VSBuild@1
       displayName: 'Build Solution'
       inputs:
-        command: 'build'
-        projects: 'SlnGen.sln'
-        arguments: '$(MSBuildArgs)'
+        solution: '**\*.sln'
+        msbuildArgs: '$(MSBuildArgs)'
 
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifacts'
