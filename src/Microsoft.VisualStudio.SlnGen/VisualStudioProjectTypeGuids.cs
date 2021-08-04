@@ -70,13 +70,18 @@ namespace Microsoft.VisualStudio.SlnGen
         public const string SolutionFolder = "2150E333-8FDC-42A3-9474-1A3956D46DE8";
 
         /// <summary>
-        /// WiX projects (.wixproj).
-        /// </summary>
-        public const string Wix = "930C7802-8A8C-48F9-8165-68863BCCD9DD";
-
-        /// <summary>
         /// SQL Server database projects (.sqlproj).
         /// </summary>
         public const string SqlServerDbProject = "00D1A9C2-B5F0-4AF3-8072-F6C62B433612";
+
+        /// <summary>
+        /// Windows Application Packaging projects (.wapproj).
+        /// </summary>
+        public const string WapProject = "C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5";
+
+        /// <summary>
+        /// WiX projects (.wixproj).
+        /// </summary>
+        public const string Wix = "930C7802-8A8C-48F9-8165-68863BCCD9DD";
     }
 }
