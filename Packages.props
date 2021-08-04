@@ -25,7 +25,7 @@
     <PackageReference Update="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Update="Shouldly" Version="4.0.3" />
     <PackageReference Update="Shouldly" Version="4.0.3" />
-    <PackageReference Update="VSLangProj165" Version="16.9.31024.71" />
+    <PackageReference Update="VSLangProj165" Version="16.10.31320.204" />
     <PackageReference Update="xunit" Version="2.4.1" />
     <PackageReference Update="xunit.runner.visualstudio" Version="2.4.3" />
   </ItemGroup>
