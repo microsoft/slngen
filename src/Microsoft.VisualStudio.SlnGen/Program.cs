@@ -68,15 +68,11 @@ namespace Microsoft.VisualStudio.SlnGen
                 return -1;
             }
 
+            Assembly thisAssembly = Assembly.GetExecutingAssembly();
+
 #if NETFRAMEWORK
             if (AppDomain.CurrentDomain.IsDefaultAppDomain())
             {
-                // MSBuild.exe.config has binding redirects that change from time to time and its very hard to make sure that NuGet.Build.Tasks.Console.exe.config is correct.
-                // It also can be different per instance of Visual Studio so when running unit tests it always needs to match that instance of MSBuild
-                // The code below runs this EXE in an AppDomain as if its MSBuild.exe so the assembly search location is next to MSBuild.exe and all binding redirects are used
-                // allowing this process to evaluate MSBuild projects as if it is MSBuild.exe
-                Assembly thisAssembly = Assembly.GetExecutingAssembly();
-
                 AppDomain appDomain = AppDomain.CreateDomain(
                     thisAssembly.FullName,
                     securityInfo: null,
@@ -91,21 +87,34 @@ namespace Microsoft.VisualStudio.SlnGen
                         thisAssembly.Location,
                         args);
             }
-#else
+#endif
+            FileInfo thisAssemblyFileInfo = new FileInfo(thisAssembly.Location);
+
             AppDomain.CurrentDomain.AssemblyResolve += (sender, eventArgs) =>
             {
-                AssemblyName assemblyName = new AssemblyName(eventArgs.Name);
+                AssemblyName requestedAssemblyName = new AssemblyName(eventArgs.Name);
 
-                FileInfo candidateFileInfo = new FileInfo(Path.Combine(CurrentDevelopmentEnvironment.MSBuildDll.DirectoryName!, $"{assemblyName.Name}.dll"));
-
-                if (candidateFileInfo.Exists)
+#if NETFRAMEWORK
+                FileInfo candidateAssemblyFileInfo = new FileInfo(Path.Combine(thisAssemblyFileInfo.DirectoryName, $"{requestedAssemblyName.Name}.dll"));
+#else
+                FileInfo candidateAssemblyFileInfo = new FileInfo(Path.Combine(CurrentDevelopmentEnvironment.MSBuildDll.DirectoryName!, $"{requestedAssemblyName.Name}.dll"));
+#endif
+                if (!candidateAssemblyFileInfo.Exists)
                 {
-                    return Assembly.LoadFrom(candidateFileInfo.FullName);
+                    return null;
                 }
 
-                return null;
+                AssemblyName candidateAssemblyName = AssemblyName.GetAssemblyName(candidateAssemblyFileInfo.FullName);
+
+                if ((requestedAssemblyName.ProcessorArchitecture != ProcessorArchitecture.None && requestedAssemblyName.ProcessorArchitecture != candidateAssemblyName.ProcessorArchitecture)
+                    || (requestedAssemblyName.Flags.HasFlag(AssemblyNameFlags.PublicKey) && !requestedAssemblyName.GetPublicKeyToken() !.SequenceEqual(candidateAssemblyName.GetPublicKeyToken() !)))
+                {
+                    return null;
+                }
+
+                return Assembly.LoadFrom(candidateAssemblyFileInfo.FullName);
             };
-#endif
+
             return Execute(args, PhysicalConsole.Singleton);
         }
 
