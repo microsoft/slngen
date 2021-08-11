@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.VisualStudio.SlnGen
 {
@@ -50,6 +51,11 @@ namespace Microsoft.VisualStudio.SlnGen
         /// The separator to split project information by.
         /// </summary>
         private static readonly string[] ProjectSectionSeparator = { "\", \"" };
+
+        /// <summary>
+        /// A regular expression used to parse the project section.
+        /// </summary>
+        private static readonly Regex GuidRegex = new (@"(?<Guid>\{[0-9a-fA-F\-]+\})");
 
         /// <summary>
         /// The file format version.
@@ -227,11 +233,41 @@ namespace Microsoft.VisualStudio.SlnGen
 
                         if (projectDetails.Length == 3)
                         {
-                            FileInfo projectFullPath = new FileInfo(Path.Combine(solutionFileDirectory, projectDetails[1].Trim().Trim('\"')));
+                            Match projectGuidMatch = GuidRegex.Match(projectDetails[2]);
 
-                            if (projectFullPath.Exists && Guid.TryParse(projectDetails[2].Trim('\"'), out Guid projectGuid))
+                            if (!projectGuidMatch.Groups["Guid"].Success)
                             {
-                                projectGuids[projectFullPath.FullName] = projectGuid;
+                                continue;
+                            }
+
+                            string projectGuidString = projectGuidMatch.Groups["Guid"].Value;
+
+                            Match projectTypeGuidMatch = GuidRegex.Match(projectDetails[0]);
+
+                            if (!projectTypeGuidMatch.Groups["Guid"].Success)
+                            {
+                                continue;
+                            }
+
+                            if (!Guid.TryParse(projectGuidString, out Guid projectGuid) || !Guid.TryParse(projectTypeGuidMatch.Groups["Guid"].Value, out Guid projectTypeGuid))
+                            {
+                                continue;
+                            }
+
+                            string projectPath = projectDetails[1].Trim().Trim('\"');
+
+                            if (projectTypeGuid.Equals(SlnFolder.FolderProjectTypeGuid))
+                            {
+                                projectGuids[projectPath] = projectGuid;
+                            }
+                            else
+                            {
+                                FileInfo projectFileInfo = new FileInfo(Path.Combine(solutionFileDirectory, projectPath));
+
+                                if (projectFileInfo.Exists)
+                                {
+                                    projectGuids[projectFileInfo.FullName] = projectGuid;
+                                }
                             }
                         }
 
@@ -355,7 +391,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
             if (SolutionItems.Count > 0)
             {
-                writer.WriteLine($@"Project(""{SlnFolder.FolderProjectTypeGuid}"") = ""Solution Items"", ""Solution Items"", ""{Guid.NewGuid().ToSolutionString()}"" ");
+                writer.WriteLine($@"Project(""{SlnFolder.FolderProjectTypeGuidString}"") = ""Solution Items"", ""Solution Items"", ""{Guid.NewGuid().ToSolutionString()}"" ");
                 writer.WriteLine("	ProjectSection(SolutionItems) = preProject");
                 foreach (string solutionItem in SolutionItems.Select(i => i.ToRelativePath(rootPath)))
                 {
@@ -387,7 +423,15 @@ namespace Microsoft.VisualStudio.SlnGen
             {
                 foreach (SlnFolder folder in hierarchy.Folders)
                 {
-                    writer.WriteLine($@"Project(""{folder.ProjectTypeGuid}"") = ""{folder.Name}"", ""{(useFolders ? folder.FullPath.ToRelativePath(rootPath) : folder.Name)}"", ""{folder.FolderGuid.ToSolutionString()}""");
+                    string projectPath = useFolders ? folder.FullPath.ToRelativePath(rootPath) : folder.Name;
+
+                    // Try to preserve the folder GUID if a matching relative folder path was parsed from an existing solution
+                    if (ExistingProjectGuids != null && ExistingProjectGuids.TryGetValue(projectPath, out Guid projectGuid))
+                    {
+                        folder.FolderGuid = projectGuid;
+                    }
+
+                    writer.WriteLine($@"Project(""{folder.ProjectTypeGuidString}"") = ""{folder.Name}"", ""{projectPath}"", ""{folder.FolderGuid.ToSolutionString()}""");
                     writer.WriteLine("EndProject");
                 }
             }

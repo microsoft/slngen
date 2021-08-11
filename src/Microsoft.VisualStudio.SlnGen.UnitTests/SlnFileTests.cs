@@ -410,6 +410,12 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 [@"test\Microsoft.VisualStudio.SlnGen.UnitTests\Microsoft.VisualStudio.SlnGen.UnitTests.csproj"] = new Guid("B55ACBF0-DC34-44BA-8535-8F81325B6D70"),
             };
 
+            Dictionary<string, Guid> folders = new Dictionary<string, Guid>
+            {
+                [@"FolderA"] = new Guid("9C915FE4-72A5-4368-8979-32B3983E6041"),
+                [@"FolderB"] = new Guid("D3A9F802-38CC-4F8D-8DE9-8DF9C8B7EADC"),
+            };
+
             Dictionary<FileInfo, Guid> projectFiles = projects.ToDictionary(i => new FileInfo(Path.Combine(solutionFilePath.DirectoryName!, i.Key)), i => i.Value);
 
             foreach (KeyValuePair<FileInfo, Guid> item in projectFiles)
@@ -465,7 +471,7 @@ EndGlobal
 
             solutionGuid.ShouldBe(Guid.Parse("CFFC4187-96EE-4465-B5B3-0BAFD3C14BB6"));
 
-            projectGuidsByPath.ShouldBe(projectFiles.Select(i => new KeyValuePair<string, Guid>(i.Key.FullName, i.Value)));
+            projectGuidsByPath.ShouldBe(projectFiles.Select(i => new KeyValuePair<string, Guid>(i.Key.FullName, i.Value)).Concat(folders));
         }
 
         [Fact]
