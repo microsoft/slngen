@@ -16,7 +16,12 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <summary>
         /// The project type GUID for a folder.
         /// </summary>
-        public static readonly string FolderProjectTypeGuid = new Guid(VisualStudioProjectTypeGuids.SolutionFolder).ToSolutionString();
+        public static readonly Guid FolderProjectTypeGuid = new (VisualStudioProjectTypeGuids.SolutionFolder);
+
+        /// <summary>
+        /// The project type GUID for a folder as a solution string.
+        /// </summary>
+        public static readonly string FolderProjectTypeGuidString = FolderProjectTypeGuid.ToSolutionString();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SlnFolder"/> class.
@@ -32,7 +37,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <summary>
         /// Gets the <see cref="Guid" /> of the folder.
         /// </summary>
-        public Guid FolderGuid { get; }
+        public Guid FolderGuid { get; set; }
 
         /// <summary>
         /// Gets a <see cref="List{SlnFolder}" /> of child folders.
@@ -62,6 +67,6 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <summary>
         /// Gets the project type GUID of the folder.
         /// </summary>
-        public string ProjectTypeGuid => FolderProjectTypeGuid;
+        public string ProjectTypeGuidString => FolderProjectTypeGuidString;
     }
 }
