@@ -3,12 +3,17 @@
 
   Licensed under the MIT license.
 -->
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project>
+  <PropertyGroup>
+      <MicrosoftBuildPackageVersion>16.11.0</MicrosoftBuildPackageVersion>
+      <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'net461'">15.9.20</MicrosoftBuildPackageVersion>
+      <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'netcoreapp3.1'">16.9.0</MicrosoftBuildPackageVersion>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Update="McMaster.Extensions.CommandLineUtils" Version="3.1.0" />
-    <PackageReference Update="Microsoft.Build" Version="16.10.0" />
-    <PackageReference Update="Microsoft.Build.Runtime" Version="16.10.0" />
-    <PackageReference Update="Microsoft.Build.Utilities.Core" Version="16.10.0" />
+    <PackageReference Update="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" />
+    <PackageReference Update="Microsoft.Build.Runtime" Version="$(MicrosoftBuildPackageVersion)" />
+    <PackageReference Update="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageVersion)" />
     <PackageReference Update="Microsoft.Extensions.FileSystemGlobbing" Version="5.0.0" />
     <PackageReference Update="Microsoft.NET.Test.Sdk" Version="16.11.0" />
     <PackageReference Update="Microsoft.VisualStudio.ProjectSystem.SDK" Version="15.8.243" />
@@ -22,19 +27,6 @@
     <PackageReference Update="xunit" Version="2.4.1" />
     <PackageReference Update="xunit.runner.visualstudio" Version="2.4.3" />
   </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
-    <PackageReference Update="Microsoft.Build" Version="15.9.20" />
-    <PackageReference Update="Microsoft.Build.Runtime" Version="15.9.20" />
-    <PackageReference Update="Microsoft.Build.Utilities.Core" Version="15.9.20" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
-    <PackageReference Update="Microsoft.Build" Version="16.9.0" />
-    <PackageReference Update="Microsoft.Build.Runtime" Version="16.9.0" />
-    <PackageReference Update="Microsoft.Build.Utilities.Core" Version="16.9.0" />
-  </ItemGroup>
-
   <ItemGroup>
     <GlobalPackageReference Include="Microsoft.Build.Artifacts" Version="2.2.0" />
     <GlobalPackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" />
