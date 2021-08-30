@@ -1,6 +1,6 @@
 @ECHO OFF
 IF "%MSBUILDTOOLSET%" EQU "150" (
-    "%~dp0tools\net46\slngen.exe" %SLNGENARGS% %*
+    "%~dp0tools\net461\slngen.exe" %SLNGENARGS% %*
     EXIT /B %ERRORLEVEL%
 )
 
