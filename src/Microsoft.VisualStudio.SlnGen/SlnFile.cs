@@ -402,7 +402,9 @@ namespace Microsoft.VisualStudio.SlnGen
                 writer.WriteLine("EndProject");
             }
 
-            foreach (SlnProject project in _projects.OrderBy(i => i.IsMainProject ? 0 : 1).ThenBy(i => i.FullPath))
+            List<SlnProject> sortedProjects = _projects.OrderBy(i => i.IsMainProject ? 0 : 1).ThenBy(i => i.FullPath).ToList();
+
+            foreach (SlnProject project in sortedProjects)
             {
                 writer.WriteLine($@"Project(""{project.ProjectTypeGuid.ToSolutionString()}"") = ""{project.Name}"", ""{project.FullPath.ToRelativePath(rootPath)}"", ""{project.ProjectGuid.ToSolutionString()}""");
                 writer.WriteLine("EndProject");
@@ -410,13 +412,13 @@ namespace Microsoft.VisualStudio.SlnGen
 
             SlnHierarchy hierarchy = null;
 
-            if (useFolders && _projects.Any(i => !i.IsMainProject))
+            if (useFolders && sortedProjects.Any(i => !i.IsMainProject))
             {
-                hierarchy = SlnHierarchy.CreateFromProjectDirectories(_projects, collapseFolders);
+                hierarchy = SlnHierarchy.CreateFromProjectDirectories(sortedProjects, collapseFolders);
             }
-            else if (_projects.Any(i => !string.IsNullOrWhiteSpace(i.SolutionFolder)))
+            else if (sortedProjects.Any(i => !string.IsNullOrWhiteSpace(i.SolutionFolder)))
             {
-                hierarchy = SlnHierarchy.CreateFromProjectSolutionFolder(_projects);
+                hierarchy = SlnHierarchy.CreateFromProjectSolutionFolder(sortedProjects);
             }
 
             if (hierarchy != null)
@@ -442,11 +444,11 @@ namespace Microsoft.VisualStudio.SlnGen
 
             HashSet<string> solutionPlatforms = Platforms != null && Platforms.Any()
                 ? new HashSet<string>(GetValidSolutionPlatforms(Platforms), StringComparer.OrdinalIgnoreCase)
-                : new HashSet<string>(GetValidSolutionPlatforms(_projects.SelectMany(i => i.Platforms)), StringComparer.OrdinalIgnoreCase);
+                : new HashSet<string>(GetValidSolutionPlatforms(sortedProjects.SelectMany(i => i.Platforms)), StringComparer.OrdinalIgnoreCase);
 
             HashSet<string> solutionConfigurations = Configurations != null && Configurations.Any()
                 ? new HashSet<string>(Configurations, StringComparer.OrdinalIgnoreCase)
-                : new HashSet<string>(_projects.SelectMany(i => i.Configurations).Where(i => !i.IsNullOrWhiteSpace()), StringComparer.OrdinalIgnoreCase);
+                : new HashSet<string>(sortedProjects.SelectMany(i => i.Configurations).Where(i => !i.IsNullOrWhiteSpace()), StringComparer.OrdinalIgnoreCase);
 
             foreach (string configuration in solutionConfigurations)
             {
@@ -463,7 +465,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
             writer.WriteLine("	GlobalSection(ProjectConfigurationPlatforms) = postSolution");
 
-            foreach (SlnProject project in _projects)
+            foreach (SlnProject project in sortedProjects)
             {
                 string projectGuid = project.ProjectGuid.ToSolutionString();
 
