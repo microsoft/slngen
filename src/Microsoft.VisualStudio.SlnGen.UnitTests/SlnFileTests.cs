@@ -313,6 +313,112 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         }
 
         [Fact]
+        public void ProjectConfigurationPlatformOrderingSameAsProjects()
+        {
+            const string projectTypeGuid = "{7E0F1516-6200-48BD-83FC-3EFA3AB4A574}";
+
+            SlnFile slnFile = new SlnFile
+            {
+                SolutionGuid = new Guid("00CB211B-D6BE-49C6-AF57-2604ECCD9E72"),
+            };
+
+            slnFile.AddProjects(new[]
+            {
+                new SlnProject
+                {
+                    FullPath = Path.Combine(TestRootPath, "C", "C.csproj"),
+                    Name = "C",
+                    ProjectGuid = new Guid("0CCA75AE-ED20-431E-8853-B9F54333E87A"),
+                    ProjectTypeGuid = new Guid(projectTypeGuid),
+                    IsMainProject = true,
+                    Configurations = new[]
+                    {
+                        "Debug",
+                        "Release",
+                    },
+                    Platforms = new[]
+                    {
+                        "AnyCPU",
+                    },
+                },
+                new SlnProject
+                {
+                    FullPath = Path.Combine(TestRootPath, "B", "B.csproj"),
+                    Name = "B",
+                    ProjectGuid = new Guid("0CCA75AE-ED20-431E-8853-B9F54333E87A"),
+                    ProjectTypeGuid = new Guid(projectTypeGuid),
+                    Configurations = new[]
+                    {
+                        "Debug",
+                        "Release",
+                    },
+                    Platforms = new[]
+                    {
+                        "AnyCPU",
+                    },
+                },
+                new SlnProject
+                {
+                    FullPath = Path.Combine(TestRootPath, "A", "A.csproj"),
+                    Name = "A",
+                    ProjectGuid = new Guid("D744C26F-1CCB-456A-B490-CEB39334051B"),
+                    ProjectTypeGuid = new Guid(projectTypeGuid),
+                    Configurations = new[]
+                    {
+                        "Debug",
+                        "Release",
+                    },
+                    Platforms = new[]
+                    {
+                        "AnyCPU",
+                    },
+                },
+            });
+
+            string path = Path.GetTempFileName();
+
+            slnFile.Save(path, useFolders: false);
+
+            string directoryName = new DirectoryInfo(TestRootPath).Name;
+
+            File.ReadAllText(path).ShouldBe(
+                $@"Microsoft Visual Studio Solution File, Format Version 12.00
+Project(""{{7E0F1516-6200-48BD-83FC-3EFA3AB4A574}}"") = ""C"", ""{directoryName}\C\C.csproj"", ""{{0CCA75AE-ED20-431E-8853-B9F54333E87A}}""
+EndProject
+Project(""{{7E0F1516-6200-48BD-83FC-3EFA3AB4A574}}"") = ""A"", ""{directoryName}\A\A.csproj"", ""{{D744C26F-1CCB-456A-B490-CEB39334051B}}""
+EndProject
+Project(""{{7E0F1516-6200-48BD-83FC-3EFA3AB4A574}}"") = ""B"", ""{directoryName}\B\B.csproj"", ""{{0CCA75AE-ED20-431E-8853-B9F54333E87A}}""
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{{0CCA75AE-ED20-431E-8853-B9F54333E87A}}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{{0CCA75AE-ED20-431E-8853-B9F54333E87A}}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{{0CCA75AE-ED20-431E-8853-B9F54333E87A}}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{{0CCA75AE-ED20-431E-8853-B9F54333E87A}}.Release|Any CPU.Build.0 = Release|Any CPU
+		{{D744C26F-1CCB-456A-B490-CEB39334051B}}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{{D744C26F-1CCB-456A-B490-CEB39334051B}}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{{D744C26F-1CCB-456A-B490-CEB39334051B}}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{{D744C26F-1CCB-456A-B490-CEB39334051B}}.Release|Any CPU.Build.0 = Release|Any CPU
+		{{0CCA75AE-ED20-431E-8853-B9F54333E87A}}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{{0CCA75AE-ED20-431E-8853-B9F54333E87A}}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{{0CCA75AE-ED20-431E-8853-B9F54333E87A}}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{{0CCA75AE-ED20-431E-8853-B9F54333E87A}}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {{00CB211B-D6BE-49C6-AF57-2604ECCD9E72}}
+	EndGlobalSection
+EndGlobal
+", StringCompareShould.IgnoreLineEndings);
+        }
+
+        [Fact]
         public void ProjectSolutionFolders()
         {
             string root = Path.GetTempPath();
