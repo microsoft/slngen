@@ -201,6 +201,16 @@ namespace Microsoft.VisualStudio.SlnGen
         }
 
         /// <summary>
+        /// Gets the specified path as a solution path only containing backslashes regardless of the file system's directory separator.
+        /// </summary>
+        /// <param name="path">The path to modify.</param>
+        /// <returns>The specified path as a solution path.</returns>
+        public static string ToSolutionPath(this string path)
+        {
+            return path.Replace("/", @"\");
+        }
+
+        /// <summary>
         /// Gets the current project platform value as a solution platform.
         /// </summary>
         /// <param name="platform">The current project platform.</param>

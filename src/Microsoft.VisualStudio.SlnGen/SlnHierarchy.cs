@@ -105,7 +105,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 CollapseFolders(folder.Folders);
             }
 
-            foreach (SlnFolder folderWithSingleChild in folders.Where(i => i.Folders.Count == 1 && i.Projects.Count == 0))
+            foreach (SlnFolder folderWithSingleChild in folders.Where(i => i.Parent != null && i.Folders.Count == 1 && i.Projects.Count == 0))
             {
                 SlnFolder child = folderWithSingleChild.Folders.First();
 
@@ -182,7 +182,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
             List<string> separatedPath = paths
                 .First(str => str.Length == paths.Max(st2 => st2.Length))
-                .Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries)
+                .Split(new[] { Path.DirectorySeparatorChar })
                 .ToList();
 
             string nextPath = null;
@@ -207,7 +207,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
         private static bool RemoveLeaves(SlnFolder folder)
         {
-            // Check if we are a leave node
+            // Check if we are a leaf node
             if (folder.Folders.Count == 0)
             {
                 // We want to remove leaves that have only a single project. There is no need to keep that
