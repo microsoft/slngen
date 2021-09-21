@@ -19,7 +19,7 @@
     <PackageReference Update="Microsoft.VisualStudio.ProjectSystem.SDK" Version="15.8.243" />
     <PackageReference Update="Microsoft.VisualStudio.SDK" Version="16.0.206" />
     <PackageReference Update="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="2.3.2262-g94fae01e" />
-    <PackageReference Update="Microsoft.VisualStudio.Telemetry" Version="16.3.198" />
+    <PackageReference Update="Microsoft.VisualStudio.Telemetry" Version="16.3.211" />
     <PackageReference Update="Microsoft.VSSDK.BuildTools" Version="16.11.16" />
     <PackageReference Update="MSBuild.ProjectCreation" Version="6.3.1" />
     <PackageReference Update="Newtonsoft.Json" Version="13.0.1" />
