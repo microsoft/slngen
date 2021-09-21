@@ -218,83 +218,68 @@ namespace Microsoft.VisualStudio.SlnGen
                 return false;
             }
 
-            string solutionFileDirectory = fileInfo.Directory.FullName;
+            using FileStream stream = File.OpenRead(path);
+            using StreamReader reader = new StreamReader(stream, Encoding.GetEncoding(0), detectEncodingFromByteOrderMarks: true);
 
-            using (FileStream stream = File.OpenRead(path))
-            using (StreamReader reader = new StreamReader(stream, Encoding.GetEncoding(0), detectEncodingFromByteOrderMarks: true))
+            string line;
+
+            while ((line = reader.ReadLine()) != null)
             {
-                string line;
-
-                while ((line = reader.ReadLine()) != null)
+                if (line.StartsWith(ProjectSectionStart))
                 {
-                    if (line.StartsWith(ProjectSectionStart))
+                    string[] projectDetails = line.Split(ProjectSectionSeparator, StringSplitOptions.RemoveEmptyEntries);
+
+                    if (projectDetails.Length == 3)
                     {
-                        string[] projectDetails = line.Split(ProjectSectionSeparator, StringSplitOptions.RemoveEmptyEntries);
+                        Match projectGuidMatch = GuidRegex.Match(projectDetails[2]);
 
-                        if (projectDetails.Length == 3)
+                        if (!projectGuidMatch.Groups["Guid"].Success)
                         {
-                            Match projectGuidMatch = GuidRegex.Match(projectDetails[2]);
-
-                            if (!projectGuidMatch.Groups["Guid"].Success)
-                            {
-                                continue;
-                            }
-
-                            string projectGuidString = projectGuidMatch.Groups["Guid"].Value;
-
-                            Match projectTypeGuidMatch = GuidRegex.Match(projectDetails[0]);
-
-                            if (!projectTypeGuidMatch.Groups["Guid"].Success)
-                            {
-                                continue;
-                            }
-
-                            if (!Guid.TryParse(projectGuidString, out Guid projectGuid) || !Guid.TryParse(projectTypeGuidMatch.Groups["Guid"].Value, out Guid projectTypeGuid))
-                            {
-                                continue;
-                            }
-
-                            string projectPath = projectDetails[1].Trim().Trim('\"');
-
-                            if (projectTypeGuid.Equals(SlnFolder.FolderProjectTypeGuid))
-                            {
-                                projectGuids[projectPath] = projectGuid;
-                            }
-                            else
-                            {
-                                FileInfo projectFileInfo = new FileInfo(Path.Combine(solutionFileDirectory, projectPath));
-
-                                if (projectFileInfo.Exists)
-                                {
-                                    projectGuids[projectFileInfo.FullName] = projectGuid;
-                                }
-                            }
+                            continue;
                         }
 
-                        while ((line = reader.ReadLine()) != null)
+                        string projectGuidString = projectGuidMatch.Groups["Guid"].Value;
+
+                        Match projectTypeGuidMatch = GuidRegex.Match(projectDetails[0]);
+
+                        if (!projectTypeGuidMatch.Groups["Guid"].Success)
                         {
-                            if (line.StartsWith(ProjectSectionEnd))
-                            {
-                                break;
-                            }
+                            continue;
                         }
+
+                        if (!Guid.TryParse(projectGuidString, out Guid projectGuid) || !Guid.TryParse(projectTypeGuidMatch.Groups["Guid"].Value, out Guid projectTypeGuid))
+                        {
+                            continue;
+                        }
+
+                        string projectPath = projectDetails[1].Trim().Trim('\"');
+
+                        projectGuids[projectPath] = projectGuid;
                     }
 
-                    if (line != null && line.StartsWith(GlobalSectionStartExtensibilityGlobals))
+                    while ((line = reader.ReadLine()) != null)
                     {
-                        while ((line = reader.ReadLine()) != null)
+                        if (line.StartsWith(ProjectSectionEnd))
                         {
-                            if (line.StartsWith(SectionSettingSolutionGuid))
-                            {
-                                string solutionGuidString = line.Substring(SectionSettingSolutionGuid.Length);
+                            break;
+                        }
+                    }
+                }
 
-                                foundSolutionGuid = Guid.TryParse(solutionGuidString, out solutionGuid);
-                            }
+                if (line != null && line.StartsWith(GlobalSectionStartExtensibilityGlobals))
+                {
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        if (line.StartsWith(SectionSettingSolutionGuid))
+                        {
+                            string solutionGuidString = line.Substring(SectionSettingSolutionGuid.Length);
 
-                            if (line.StartsWith(GlobalSectionEnd))
-                            {
-                                break;
-                            }
+                            foundSolutionGuid = Guid.TryParse(solutionGuidString, out solutionGuid);
+                        }
+
+                        if (line.StartsWith(GlobalSectionEnd))
+                        {
+                            break;
                         }
                     }
                 }
@@ -311,15 +296,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <param name="projects">An <see cref="IEnumerable{SlnProject}"/> containing projects to add to the solution.</param>
         public void AddProjects(IEnumerable<SlnProject> projects)
         {
-            _projects.AddRange(projects.Select(project =>
-            {
-                if (project != null && ExistingProjectGuids != null && ExistingProjectGuids.TryGetValue(project.FullPath, out Guid projectGuid))
-                {
-                    project.ProjectGuid = projectGuid;
-                }
-
-                return project;
-            }));
+            _projects.AddRange(projects);
         }
 
         /// <summary>
@@ -333,17 +310,7 @@ namespace Microsoft.VisualStudio.SlnGen
             _projects.AddRange(
                 projects
                     .Distinct(new EqualityComparer<Project>((x, y) => string.Equals(x.FullPath, y.FullPath, StringComparison.OrdinalIgnoreCase), i => i.FullPath.GetHashCode()))
-                    .Select(i =>
-                    {
-                        SlnProject project = SlnProject.FromProject(i, customProjectTypeGuids, string.Equals(i.FullPath, mainProjectFullPath, StringComparison.OrdinalIgnoreCase));
-
-                        if (project != null && ExistingProjectGuids != null && ExistingProjectGuids.TryGetValue(project.FullPath, out Guid projectGuid))
-                        {
-                            project.ProjectGuid = projectGuid;
-                        }
-
-                        return project;
-                    })
+                    .Select(i => SlnProject.FromProject(i, customProjectTypeGuids, string.Equals(i.FullPath, mainProjectFullPath, StringComparison.OrdinalIgnoreCase)))
                     .Where(i => i != null));
         }
 
@@ -393,7 +360,7 @@ namespace Microsoft.VisualStudio.SlnGen
             {
                 writer.WriteLine($@"Project(""{SlnFolder.FolderProjectTypeGuidString}"") = ""Solution Items"", ""Solution Items"", ""{Guid.NewGuid().ToSolutionString()}"" ");
                 writer.WriteLine("	ProjectSection(SolutionItems) = preProject");
-                foreach (string solutionItem in SolutionItems.Select(i => i.ToRelativePath(rootPath)))
+                foreach (string solutionItem in SolutionItems.Select(i => i.ToRelativePath(rootPath).ToSolutionPath()))
                 {
                     writer.WriteLine($"		{solutionItem} = {solutionItem}");
                 }
@@ -406,7 +373,14 @@ namespace Microsoft.VisualStudio.SlnGen
 
             foreach (SlnProject project in sortedProjects)
             {
-                writer.WriteLine($@"Project(""{project.ProjectTypeGuid.ToSolutionString()}"") = ""{project.Name}"", ""{project.FullPath.ToRelativePath(rootPath)}"", ""{project.ProjectGuid.ToSolutionString()}""");
+                string solutionPath = project.FullPath.ToRelativePath(rootPath).ToSolutionPath();
+
+                if (ExistingProjectGuids != null && ExistingProjectGuids.TryGetValue(solutionPath, out Guid existingProjectGuid))
+                {
+                    project.ProjectGuid = existingProjectGuid;
+                }
+
+                writer.WriteLine($@"Project(""{project.ProjectTypeGuid.ToSolutionString()}"") = ""{project.Name}"", ""{solutionPath}"", ""{project.ProjectGuid.ToSolutionString()}""");
                 writer.WriteLine("EndProject");
             }
 
@@ -425,15 +399,15 @@ namespace Microsoft.VisualStudio.SlnGen
             {
                 foreach (SlnFolder folder in hierarchy.Folders)
                 {
-                    string projectPath = useFolders ? folder.FullPath.ToRelativePath(rootPath) : folder.Name;
+                    string projectSolutionPath = (useFolders ? folder.FullPath.ToRelativePath(rootPath) : folder.Name).ToSolutionPath();
 
                     // Try to preserve the folder GUID if a matching relative folder path was parsed from an existing solution
-                    if (ExistingProjectGuids != null && ExistingProjectGuids.TryGetValue(projectPath, out Guid projectGuid))
+                    if (ExistingProjectGuids != null && ExistingProjectGuids.TryGetValue(projectSolutionPath, out Guid projectGuid))
                     {
                         folder.FolderGuid = projectGuid;
                     }
 
-                    writer.WriteLine($@"Project(""{folder.ProjectTypeGuidString}"") = ""{folder.Name}"", ""{projectPath}"", ""{folder.FolderGuid.ToSolutionString()}""");
+                    writer.WriteLine($@"Project(""{folder.ProjectTypeGuidString}"") = ""{folder.Name}"", ""{projectSolutionPath}"", ""{folder.FolderGuid.ToSolutionString()}""");
                     writer.WriteLine("EndProject");
                 }
             }
