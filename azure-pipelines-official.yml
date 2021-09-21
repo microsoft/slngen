@@ -37,7 +37,7 @@ stages:
   - job: Build
     displayName: 'Build'
     pool:
-      name: 'VSEngSS-MicroBuild2019'
+      name: 'VSEngSS-MicroBuild2022-1ES'
     steps:
     - script: 'echo ##vso[task.setvariable variable=SignType;]Real'
       displayName: 'Set SignType to Real for tagged commits'
