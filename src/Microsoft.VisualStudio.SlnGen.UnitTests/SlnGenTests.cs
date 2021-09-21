@@ -108,8 +108,6 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 [MSBuildPropertyNames.SlnGenLaunchVisualStudio] = bool.FalseString,
             };
 
-            ProjectCollection projectCollection = new ProjectCollection(globalProperties);
-
             ProjectCreator
                 .Create(Path.Combine(TestRootPath, "Directory.Build.props"))
                 .Save();
@@ -123,10 +121,9 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             ProjectCreator project = ProjectCreator.Templates
                 .SdkCsproj(
                     Path.Combine(TestRootPath, "ProjectA", "ProjectA.csproj"),
-                    targetFramework: "netcoreapp2.0",
-                    projectCollection: projectCollection)
+                    targetFramework: "netcoreapp2.0")
                 .Save()
-                .TryBuild("SlnGen", out bool result, out BuildOutput buildOutput, out IDictionary<string, TargetResult> targetOutputs);
+                .TryBuild("SlnGen", globalProperties, out bool result, out BuildOutput buildOutput, out IDictionary<string, TargetResult> targetOutputs);
 
             result.ShouldBeTrue(buildOutput.GetConsoleLog());
 
