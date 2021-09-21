@@ -4,6 +4,7 @@
 
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
+using Microsoft.Build.Utilities.ProjectCreation;
 using Shouldly;
 using System;
 using System.Collections.Generic;
@@ -237,7 +238,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             {
                 ExistingProjectGuids = new Dictionary<string, Guid>
                 {
-                    [project.FullPath] = projectGuid,
+                    [Path.GetFileName(project.FullPath)] = projectGuid,
                 },
                 SolutionGuid = Guid.NewGuid(),
             };
@@ -310,6 +311,73 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             };
 
             ValidateProjectInSolution((slnProject, projectInSolution) => projectInSolution.ParentProjectGuid.ShouldBe(null), projects, false);
+        }
+
+        [Fact]
+        public void PathsWorkForAllDirectorySeparatorChars()
+        {
+            const string solutionText = @"Microsoft Visual Studio Solution File, Format Version 12.00
+Project(""{9A19103F-16F7-4668-BE54-9A1E7A4F7556}"") = ""ProjectA"", ""ProjectA\ProjectA.csproj"", ""{E859E866-96F9-474E-A1EA-6539385AD236}""
+EndProject
+Project(""{9A19103F-16F7-4668-BE54-9A1E7A4F7556}"") = ""ProjectB"", ""ProjectB\ProjectB.csproj"", ""{893607F9-C204-4CB2-8BF2-1F71B4198CD2}""
+EndProject
+Project(""{9A19103F-16F7-4668-BE54-9A1E7A4F7556}"") = ""ProjectC"", ""ProjectC\ProjectC.csproj"", ""{081A3445-4E74-4AE9-95B6-FF564FE70CA3}""
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E859E866-96F9-474E-A1EA-6539385AD236}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E859E866-96F9-474E-A1EA-6539385AD236}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E859E866-96F9-474E-A1EA-6539385AD236}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E859E866-96F9-474E-A1EA-6539385AD236}.Release|Any CPU.Build.0 = Release|Any CPU
+		{893607F9-C204-4CB2-8BF2-1F71B4198CD2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{893607F9-C204-4CB2-8BF2-1F71B4198CD2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{893607F9-C204-4CB2-8BF2-1F71B4198CD2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{893607F9-C204-4CB2-8BF2-1F71B4198CD2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{081A3445-4E74-4AE9-95B6-FF564FE70CA3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{081A3445-4E74-4AE9-95B6-FF564FE70CA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{081A3445-4E74-4AE9-95B6-FF564FE70CA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{081A3445-4E74-4AE9-95B6-FF564FE70CA3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AA784BCF-D76D-4DD7-91D2-79E6A14A4DE2}
+	EndGlobalSection
+EndGlobal
+";
+
+            string solutionFileFullPath = GetTempFileName(".sln");
+
+            File.WriteAllText(solutionFileFullPath, solutionText);
+
+            ProgramArguments programArguments = new ProgramArguments
+            {
+                LaunchVisualStudio = new[] { bool.FalseString },
+                SolutionFileFullPath = new[] { solutionFileFullPath },
+            };
+
+            Project[] projects =
+            {
+                ProjectCreator.Templates.SdkCsproj(path: GetTempProjectFile("ProjectA"))
+                    .Save(),
+                ProjectCreator.Templates.SdkCsproj(path: GetTempProjectFile("ProjectB"))
+                    .Save(),
+                ProjectCreator.Templates.SdkCsproj(path: GetTempProjectFile("ProjectC"))
+                    .Save(),
+            };
+
+            TestLogger testLogger = new TestLogger();
+
+            (string _, int customProjectTypeGuidCount, int solutionItemCount, Guid solutionGuid) = SlnFile.GenerateSolutionFile(programArguments, projects, testLogger);
+
+            string actualSolutionText = File.ReadAllText(solutionFileFullPath);
+
+            actualSolutionText.ShouldBe(solutionText, StringCompareShould.IgnoreLineEndings);
         }
 
         [Fact]
@@ -577,7 +645,7 @@ EndGlobal
 
             solutionGuid.ShouldBe(Guid.Parse("CFFC4187-96EE-4465-B5B3-0BAFD3C14BB6"));
 
-            projectGuidsByPath.ShouldBe(projectFiles.Select(i => new KeyValuePair<string, Guid>(i.Key.FullName, i.Value)).Concat(folders));
+            projectGuidsByPath.ShouldBe(projects.Concat(folders));
         }
 
         [Fact]

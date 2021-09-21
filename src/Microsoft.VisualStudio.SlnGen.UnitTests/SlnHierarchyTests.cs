@@ -13,6 +13,8 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 {
     public class SlnHierarchyTests
     {
+        private readonly string _driveRoot = Path.GetPathRoot(Environment.CurrentDirectory);
+
         [Fact]
         public void HierarchyIgnoresCase()
         {
@@ -20,14 +22,14 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             {
                 new SlnProject
                 {
-                    FullPath = Path.Combine(@"E:\Code", "ProjectA", "ProjectA.csproj"),
+                    FullPath = Path.Combine(_driveRoot, "Code", "ProjectA", "ProjectA.csproj"),
                     Name = "ProjectA",
                     ProjectGuid = Guid.NewGuid(),
                     ProjectTypeGuid = SlnProject.DefaultLegacyProjectTypeGuid,
                 },
                 new SlnProject
                 {
-                    FullPath = Path.Combine(@"E:\code", "ProjectB", "ProjectB.csproj"),
+                    FullPath = Path.Combine(_driveRoot, "code", "ProjectB", "ProjectB.csproj"),
                     Name = "ProjectB",
                     ProjectGuid = Guid.NewGuid(),
                     ProjectTypeGuid = SlnProject.DefaultLegacyProjectTypeGuid,
@@ -36,227 +38,191 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             SlnHierarchy hierarchy = SlnHierarchy.CreateFromProjectDirectories(projects);
 
-            hierarchy.Folders.Select(i => i.FullPath).ShouldBe(new[]
-            {
-                @"E:\Code\ProjectA",
-                @"E:\code\ProjectB",
-                @"E:\Code",
-            });
+            GetFolderStructureAsString(hierarchy.Folders).ShouldBe(
+                $@"{_driveRoot}Code - Code
+{_driveRoot}Code{Path.DirectorySeparatorChar}ProjectA - ProjectA
+{_driveRoot}code{Path.DirectorySeparatorChar}ProjectB - ProjectB",
+                StringCompareShould.IgnoreLineEndings);
         }
 
         [Fact]
         public void HierarchyIsCorrectlyFormed()
         {
-            DummyFolder root = DummyFolder.CreateRoot(@"D:\zoo\foo");
-            DummyFolder bar = root.AddSubDirectory("bar");
-            bar.AddProjectWithDirectory("baz");
-            bar.AddProjectWithDirectory("baz1");
-            bar.AddProjectWithDirectory("baz2");
-            root.AddProjectWithDirectory("bar1");
-
-            List<SlnProject> projects = root.GetAllProjects();
+            SlnProject[] projects =
+            {
+                new SlnProject
+                {
+                    FullPath = $"{Path.Combine(_driveRoot, "zoo", "foo", "bar", "baz", "baz")}.csproj",
+                    Name = "baz",
+                    ProjectGuid = Guid.NewGuid(),
+                    ProjectTypeGuid = SlnProject.DefaultLegacyProjectTypeGuid,
+                },
+                new SlnProject
+                {
+                    FullPath = $"{Path.Combine(_driveRoot, "zoo", "foo", "bar", "baz1", "baz1")}.csproj",
+                    Name = "baz1",
+                    ProjectGuid = Guid.NewGuid(),
+                    ProjectTypeGuid = SlnProject.DefaultLegacyProjectTypeGuid,
+                },
+                new SlnProject
+                {
+                    FullPath = $"{Path.Combine(_driveRoot, "zoo", "foo", "bar", "baz2", "baz2")}.csproj",
+                    Name = "baz2",
+                    ProjectGuid = Guid.NewGuid(),
+                    ProjectTypeGuid = SlnProject.DefaultLegacyProjectTypeGuid,
+                },
+                new SlnProject
+                {
+                    FullPath = $"{Path.Combine(_driveRoot, "zoo", "foo", "bar1", "bar1")}.csproj",
+                    Name = "bar1",
+                    ProjectGuid = Guid.NewGuid(),
+                    ProjectTypeGuid = SlnProject.DefaultLegacyProjectTypeGuid,
+                },
+            };
 
             SlnHierarchy hierarchy = SlnHierarchy.CreateFromProjectDirectories(projects);
 
-            hierarchy.Folders.Select(i => i.FullPath).OrderBy(s => s)
-                .ShouldBe(root.GetAllFolders().Select(f => f.FullPath).OrderBy(s => s));
-
-            foreach (SlnProject project in projects)
-            {
-                hierarchy
-                    .Folders
-                    .First(i => i.FullPath.Equals(Path.GetDirectoryName(project.FullPath)))
-                    .Projects.ShouldHaveSingleItem()
-                    .ShouldBe(project);
-            }
+            GetFolderStructureAsString(hierarchy.Folders).ShouldBe(
+                $@"{_driveRoot}zoo{Path.DirectorySeparatorChar}foo - foo
+{_driveRoot}zoo{Path.DirectorySeparatorChar}foo{Path.DirectorySeparatorChar}bar - bar
+{_driveRoot}zoo{Path.DirectorySeparatorChar}foo{Path.DirectorySeparatorChar}bar{Path.DirectorySeparatorChar}baz - baz
+{_driveRoot}zoo{Path.DirectorySeparatorChar}foo{Path.DirectorySeparatorChar}bar{Path.DirectorySeparatorChar}baz1 - baz1
+{_driveRoot}zoo{Path.DirectorySeparatorChar}foo{Path.DirectorySeparatorChar}bar{Path.DirectorySeparatorChar}baz2 - baz2
+{_driveRoot}zoo{Path.DirectorySeparatorChar}foo{Path.DirectorySeparatorChar}bar1 - bar1",
+                StringCompareShould.IgnoreLineEndings);
         }
 
         [Fact]
         public void SingleFolderWithProjectsShouldNotCollapseIntoParentFolderWithProjects()
         {
-            DummyFolder root = DummyFolder.CreateRoot(@"D:\foo\");
-            DummyFolder src = root.AddSubDirectory("src");
-            DummyFolder subfolder = src.AddSubDirectory("subfolder");
-            SlnProject project1 = subfolder.AddProjectWithDirectory("project1");
-            SlnProject project1Tests = subfolder.AddProjectWithDirectory("project1Tests");
-            SlnProject project2 = src.AddProjectWithDirectory("project2");
-            SlnProject project3 = root.AddProjectWithDirectory("project3");
+            SlnProject[] projects =
+            {
+                new SlnProject
+                {
+                    FullPath = $"{Path.Combine(_driveRoot, "foo", "src", "subfolder", "project1", "project1")}.csproj",
+                    Name = "project1",
+                    ProjectGuid = Guid.NewGuid(),
+                    ProjectTypeGuid = SlnProject.DefaultLegacyProjectTypeGuid,
+                },
+                new SlnProject
+                {
+                    FullPath = $"{Path.Combine(_driveRoot, "foo", "src", "subfolder", "project1Tests", "project1Tests")}.csproj",
+                    Name = "project1Tests",
+                    ProjectGuid = Guid.NewGuid(),
+                    ProjectTypeGuid = SlnProject.DefaultLegacyProjectTypeGuid,
+                },
+                new SlnProject
+                {
+                    FullPath = $"{Path.Combine(_driveRoot, "foo", "src", "project2", "project2")}.csproj",
+                    Name = "project2",
+                    ProjectGuid = Guid.NewGuid(),
+                    ProjectTypeGuid = SlnProject.DefaultLegacyProjectTypeGuid,
+                },
+                new SlnProject
+                {
+                    FullPath = $"{Path.Combine(_driveRoot, "foo", "project3", "project3")}.csproj",
+                    Name = "project3",
+                    ProjectGuid = Guid.NewGuid(),
+                    ProjectTypeGuid = SlnProject.DefaultLegacyProjectTypeGuid,
+                },
+            };
 
-            DummyFolder rootExpected = DummyFolder.CreateRoot(@"D:\foo");
-            DummyFolder srcExpected = rootExpected.AddSubDirectory("src");
-            DummyFolder subfolderExpected = srcExpected.AddSubDirectory("subfolder");
-            subfolderExpected.Projects.Add(project1);
-            subfolderExpected.Projects.Add(project1Tests);
-            srcExpected.Projects.Add(project2);
-            rootExpected.Projects.Add(project3);
+            SlnHierarchy hierarchy = SlnHierarchy.CreateFromProjectDirectories(projects, collapseFolders: true);
 
-            SlnHierarchy hierarchy = SlnHierarchy.CreateFromProjectDirectories(root.GetAllProjects(), collapseFolders: true);
-
-            CompareFolders(rootExpected.GetAllFolders(), hierarchy.Folders);
+            GetFolderStructureAsString(hierarchy.Folders).ShouldBe(
+                $@"{_driveRoot}foo - foo
+{_driveRoot}foo{Path.DirectorySeparatorChar}src - src
+{_driveRoot}foo{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}subfolder - subfolder",
+                StringCompareShould.IgnoreLineEndings);
         }
 
         [Fact]
         public void HierarchyWithMultipleSubfoldersUnderACollapsedFolderIsCorrectlyFormed()
         {
-            DummyFolder root = DummyFolder.CreateRoot(@"D:\foo\");
-            DummyFolder src = root.AddSubDirectory("src");
-            DummyFolder subfolder = src.AddSubDirectory("subfolder");
-            DummyFolder subfolderSrc = subfolder.AddSubDirectory("src");
-            DummyFolder subfolderTests = subfolder.AddSubDirectory("tests");
-            SlnProject project1 = subfolderSrc.AddProjectWithDirectory("project1");
-            SlnProject project1Tests = subfolderTests.AddProjectWithDirectory("project1Tests");
-            SlnProject project2 = root.AddProjectWithDirectory("project2");
+            SlnProject[] projects =
+            {
+                new SlnProject
+                {
+                    FullPath = $"{Path.Combine(_driveRoot, "foo", "src", "subfolder", "src", "project1", "project1")}.csproj",
+                    Name = "project1",
+                    ProjectGuid = Guid.NewGuid(),
+                    ProjectTypeGuid = SlnProject.DefaultLegacyProjectTypeGuid,
+                },
+                new SlnProject
+                {
+                    FullPath = $"{Path.Combine(_driveRoot, "foo", "src", "subfolder", "tests", "project1Tests", "project1Tests")}.csproj",
+                    Name = "project1Tests",
+                    ProjectGuid = Guid.NewGuid(),
+                    ProjectTypeGuid = SlnProject.DefaultLegacyProjectTypeGuid,
+                },
+                new SlnProject
+                {
+                    FullPath = $"{Path.Combine(_driveRoot, "foo", "project2", "project2")}.csproj",
+                    Name = "project2",
+                    ProjectGuid = Guid.NewGuid(),
+                    ProjectTypeGuid = SlnProject.DefaultLegacyProjectTypeGuid,
+                },
+            };
 
-            DummyFolder rootExpected = DummyFolder.CreateRoot(@"D:\foo");
-            DummyFolder subfolderExpected = rootExpected.AddSubDirectory($"src {SlnHierarchy.Separator} subfolder");
-            DummyFolder subfolderSrcExpected = subfolderExpected.AddSubDirectory("src");
-            subfolderSrcExpected.Projects.Add(project1);
-            DummyFolder subfolderTestsExpected = subfolderExpected.AddSubDirectory("tests");
-            subfolderTestsExpected.Projects.Add(project1Tests);
-            rootExpected.Projects.Add(project2);
+            SlnHierarchy hierarchy = SlnHierarchy.CreateFromProjectDirectories(projects, collapseFolders: true);
 
-            SlnHierarchy hierarchy = SlnHierarchy.CreateFromProjectDirectories(root.GetAllProjects(), collapseFolders: true);
-
-            CompareFolders(rootExpected.GetAllFolders(), hierarchy.Folders);
+            GetFolderStructureAsString(hierarchy.Folders).ShouldBe(
+                $@"{_driveRoot}foo - foo
+{_driveRoot}foo{Path.DirectorySeparatorChar}src - src {SlnHierarchy.Separator} subfolder
+{_driveRoot}foo{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}subfolder{Path.DirectorySeparatorChar}src - src
+{_driveRoot}foo{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}subfolder{Path.DirectorySeparatorChar}tests - tests",
+                StringCompareShould.IgnoreLineEndings);
         }
 
         [Fact]
         public void HierarchyWithCollapsedFoldersIsCorrectlyFormed()
         {
-            DummyFolder root = DummyFolder.CreateRoot(@"D:\zoo\foo");
-            DummyFolder bar = root.AddSubDirectory("bar");
-            DummyFolder qux = bar.AddSubDirectory("qux");
-            SlnProject baz = qux.AddProjectWithDirectory("baz");
-            SlnProject baz1 = qux.AddProjectWithDirectory("baz1");
-            SlnProject baz2 = qux.AddProjectWithDirectory("baz2");
-            SlnProject bar1 = root.AddProjectWithDirectory("bar1");
-            SlnProject baz3 = root
-                .AddSubDirectory("foo1")
-                .AddSubDirectory("foo2")
-                .AddProjectWithDirectory("baz3");
-
-            DummyFolder rootExpected = DummyFolder.CreateRoot(@"D:\zoo\foo");
-            DummyFolder barQuxExpected = rootExpected.AddSubDirectory($"bar {SlnHierarchy.Separator} qux");
-            barQuxExpected.Projects.Add(baz);
-            barQuxExpected.Projects.Add(baz1);
-            barQuxExpected.Projects.Add(baz2);
-            rootExpected.Projects.Add(bar1);
-            rootExpected.AddSubDirectory($"foo1 {SlnHierarchy.Separator} foo2").Projects.Add(baz3);
-
-            SlnHierarchy hierarchy = SlnHierarchy.CreateFromProjectDirectories(root.GetAllProjects(), collapseFolders: true);
-
-            CompareFolders(rootExpected.GetAllFolders(), hierarchy.Folders);
-        }
-
-        private static void CompareFolders(IEnumerable<DummyFolder> expected, IEnumerable<SlnFolder> result)
-        {
-            SlnFolder[] resultFolders = result.OrderBy(f => f.FullPath).ToArray();
-            DummyFolder[] expectedFolders = expected.OrderBy(f => f.FullPath).ToArray();
-
-            resultFolders.Length.ShouldBe(expectedFolders.Length);
-
-            for (int i = 0; i < resultFolders.Length; i++)
+            SlnProject[] projects =
             {
-                SlnFolder resultFolder = resultFolders[i];
-                DummyFolder expectedFolder = expectedFolders[i];
-
-                resultFolder.Name.ShouldBe(expectedFolder.Name);
-
-                // Verify that expected and results projects match
-                resultFolder.Projects.Count.ShouldBe(expectedFolder.Projects.Count);
-                resultFolder.Projects.ShouldAllBe(p => expectedFolder.Projects.Contains(p));
-
-                // Verify that expected and results child folders match
-                resultFolder.Folders.Count.ShouldBe(expectedFolder.Folders.Count);
-                resultFolder.Folders.ShouldAllBe(p => expectedFolder.Folders.Exists(f => f.Name == p.Name));
-
-                // Verify that the parent folders match
-                resultFolder.Parent?.FullPath.ShouldBe(expectedFolder.Parent?.FullPath);
-            }
-        }
-
-        private class DummyFolder
-        {
-            private DummyFolder(string path, DummyFolder parent)
-            {
-                FileInfo fileInfo = new FileInfo(path);
-
-                Folders = new List<DummyFolder>();
-                Projects = new List<SlnProject>();
-
-                FullPath = fileInfo.FullName.Split(new[] { $" {SlnHierarchy.Separator} " }, StringSplitOptions.None)[0];
-                Name = fileInfo.Name;
-
-                Parent = parent;
-            }
-
-            public List<DummyFolder> Folders { get; }
-
-            public string FullPath { get; }
-
-            public string Name { get; }
-
-            public List<SlnProject> Projects { get; }
-
-            public DummyFolder Parent { get; }
-
-            public static DummyFolder CreateRoot(string rootPath)
-            {
-                return new DummyFolder(rootPath, null);
-            }
-
-            public SlnProject AddProjectWithDirectory(string name)
-            {
-                return AddSubDirectory(name).AddProject(name);
-            }
-
-            public DummyFolder AddSubDirectory(string folderName)
-            {
-                string path = Path.Combine(FullPath, folderName);
-
-                DummyFolder childFolder = new DummyFolder(path, this);
-
-                Folders.Add(childFolder);
-
-                return childFolder;
-            }
-
-            public List<DummyFolder> GetAllFolders()
-            {
-                List<DummyFolder> folders = Folders
-                    .SelectMany(f => f.GetAllFolders())
-                    .ToList();
-
-                folders.Add(this);
-
-                return folders;
-            }
-
-            public List<SlnProject> GetAllProjects()
-            {
-                List<SlnProject> projects = Folders
-                    .SelectMany(f => f.GetAllProjects())
-                    .ToList();
-
-                projects.AddRange(Projects);
-
-                return projects;
-            }
-
-            private SlnProject AddProject(string name)
-            {
-                SlnProject project = new SlnProject
+                new SlnProject
                 {
-                    FullPath = Path.Combine(FullPath, name) + ".csproj",
-                    Name = name,
+                    FullPath = $"{Path.Combine(_driveRoot, "zoo", "foo", "bar", "qux", "baz", "baz")}.csproj",
+                    Name = "baz",
                     ProjectGuid = Guid.NewGuid(),
                     ProjectTypeGuid = SlnProject.DefaultLegacyProjectTypeGuid,
-                };
+                },
+                new SlnProject
+                {
+                    FullPath = $"{Path.Combine(_driveRoot, "zoo", "foo", "bar", "qux", "baz1", "baz1")}.csproj",
+                    Name = "baz1",
+                    ProjectGuid = Guid.NewGuid(),
+                    ProjectTypeGuid = SlnProject.DefaultLegacyProjectTypeGuid,
+                },
+                new SlnProject
+                {
+                    FullPath = $"{Path.Combine(_driveRoot, "zoo", "foo", "bar", "qux", "baz2", "baz2")}.csproj",
+                    Name = "baz2",
+                    ProjectGuid = Guid.NewGuid(),
+                    ProjectTypeGuid = SlnProject.DefaultLegacyProjectTypeGuid,
+                },
+                new SlnProject
+                {
+                    FullPath = $"{Path.Combine(_driveRoot, "zoo", "foo", "foo1", "foo2", "baz3", "baz3")}.csproj",
+                    Name = "baz3",
+                    ProjectGuid = Guid.NewGuid(),
+                    ProjectTypeGuid = SlnProject.DefaultLegacyProjectTypeGuid,
+                },
+            };
 
-                Projects.Add(project);
+            SlnHierarchy hierarchy = SlnHierarchy.CreateFromProjectDirectories(projects, collapseFolders: true);
 
-                return project;
-            }
+            GetFolderStructureAsString(hierarchy.Folders).ShouldBe(
+                $@"{_driveRoot}zoo{Path.DirectorySeparatorChar}foo - foo
+{_driveRoot}zoo{Path.DirectorySeparatorChar}foo{Path.DirectorySeparatorChar}bar - bar {SlnHierarchy.Separator} qux
+{_driveRoot}zoo{Path.DirectorySeparatorChar}foo{Path.DirectorySeparatorChar}foo1 - foo1 {SlnHierarchy.Separator} foo2",
+                StringCompareShould.IgnoreLineEndings);
+        }
+
+        private static string GetFolderStructureAsString(IEnumerable<SlnFolder> folders)
+        {
+            return string.Join(
+                Environment.NewLine,
+                folders.OrderBy(i => i.FullPath).Select(i => $"{i.FullPath} - {i.Name}"));
         }
     }
 }

@@ -25,11 +25,10 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 ["SlnGenLaunchVisualStudio"] = "false",
             };
 
-            ProjectCollection projectCollection = new ProjectCollection(globalProperties);
-
             ProjectCreator
                 .Create(Path.Combine(TestRootPath, "Directory.Build.props"))
                 .Save();
+
             ProjectCreator
                 .Create(Path.Combine(TestRootPath, "Directory.Build.targets"))
                 .Import(Path.Combine(Environment.CurrentDirectory, "build", "Microsoft.VisualStudio.SlnGen.targets"), condition: "'$(IsCrossTargetingBuild)' != 'true'")
@@ -67,7 +66,6 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 .Create(
                     Path.Combine(TestRootPath, "ProjectE", "ProjectE.csproj"),
                     sdk: "Microsoft.NET.Sdk",
-                    projectCollection: projectCollection,
                     projectFileOptions: NewProjectFileOptions.None)
                 .PropertyGroup()
                 .Property("TargetFrameworks", "net46;netcoreapp2.0")
@@ -77,7 +75,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 .ItemProjectReference(projectC, condition: "'$(TargetFramework)' == 'net46'")
                 .ItemProjectReference(projectD, condition: "'$(TargetFramework)' == 'net46'")
                 .Save()
-                .TryBuild("SlnGen", out bool result, out BuildOutput buildOutput, out _);
+                .TryBuild("SlnGen", globalProperties, out bool result, out BuildOutput buildOutput, out _);
 
             result.ShouldBeTrue(buildOutput.GetConsoleLog());
 
@@ -87,14 +85,17 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             SolutionFile solutionFile = SolutionFile.Parse(expectedSolutionFilePath);
 
-            solutionFile.ProjectsInOrder.Select(i => Path.GetFullPath(i.AbsolutePath)).ShouldBe(new string[]
-            {
-                mainProject,
-                projectA,
-                projectB,
-                projectC,
-                projectD,
-            });
+            solutionFile.ProjectsInOrder.Select(i => Path.GetFullPath(i.AbsolutePath))
+                .ShouldBe(
+                new string[]
+                {
+                    mainProject,
+                    projectA,
+                    projectB,
+                    projectC,
+                    projectD,
+                },
+                buildOutput.GetConsoleLog());
         }
 
         [Fact]

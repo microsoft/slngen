@@ -115,7 +115,7 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
             FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(msbuildExePath.FullName);
 
             // MSBuild 16.4 and above use the Static Graph API
-            if (fileVersionInfo.FileMajorPart >= 16 && fileVersionInfo.FileMinorPart >= 4)
+            if (fileVersionInfo.FileMajorPart > 16 || (fileVersionInfo.FileMajorPart == 16 && fileVersionInfo.FileMinorPart >= 4))
             {
                 return new ProjectGraphProjectLoader(logger);
             }
