@@ -134,7 +134,7 @@ Use the following properties and items to customize the generated Solution file.
 ```xml
 <PropertyGroup>
   <!-- Exclude .sqlproj projects from generated solution files -->
-  <IncludeInSolutionFile Condition="'$(MSBuildProjectExtension)' == '.sqlproj'">false</SlnGenLaunchVisualStudio>
+  <IncludeInSolutionFile Condition="'$(MSBuildProjectExtension)' == '.sqlproj'">false</IncludeInSolutionFile>
 
   <!-- Disable folder hierarchy in Solution files, projects will be in a flat list instead -->
   <SlnGenFolders>false</SlnGenFolders>
