@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -107,7 +108,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 }
             }
 #if NETFRAMEWORK
-            if (Utility.TryFindOnPath("MSBuild", out FileInfo msbuildExeFileInfo))
+            if (Utility.TryFindOnPath("MSBuild.exe", IsMSBuildExeCompatible, out FileInfo msbuildExeFileInfo))
             {
                 return new DevelopmentEnvironment
                 {
@@ -118,7 +119,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
             return new DevelopmentEnvironment("SlnGen must be run from a command-line window where MSBuild.exe is on the PATH.");
 #else
-            if (!Utility.TryFindOnPath("dotnet", out FileInfo dotnetFileInfo))
+            if (!Utility.TryFindOnPath(Utility.RunningOnWindows ? "dotnet.exe" : "dotnet", null, out FileInfo dotnetFileInfo))
             {
                 return new DevelopmentEnvironment("SlnGen must be run from a command-line window where dotnet.exe is on the PATH.");
             }
@@ -135,7 +136,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 MSBuildDll = new FileInfo(Path.Combine(dotnetCoreSdkDirectoryInfo.FullName, "MSBuild.dll")),
             };
 
-            if (Utility.RunningOnWindows && Utility.TryFindOnPath("MSBuild", out FileInfo msbuildExeFileInfo))
+            if (Utility.RunningOnWindows && Utility.TryFindOnPath("MSBuild.exe", IsMSBuildExeCompatible, out FileInfo msbuildExeFileInfo))
             {
                 developmentEnvironment.MSBuildExe = GetPathToMSBuildExe(msbuildExeFileInfo);
                 developmentEnvironment.VisualStudio = VisualStudioConfiguration.GetInstanceForPath(msbuildExeFileInfo.FullName);
@@ -143,6 +144,20 @@ namespace Microsoft.VisualStudio.SlnGen
 
             return developmentEnvironment;
 #endif
+        }
+
+        private static bool IsMSBuildExeCompatible(FileInfo fileInfo)
+        {
+            try
+            {
+                FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(fileInfo.FullName);
+
+                return fileVersionInfo.FileMajorPart >= 15;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         /// <summary>
