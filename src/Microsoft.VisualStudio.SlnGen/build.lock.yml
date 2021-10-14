@@ -289,6 +289,7 @@ net461:
   - SlnHierarchy.cs
   - SlnProject.cs
   - Strings.Designer.cs
+  - Strings.resx
   - Tasks/SlnGenToolTask.cs
   - TelemetryClient.cs
   - VisualStudioLauncher.cs
@@ -402,6 +403,7 @@ net472:
   - SlnHierarchy.cs
   - SlnProject.cs
   - Strings.Designer.cs
+  - Strings.resx
   - Tasks/SlnGenToolTask.cs
   - TelemetryClient.cs
   - VisualStudioLauncher.cs
@@ -658,6 +660,7 @@ net5.0:
   - SlnHierarchy.cs
   - SlnProject.cs
   - Strings.Designer.cs
+  - Strings.resx
   - Tasks/SlnGenToolTask.cs
   - TelemetryClient.cs
   - VisualStudioLauncher.cs
@@ -917,6 +920,7 @@ net6.0:
   - SlnHierarchy.cs
   - SlnProject.cs
   - Strings.Designer.cs
+  - Strings.resx
   - Tasks/SlnGenToolTask.cs
   - TelemetryClient.cs
   - VisualStudioLauncher.cs
@@ -1169,6 +1173,7 @@ netcoreapp3.1:
   - SlnHierarchy.cs
   - SlnProject.cs
   - Strings.Designer.cs
+  - Strings.resx
   - Tasks/SlnGenToolTask.cs
   - TelemetryClient.cs
   - VisualStudioLauncher.cs
