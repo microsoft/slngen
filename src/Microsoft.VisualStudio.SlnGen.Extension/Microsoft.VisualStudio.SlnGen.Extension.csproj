@@ -28,6 +28,7 @@
     <StartArguments>/rootsuffix Exp</StartArguments>
     <ArtifactsPath>$(BaseArtifactsPath)\$(MSBuildProjectName)</ArtifactsPath>
     <DefaultArtifactsFileMatch>*vsix</DefaultArtifactsFileMatch>
+    <EnableBuildLockFile>false</EnableBuildLockFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
