@@ -33,6 +33,6 @@
     <GlobalPackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" Version="0.4.1" />
     <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.4.240" />
     <GlobalPackageReference Include="StyleCop.Analyzers" Version="1.1.118" />
-    <GlobalPackageReference Include="MSBuildLockFiles.Tasks" Version="1.0.5-preview-g3477eb1abe" Condition="'$(EnableBuildLockFile)' != 'false'" />
+    <GlobalPackageReference Include="MSBuildLockFiles.Tasks" Version="1.0.6-preview-g98ecf367e0" Condition="'$(EnableBuildLockFile)' != 'false'" />
   </ItemGroup>
 </Project>
