@@ -1,3 +1,6 @@
+all:
+  outputs:
+  - Microsoft.VisualStudio.SlnGen.6.3.3.nupkg
 net461:
   constants:
   - DEBUG
