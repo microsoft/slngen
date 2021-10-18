@@ -1,3 +1,6 @@
+all:
+  outputs:
+  - SlnGen.Corext.6.3.3.nupkg
 net461:
   constants:
   - DEBUG
