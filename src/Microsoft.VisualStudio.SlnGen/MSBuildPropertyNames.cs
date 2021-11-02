@@ -10,11 +10,6 @@ namespace Microsoft.VisualStudio.SlnGen
     public static class MSBuildPropertyNames
     {
         /// <summary>
-        /// Represents the AssemblyName property.
-        /// </summary>
-        public const string AssemblyName = nameof(AssemblyName);
-
-        /// <summary>
         /// Represents the BuildingProject property.
         /// </summary>
         public const string BuildingProject = nameof(BuildingProject);
@@ -98,6 +93,11 @@ namespace Microsoft.VisualStudio.SlnGen
         /// Represents the SlnGenLoadProjects property.
         /// </summary>
         public const string SlnGenLoadProjects = nameof(SlnGenLoadProjects);
+
+        /// <summary>
+        /// Represents the SlnGenProjectName property.
+        /// </summary>
+        public const string SlnGenProjectName = nameof(SlnGenProjectName);
 
         /// <summary>
         /// Represents the SlnGenSolutionFileFullPath property.

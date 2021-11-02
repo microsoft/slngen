@@ -142,7 +142,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
             string fullPath = project.FullPath.ToFullPathInCorrectCase();
 
-            string name = project.GetPropertyValueOrDefault(MSBuildPropertyNames.AssemblyName, Path.GetFileNameWithoutExtension(fullPath));
+            string name = project.GetPropertyValueOrDefault(MSBuildPropertyNames.SlnGenProjectName, Path.GetFileNameWithoutExtension(fullPath));
 
             bool isUsingMicrosoftNETSdk = project.IsPropertyValueTrue(MSBuildPropertyNames.UsingMicrosoftNETSdk);
 

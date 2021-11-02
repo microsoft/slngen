@@ -17,13 +17,114 @@ net5.0:
   - NETCOREAPP3_1_OR_GREATER
   - TRACE
   outputs:
+  - bin/Debug/slngen/net472/McMaster.Extensions.CommandLineUtils.dll
+  - bin/Debug/slngen/net472/Microsoft.Diagnostics.Tracing.EventSource.dll
+  - bin/Debug/slngen/net472/Microsoft.Extensions.FileSystemGlobbing.dll
+  - bin/Debug/slngen/net472/Microsoft.VisualStudio.RemoteControl.dll
+  - bin/Debug/slngen/net472/Microsoft.VisualStudio.Setup.Configuration.Interop.dll
+  - bin/Debug/slngen/net472/Microsoft.VisualStudio.Telemetry.dll
+  - bin/Debug/slngen/net472/Microsoft.VisualStudio.Utilities.Internal.dll
+  - bin/Debug/slngen/net472/Newtonsoft.Json.dll
+  - bin/Debug/slngen/net472/slngen.exe
+  - bin/Debug/slngen/net472/slngen.exe.config
+  - bin/Debug/slngen/net472/System.ValueTuple.dll
+  - bin/Debug/slngen/net5.0/McMaster.Extensions.CommandLineUtils.dll
+  - bin/Debug/slngen/net5.0/Microsoft.Extensions.FileSystemGlobbing.dll
+  - bin/Debug/slngen/net5.0/Microsoft.VisualStudio.RemoteControl.dll
+  - bin/Debug/slngen/net5.0/Microsoft.VisualStudio.Setup.Configuration.Interop.dll
+  - bin/Debug/slngen/net5.0/Microsoft.VisualStudio.Telemetry.dll
+  - bin/Debug/slngen/net5.0/Microsoft.VisualStudio.Utilities.Internal.dll
+  - bin/Debug/slngen/net5.0/Microsoft.Win32.SystemEvents.dll
+  - bin/Debug/slngen/net5.0/Newtonsoft.Json.dll
+  - bin/Debug/slngen/net5.0/runtimes/unix/lib/netcoreapp3.0/System.Drawing.Common.dll
+  - bin/Debug/slngen/net5.0/runtimes/win/lib/netcoreapp2.0/System.Diagnostics.PerformanceCounter.dll
+  - bin/Debug/slngen/net5.0/runtimes/win/lib/netcoreapp2.0/System.Management.dll
+  - bin/Debug/slngen/net5.0/runtimes/win/lib/netcoreapp3.0/Microsoft.Win32.SystemEvents.dll
+  - bin/Debug/slngen/net5.0/runtimes/win/lib/netcoreapp3.0/System.Drawing.Common.dll
+  - bin/Debug/slngen/net5.0/runtimes/win/lib/netcoreapp3.0/System.Windows.Extensions.dll
+  - bin/Debug/slngen/net5.0/runtimes/win/lib/netstandard2.0/System.Security.Cryptography.ProtectedData.dll
+  - bin/Debug/slngen/net5.0/slngen.deps.json
+  - bin/Debug/slngen/net5.0/slngen.dll
+  - bin/Debug/slngen/net5.0/slngen.exe
+  - bin/Debug/slngen/net5.0/slngen.runtimeconfig.json
+  - bin/Debug/slngen/net5.0/System.CodeDom.dll
+  - bin/Debug/slngen/net5.0/System.Configuration.ConfigurationManager.dll
+  - bin/Debug/slngen/net5.0/System.Diagnostics.PerformanceCounter.dll
+  - bin/Debug/slngen/net5.0/System.Drawing.Common.dll
+  - bin/Debug/slngen/net5.0/System.Management.dll
+  - bin/Debug/slngen/net5.0/System.Security.Cryptography.ProtectedData.dll
+  - bin/Debug/slngen/net5.0/System.Security.Permissions.dll
+  - bin/Debug/slngen/net5.0/System.Windows.Extensions.dll
+  - bin/Debug/slngen/net6.0/McMaster.Extensions.CommandLineUtils.dll
+  - bin/Debug/slngen/net6.0/Microsoft.Extensions.FileSystemGlobbing.dll
+  - bin/Debug/slngen/net6.0/Microsoft.VisualStudio.RemoteControl.dll
+  - bin/Debug/slngen/net6.0/Microsoft.VisualStudio.Setup.Configuration.Interop.dll
+  - bin/Debug/slngen/net6.0/Microsoft.VisualStudio.Telemetry.dll
+  - bin/Debug/slngen/net6.0/Microsoft.VisualStudio.Utilities.Internal.dll
+  - bin/Debug/slngen/net6.0/Microsoft.Win32.SystemEvents.dll
+  - bin/Debug/slngen/net6.0/Newtonsoft.Json.dll
+  - bin/Debug/slngen/net6.0/runtimes/unix/lib/netcoreapp3.0/System.Drawing.Common.dll
+  - bin/Debug/slngen/net6.0/runtimes/win/lib/netcoreapp2.0/System.Diagnostics.PerformanceCounter.dll
+  - bin/Debug/slngen/net6.0/runtimes/win/lib/netcoreapp2.0/System.Management.dll
+  - bin/Debug/slngen/net6.0/runtimes/win/lib/netcoreapp3.0/Microsoft.Win32.SystemEvents.dll
+  - bin/Debug/slngen/net6.0/runtimes/win/lib/netcoreapp3.0/System.Drawing.Common.dll
+  - bin/Debug/slngen/net6.0/runtimes/win/lib/netcoreapp3.0/System.Windows.Extensions.dll
+  - bin/Debug/slngen/net6.0/runtimes/win/lib/netstandard2.0/System.Security.Cryptography.ProtectedData.dll
+  - bin/Debug/slngen/net6.0/slngen.deps.json
+  - bin/Debug/slngen/net6.0/slngen.dll
+  - bin/Debug/slngen/net6.0/slngen.exe
+  - bin/Debug/slngen/net6.0/slngen.runtimeconfig.json
+  - bin/Debug/slngen/net6.0/System.CodeDom.dll
+  - bin/Debug/slngen/net6.0/System.Configuration.ConfigurationManager.dll
+  - bin/Debug/slngen/net6.0/System.Diagnostics.PerformanceCounter.dll
+  - bin/Debug/slngen/net6.0/System.Drawing.Common.dll
+  - bin/Debug/slngen/net6.0/System.Management.dll
+  - bin/Debug/slngen/net6.0/System.Security.Cryptography.ProtectedData.dll
+  - bin/Debug/slngen/net6.0/System.Security.Permissions.dll
+  - bin/Debug/slngen/net6.0/System.Windows.Extensions.dll
+  - bin/Debug/slngen/netcoreapp3.1/McMaster.Extensions.CommandLineUtils.dll
+  - bin/Debug/slngen/netcoreapp3.1/Microsoft.Extensions.FileSystemGlobbing.dll
+  - bin/Debug/slngen/netcoreapp3.1/Microsoft.VisualStudio.RemoteControl.dll
+  - bin/Debug/slngen/netcoreapp3.1/Microsoft.VisualStudio.Setup.Configuration.Interop.dll
+  - bin/Debug/slngen/netcoreapp3.1/Microsoft.VisualStudio.Telemetry.dll
+  - bin/Debug/slngen/netcoreapp3.1/Microsoft.VisualStudio.Utilities.Internal.dll
+  - bin/Debug/slngen/netcoreapp3.1/Microsoft.Win32.SystemEvents.dll
+  - bin/Debug/slngen/netcoreapp3.1/Newtonsoft.Json.dll
+  - bin/Debug/slngen/netcoreapp3.1/runtimes/unix/lib/netcoreapp3.0/System.Drawing.Common.dll
+  - bin/Debug/slngen/netcoreapp3.1/runtimes/win/lib/netcoreapp2.0/System.Diagnostics.PerformanceCounter.dll
+  - bin/Debug/slngen/netcoreapp3.1/runtimes/win/lib/netcoreapp2.0/System.Management.dll
+  - bin/Debug/slngen/netcoreapp3.1/runtimes/win/lib/netcoreapp3.0/Microsoft.Win32.SystemEvents.dll
+  - bin/Debug/slngen/netcoreapp3.1/runtimes/win/lib/netcoreapp3.0/System.Drawing.Common.dll
+  - bin/Debug/slngen/netcoreapp3.1/runtimes/win/lib/netcoreapp3.0/System.Windows.Extensions.dll
+  - bin/Debug/slngen/netcoreapp3.1/runtimes/win/lib/netstandard2.0/System.Security.Cryptography.ProtectedData.dll
+  - bin/Debug/slngen/netcoreapp3.1/slngen.deps.json
+  - bin/Debug/slngen/netcoreapp3.1/slngen.dll
+  - bin/Debug/slngen/netcoreapp3.1/slngen.exe
+  - bin/Debug/slngen/netcoreapp3.1/slngen.runtimeconfig.json
+  - bin/Debug/slngen/netcoreapp3.1/System.CodeDom.dll
+  - bin/Debug/slngen/netcoreapp3.1/System.ComponentModel.Annotations.dll
+  - bin/Debug/slngen/netcoreapp3.1/System.Configuration.ConfigurationManager.dll
+  - bin/Debug/slngen/netcoreapp3.1/System.Diagnostics.PerformanceCounter.dll
+  - bin/Debug/slngen/netcoreapp3.1/System.Drawing.Common.dll
+  - bin/Debug/slngen/netcoreapp3.1/System.Management.dll
+  - bin/Debug/slngen/netcoreapp3.1/System.Security.Cryptography.ProtectedData.dll
+  - bin/Debug/slngen/netcoreapp3.1/System.Security.Permissions.dll
+  - bin/Debug/slngen/netcoreapp3.1/System.Windows.Extensions.dll
   - Microsoft.VisualStudio.Setup.Configuration.Interop.dll
   - ref/slngen.dll
+  - slngen.deps.json
+  - slngen.deps.json
+  - slngen.deps.json
   - slngen.deps.json
   - slngen.dll
   - slngen.exe
   - slngen.pdb
   - slngen.runtimeconfig.dev.json
+  - slngen.runtimeconfig.dev.json
+  - slngen.runtimeconfig.dev.json
+  - slngen.runtimeconfig.json
+  - slngen.runtimeconfig.json
+  - slngen.runtimeconfig.json
   - slngen.runtimeconfig.json
   references:
   - {NetCoreTargetingPackRoot}/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/Microsoft.CSharp.dll
