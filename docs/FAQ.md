@@ -102,6 +102,16 @@ For example, you want to leave out a `ProjectReference` because you know it won'
 </ItemGroup>
 ```
 
+## Why are the project names in my solution file the file name of the project without the extension?
+This is the default behavior of Visual Studio to use the file name without the extension for the name of a project in the solution.  You can change this behavior by setting the `SlnGenProjectName` property:
+
+For example, this changes the name of the project in the solution to be the same as the assembly name:
+```xml
+<PropertyGroup>
+  <SlnGenProjectName Condition="'$(SlnGenProjectName)' == ''">$(AssemblyName)</SlnGenProjectName>
+</PropertyGroup>
+```
+
 ## How do I troubleshoot SlnGen?
 You can generate a diagnostic log by specifying the `--binarylogger` command-line parameter:
 

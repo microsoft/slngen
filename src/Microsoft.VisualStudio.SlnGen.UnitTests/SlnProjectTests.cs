@@ -270,10 +270,26 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             logger.LowImportanceMessages.ShouldBeEmpty();
         }
 
-        [Fact]
-        public void UseAssemblyNameProperty()
+        [Theory]
+        [InlineData(null)]
+        [InlineData("SomeProject")]
+        public void ProjectNameIsCorrect(string projectName)
         {
-            CreateAndValidateProject(expectedGuid: "{3EA7B89C-F85F-49F4-B99D-1BC184C08186}", expectedName: "Project.Name");
+            Dictionary<string, string> globalProperties = new Dictionary<string, string>
+            {
+                [MSBuildPropertyNames.SlnGenProjectName] = projectName ?? string.Empty,
+            };
+
+            SlnProject project = CreateAndValidateProject(expectedGuid: "{3EA7B89C-F85F-49F4-B99D-1BC184C08186}", globalProperties: globalProperties);
+
+            if (!string.IsNullOrWhiteSpace(projectName))
+            {
+                project.Name.ShouldBe(projectName);
+            }
+            else
+            {
+                project.Name.ShouldBe(Path.GetFileNameWithoutExtension(project.FullPath));
+            }
         }
 
         [Fact]
@@ -350,7 +366,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             actualProjectTypeGuid.Value.ShouldBe(expectedProjectTypeGuid);
         }
 
-        private SlnProject CreateAndValidateProject(bool isMainProject = false, string expectedGuid = null, string expectedName = null, string extension = ProjectFileExtensions.CSharp, IDictionary<string, string> globalProperties = null, string isDeployable = null)
+        private SlnProject CreateAndValidateProject(bool isMainProject = false, string expectedGuid = null, string extension = ProjectFileExtensions.CSharp, IDictionary<string, string> globalProperties = null, string isDeployable = null)
         {
             if (!isDeployable.IsNullOrWhiteSpace())
             {
@@ -359,16 +375,11 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 globalProperties[MSBuildPropertyNames.SlnGenIsDeployable] = isDeployable;
             }
 
-            Project expectedProject = CreateProject(expectedGuid, expectedName, extension, globalProperties);
+            Project expectedProject = CreateProject(expectedGuid, extension, globalProperties);
 
             SlnProject actualProject = SlnProject.FromProject(expectedProject, new Dictionary<string, Guid>(), isMainProject);
 
             actualProject.FullPath.ShouldBe(expectedProject.FullPath);
-
-            if (!expectedName.IsNullOrWhiteSpace())
-            {
-                actualProject.Name.ShouldBe(expectedName);
-            }
 
             if (expectedGuid != null)
             {
@@ -380,7 +391,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             return actualProject;
         }
 
-        private Project CreateProject(string projectGuid = null, string name = null, string extension = ProjectFileExtensions.CSharp, IDictionary<string, string> globalProperties = null)
+        private Project CreateProject(string projectGuid = null, string extension = ProjectFileExtensions.CSharp, IDictionary<string, string> globalProperties = null)
         {
             string fullPath = GetTempFileName(extension);
 
@@ -389,11 +400,6 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             if (!projectGuid.IsNullOrWhiteSpace())
             {
                 globalProperties[MSBuildPropertyNames.ProjectGuid] = projectGuid;
-            }
-
-            if (!name.IsNullOrWhiteSpace())
-            {
-                globalProperties[MSBuildPropertyNames.AssemblyName] = name;
             }
 
             return MockProject.Create(fullPath, globalProperties);
