@@ -98,6 +98,8 @@ stages:
               packagesToPush: '$(Pipeline.Workspace)/$(ArtifactsDirectoryName)/**/Microsoft.VisualStudio.SlnGen*.nupkg'
               nuGetFeedType: 'external'
               publishFeedCredentials: 'NuGet-1ES-Full'
+              allowPackageConflicts: true
+
           - task: NuGetCommand@2
             displayName: 'Push SlnGen.Corext'
             inputs:
@@ -105,3 +107,4 @@ stages:
               packagesToPush: '$(Pipeline.Workspace)/$(ArtifactsDirectoryName)/**/SlnGen.Corext*.nupkg'
               nuGetFeedType: 'external'
               publishFeedCredentials: 'CloudBuild-Push'
+              allowPackageConflicts: true
