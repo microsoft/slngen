@@ -358,7 +358,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
             if (SolutionItems.Count > 0)
             {
-                writer.WriteLine($@"Project(""{SlnFolder.FolderProjectTypeGuidString}"") = ""Solution Items"", ""Solution Items"", ""{Guid.NewGuid().ToSolutionString()}"" ");
+                writer.WriteLine($@"Project(""{SlnFolder.FolderProjectTypeGuidString}"") = ""Solution Items"", ""Solution Items"", ""{{B283EBC2-E01F-412D-9339-FD56EF114549}}"" ");
                 writer.WriteLine("	ProjectSection(SolutionItems) = preProject");
                 foreach (string solutionItem in SolutionItems.Select(i => i.ToRelativePath(rootPath).ToSolutionPath()))
                 {
