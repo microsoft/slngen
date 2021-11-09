@@ -1,6 +1,6 @@
 all:
   outputs:
-  - SlnGen.Corext.{PackageVersion}.nupkg
+  - SlnGen.Corext.(PackageVersion).nupkg
 net461:
   constants:
   - DEBUG
