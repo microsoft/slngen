@@ -5,8 +5,7 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>slngen</ToolCommandName>
     <RollForward>LatestMajor</RollForward>
-    <ProjectReferenceBuildTargets>GetTargetPath</ProjectReferenceBuildTargets>
-    <SlnTargetFrameworks>net472;netcoreapp3.1;net5.0;net6.0</SlnTargetFrameworks>
+    <_GetChildProjectCopyToPublishDirectoryItems>false</_GetChildProjectCopyToPublishDirectoryItems>
   </PropertyGroup>
   <Import Project="..\Shared\Shared.props" />
   <ItemGroup>
@@ -14,22 +13,40 @@
                  Authenticode="Microsoft400"
                  StrongName="StrongName" />
   </ItemGroup>
-  <Target Name="AddSlnGenProjectReferences"
-          BeforeTargets="BeforeBuild">
-    <ItemGroup>
-      <_SlnTargetFrameworks Include="$(SlnTargetFrameworks)" />
-    </ItemGroup>
-    <ItemGroup>
-      <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj"
-                        AdditionalProperties="TargetFramework=%(_SlnTargetFrameworks.Identity)"
-                        IncludeAssets="None"
-                        OutputItemType="SlnGenBuildOutput"
-                        PrivateAssets="All"
-                        ReferenceOutputAssembly="false"
-                        SkipGetTargetFrameworkProperties="true"
-                        TargetFramework="%(_SlnTargetFrameworks.Identity)" />
-    </ItemGroup>
-  </Target>
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj"
+                      SetTargetFramework="TargetFramework=net472"
+                      IncludeAssets="None"
+                      OutputItemType="SlnGenBuildOutput"
+                      PrivateAssets="All"
+                      ReferenceOutputAssembly="false"
+                      SkipGetTargetFrameworkProperties="true"
+                      TargetFramework="net472" />
+    <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj"
+                      SetTargetFramework="TargetFramework=netcoreapp3.1"
+                      IncludeAssets="None"
+                      OutputItemType="SlnGenBuildOutput"
+                      PrivateAssets="All"
+                      ReferenceOutputAssembly="false"
+                      SkipGetTargetFrameworkProperties="true"
+                      TargetFramework="netcoreapp3.1" />
+    <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj"
+                      SetTargetFramework="TargetFramework=net5.0"
+                      IncludeAssets="None"
+                      OutputItemType="SlnGenBuildOutput"
+                      PrivateAssets="All"
+                      ReferenceOutputAssembly="false"
+                      SkipGetTargetFrameworkProperties="true"
+                      TargetFramework="net5.0" />
+    <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj"
+                      SetTargetFramework="TargetFramework=net6.0"
+                      IncludeAssets="None"
+                      OutputItemType="SlnGenBuildOutput"
+                      PrivateAssets="All"
+                      ReferenceOutputAssembly="false"
+                      SkipGetTargetFrameworkProperties="true"
+                      TargetFramework="net6.0" />
+  </ItemGroup>
   <Target Name="CopySlnGenToOutputDirectoryAndPackage"
           AfterTargets="PrepareForRun"
           DependsOnTargets="ResolveProjectReferences"
@@ -37,8 +54,7 @@
     <ItemGroup>
       <SlnGenFiles Include="%(SlnGenBuildOutput.RootDir)%(SlnGenBuildOutput.Directory)\**"
                    Exclude="%(SlnGenBuildOutput.RootDir)%(SlnGenBuildOutput.Directory)\ref\**;%(SlnGenBuildOutput.RootDir)%(SlnGenBuildOutput.Directory)\**\*.dev.json;%(SlnGenBuildOutput.RootDir)%(SlnGenBuildOutput.Directory)\**\*.pdb"
-                   TargetFramework="%(SlnGenBuildOutput.TargetFramework)"
-                   TargetPath="%(SlnGenBuildOutput.TargetFramework)\%(RecursiveDir)%(Filename)%(Extension)" />
+                   TargetFramework="%(SlnGenBuildOutput.TargetFramework)" />
 
       <_PackageFiles Include="@(SlnGenFiles)"
                      TargetFramework="%(SlnGenFiles.TargetFramework)"
@@ -61,4 +77,4 @@
               ItemName="ReferencesCopiedInThisBuild" />
     </Copy>
   </Target>
-</Project> 
+</Project>

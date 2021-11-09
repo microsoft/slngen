@@ -50,7 +50,6 @@ jobs:
     displayName: 'Install .NET $(DotNet6Version)'
     inputs:
       version: '$(DotNet6Version)'
-      includePreviewVersions: true
 
   - task: VSBuild@1
     displayName: 'Build Solution'
@@ -116,7 +115,6 @@ jobs:
     displayName: 'Install .NET $(DotNet6Version)'
     inputs:
       version: '$(DotNet6Version)'
-      includePreviewVersions: true
 
   - task: DotNetCoreCLI@2
     displayName: 'Build'
@@ -178,7 +176,6 @@ jobs:
     displayName: 'Install .NET $(DotNet6Version)'
     inputs:
       version: '$(DotNet6Version)'
-      includePreviewVersions: true
 
   - task: DotNetCoreCLI@2
     displayName: 'Build'
