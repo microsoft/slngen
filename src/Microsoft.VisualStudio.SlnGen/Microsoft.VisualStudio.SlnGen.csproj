@@ -31,7 +31,8 @@
     <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net46\MSBuild.exe" Private="false" Condition="'$(TargetFramework)' == 'net461'" />
     <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net472\MSBuild.exe" Private="false" Condition="'$(TargetFramework)' == 'net472'" />
     <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\netcoreapp2.1\MSBuild.dll" Private="false" Condition="'$(TargetFramework)' == 'netcoreapp3.1'" />
-    <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net5.0\MSBuild.dll" Private="false" Condition="'$(TargetFramework)' == 'net5.0' Or '$(TargetFramework)' == 'net6.0'" />
+    <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net5.0\MSBuild.dll" Private="false" Condition="'$(TargetFramework)' == 'net5.0'" />
+    <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net6.0\MSBuild.dll" Private="false" Condition="'$(TargetFramework)' == 'net6.0'" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" Condition="'$(TargetFramework)' == 'net461' Or '$(TargetFramework)' == 'net472'" />
