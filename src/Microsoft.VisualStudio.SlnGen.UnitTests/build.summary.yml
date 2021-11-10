@@ -267,7 +267,7 @@ net472:
   - (NuGetPackageRoot)/microsoft.codecoverage/17.0.0/lib/net45/Microsoft.VisualStudio.CodeCoverage.Shim.dll
   - (NuGetPackageRoot)/microsoft.net.stringtools/1.0.0/lib/net472/Microsoft.NET.StringTools.dll
   - (NuGetPackageRoot)/microsoft.visualstudio.setup.configuration.interop/1.16.30/lib/net35/Microsoft.VisualStudio.Setup.Configuration.Interop.dll
-  - (NuGetPackageRoot)/msbuild.projectcreation/6.3.3/lib/net472/Microsoft.Build.Utilities.ProjectCreation.dll
+  - (NuGetPackageRoot)/msbuild.projectcreation/7.0.3-preview/lib/net472/Microsoft.Build.Utilities.ProjectCreation.dll
   - (NuGetPackageRoot)/newtonsoft.json/9.0.1/lib/net45/Newtonsoft.Json.dll
   - (NuGetPackageRoot)/nuget.common/5.11.0/lib/net472/NuGet.Common.dll
   - (NuGetPackageRoot)/nuget.configuration/5.11.0/lib/net472/NuGet.Configuration.dll
@@ -768,7 +768,7 @@ net5.0:
   - (NuGetPackageRoot)/microsoft.win32.registry.accesscontrol/5.0.0/ref/netstandard2.0/Microsoft.Win32.Registry.AccessControl.dll
   - (NuGetPackageRoot)/microsoft.win32.registry/5.0.0/ref/netstandard2.0/Microsoft.Win32.Registry.dll
   - (NuGetPackageRoot)/microsoft.win32.systemevents/5.0.0/ref/netstandard2.0/Microsoft.Win32.SystemEvents.dll
-  - (NuGetPackageRoot)/msbuild.projectcreation/6.3.3/lib/net5.0/Microsoft.Build.Utilities.ProjectCreation.dll
+  - (NuGetPackageRoot)/msbuild.projectcreation/7.0.3-preview/lib/net5.0/Microsoft.Build.Utilities.ProjectCreation.dll
   - (NuGetPackageRoot)/newtonsoft.json/9.0.1/lib/netstandard1.0/Newtonsoft.Json.dll
   - (NuGetPackageRoot)/nuget.common/5.11.0/lib/netstandard2.0/NuGet.Common.dll
   - (NuGetPackageRoot)/nuget.configuration/5.11.0/lib/netstandard2.0/NuGet.Configuration.dll
@@ -1296,17 +1296,17 @@ net6.0:
   - (NuGetPackageRoot)/microsoft.testplatform.testhost/17.0.0/lib/netcoreapp2.1/testhost.dll
   - (NuGetPackageRoot)/microsoft.win32.registry.accesscontrol/5.0.0/ref/netstandard2.0/Microsoft.Win32.Registry.AccessControl.dll
   - (NuGetPackageRoot)/microsoft.win32.systemevents/5.0.0/ref/netstandard2.0/Microsoft.Win32.SystemEvents.dll
-  - (NuGetPackageRoot)/msbuild.projectcreation/6.3.3/lib/net6.0/Microsoft.Build.Utilities.ProjectCreation.dll
-  - (NuGetPackageRoot)/newtonsoft.json/9.0.1/lib/netstandard1.0/Newtonsoft.Json.dll
-  - (NuGetPackageRoot)/nuget.common/5.11.0/lib/netstandard2.0/NuGet.Common.dll
-  - (NuGetPackageRoot)/nuget.configuration/5.11.0/lib/netstandard2.0/NuGet.Configuration.dll
-  - (NuGetPackageRoot)/nuget.dependencyresolver.core/5.11.0/lib/net5.0/NuGet.DependencyResolver.Core.dll
-  - (NuGetPackageRoot)/nuget.frameworks/5.11.0/lib/netstandard2.0/NuGet.Frameworks.dll
-  - (NuGetPackageRoot)/nuget.librarymodel/5.11.0/lib/netstandard2.0/NuGet.LibraryModel.dll
-  - (NuGetPackageRoot)/nuget.packaging/5.11.0/lib/net5.0/NuGet.Packaging.dll
-  - (NuGetPackageRoot)/nuget.projectmodel/5.11.0/lib/net5.0/NuGet.ProjectModel.dll
-  - (NuGetPackageRoot)/nuget.protocol/5.11.0/lib/net5.0/NuGet.Protocol.dll
-  - (NuGetPackageRoot)/nuget.versioning/5.11.0/lib/netstandard2.0/NuGet.Versioning.dll
+  - (NuGetPackageRoot)/msbuild.projectcreation/7.0.3-preview/lib/net6.0/Microsoft.Build.Utilities.ProjectCreation.dll
+  - (NuGetPackageRoot)/newtonsoft.json/13.0.1/lib/netstandard2.0/Newtonsoft.Json.dll
+  - (NuGetPackageRoot)/nuget.common/6.0.0/lib/netstandard2.0/NuGet.Common.dll
+  - (NuGetPackageRoot)/nuget.configuration/6.0.0/lib/netstandard2.0/NuGet.Configuration.dll
+  - (NuGetPackageRoot)/nuget.dependencyresolver.core/6.0.0/lib/net5.0/NuGet.DependencyResolver.Core.dll
+  - (NuGetPackageRoot)/nuget.frameworks/6.0.0/lib/netstandard2.0/NuGet.Frameworks.dll
+  - (NuGetPackageRoot)/nuget.librarymodel/6.0.0/lib/netstandard2.0/NuGet.LibraryModel.dll
+  - (NuGetPackageRoot)/nuget.packaging/6.0.0/lib/net5.0/NuGet.Packaging.dll
+  - (NuGetPackageRoot)/nuget.projectmodel/6.0.0/lib/net5.0/NuGet.ProjectModel.dll
+  - (NuGetPackageRoot)/nuget.protocol/6.0.0/lib/net5.0/NuGet.Protocol.dll
+  - (NuGetPackageRoot)/nuget.versioning/6.0.0/lib/netstandard2.0/NuGet.Versioning.dll
   - (NuGetPackageRoot)/shouldly/4.0.3/lib/netstandard2.0/Shouldly.dll
   - (NuGetPackageRoot)/system.codedom/5.0.0/ref/netstandard2.0/System.CodeDom.dll
   - (NuGetPackageRoot)/system.componentmodel.composition.registration/5.0.0/ref/netstandard2.1/System.ComponentModel.Composition.Registration.dll
@@ -1822,17 +1822,17 @@ netcoreapp3.1:
   - (NuGetPackageRoot)/microsoft.win32.registry.accesscontrol/5.0.0/ref/netstandard2.0/Microsoft.Win32.Registry.AccessControl.dll
   - (NuGetPackageRoot)/microsoft.win32.registry/5.0.0/ref/netstandard2.0/Microsoft.Win32.Registry.dll
   - (NuGetPackageRoot)/microsoft.win32.systemevents/5.0.0/ref/netstandard2.0/Microsoft.Win32.SystemEvents.dll
-  - (NuGetPackageRoot)/msbuild.projectcreation/6.3.3/lib/netcoreapp3.1/Microsoft.Build.Utilities.ProjectCreation.dll
+  - (NuGetPackageRoot)/msbuild.projectcreation/7.0.3-preview/lib/netcoreapp3.1/Microsoft.Build.Utilities.ProjectCreation.dll
   - (NuGetPackageRoot)/newtonsoft.json/9.0.1/lib/netstandard1.0/Newtonsoft.Json.dll
-  - (NuGetPackageRoot)/nuget.common/5.7.1/lib/netstandard2.0/NuGet.Common.dll
-  - (NuGetPackageRoot)/nuget.configuration/5.7.1/lib/netstandard2.0/NuGet.Configuration.dll
-  - (NuGetPackageRoot)/nuget.dependencyresolver.core/5.7.1/lib/netstandard2.0/NuGet.DependencyResolver.Core.dll
-  - (NuGetPackageRoot)/nuget.frameworks/5.7.1/lib/netstandard2.0/NuGet.Frameworks.dll
-  - (NuGetPackageRoot)/nuget.librarymodel/5.7.1/lib/netstandard2.0/NuGet.LibraryModel.dll
-  - (NuGetPackageRoot)/nuget.packaging/5.7.1/lib/netstandard2.0/NuGet.Packaging.dll
-  - (NuGetPackageRoot)/nuget.projectmodel/5.7.1/lib/netstandard2.0/NuGet.ProjectModel.dll
-  - (NuGetPackageRoot)/nuget.protocol/5.7.1/lib/netstandard2.0/NuGet.Protocol.dll
-  - (NuGetPackageRoot)/nuget.versioning/5.7.1/lib/netstandard2.0/NuGet.Versioning.dll
+  - (NuGetPackageRoot)/nuget.common/5.11.0/lib/netstandard2.0/NuGet.Common.dll
+  - (NuGetPackageRoot)/nuget.configuration/5.11.0/lib/netstandard2.0/NuGet.Configuration.dll
+  - (NuGetPackageRoot)/nuget.dependencyresolver.core/5.11.0/lib/netstandard2.0/NuGet.DependencyResolver.Core.dll
+  - (NuGetPackageRoot)/nuget.frameworks/5.11.0/lib/netstandard2.0/NuGet.Frameworks.dll
+  - (NuGetPackageRoot)/nuget.librarymodel/5.11.0/lib/netstandard2.0/NuGet.LibraryModel.dll
+  - (NuGetPackageRoot)/nuget.packaging/5.11.0/lib/netstandard2.0/NuGet.Packaging.dll
+  - (NuGetPackageRoot)/nuget.projectmodel/5.11.0/lib/netstandard2.0/NuGet.ProjectModel.dll
+  - (NuGetPackageRoot)/nuget.protocol/5.11.0/lib/netstandard2.0/NuGet.Protocol.dll
+  - (NuGetPackageRoot)/nuget.versioning/5.11.0/lib/netstandard2.0/NuGet.Versioning.dll
   - (NuGetPackageRoot)/shouldly/4.0.3/lib/netstandard2.0/Shouldly.dll
   - (NuGetPackageRoot)/system.codedom/5.0.0/ref/netstandard2.0/System.CodeDom.dll
   - (NuGetPackageRoot)/system.collections.immutable/5.0.0/lib/netstandard2.0/System.Collections.Immutable.dll
