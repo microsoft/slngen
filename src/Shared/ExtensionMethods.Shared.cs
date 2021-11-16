@@ -43,7 +43,12 @@ namespace Microsoft.VisualStudio.SlnGen
 
                 GetFinalPathNameByHandle(stream.SafeFileHandle, stringBuilder, stringBuilder.Capacity, 0);
 
-                return stringBuilder.ToString(4, stringBuilder.Capacity - 5);
+                // The path must begin with \\?\X:in order to be made into a path that Visual Studio can use.
+                // Mapped network drives return a value like "// \\?\UNC\MachineName\C$" which won't work so the original path must be used
+                if (stringBuilder.Length > 7 && stringBuilder[0] == '\\' && stringBuilder[1] == '\\' && stringBuilder[2] == '?' && stringBuilder[3] == '\\' && stringBuilder[5] == ':' && stringBuilder[6] == '\\')
+                {
+                    return stringBuilder.ToString(4, stringBuilder.Capacity - 5);
+                }
             }
 
             return path;
