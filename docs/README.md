@@ -71,8 +71,6 @@ Options:
   --ignoreMainProject                 None of the projects receive special treatment.
   --launch <true|false>               Launch Visual Studio after generating the Solution file. Default: true on Windows
   --loadprojects <false>              When launching Visual Studio, opens the specified solution without loading any projects. Default: true
-                                      You must disable shell execute when using this command-line option.
-                                        --useshellexecute:false
   --logger                            Use this logger to log events from SlnGen. To specify multiple loggers, specify each logger separately.
                                       The <logger> syntax is:
                                         [<class>,]<assembly>[;<parameters>]
@@ -90,7 +88,6 @@ Options:
   -p|--property <name=value[;]>       Set or override these project-level properties. <name> is the property name, and <value> is the property value. Use a semicolon or a comma to separate multiple properties, or specify each property separately.
                                         Example:
                                           --property:WarningLevel=2;MyProperty=true
-  -u|--useshellexecute <false>        Indicates whether or not the Visual Studio solution file should be opened by the registered file extension handler. Default: true
   -d|--solutiondir <path>             An optional path to the directory in which the solution file will be generated. Defaults to the same directory as the project. --solutionfile will take precedence over this switch.
   -o|--solutionfile <path>            An optional path to the solution file to generate. Defaults to the same directory as the project.
   -v|--verbosity                      Display this amount of information in the event log. The available verbosity levels are:
@@ -125,7 +122,6 @@ The following properties only apply when using SlnGen as an MSBuild target.
 |--------------------------|------------------------------------------------------------------------------------------------------------|--------------------|---------|
 | `SlnGenLaunchVisualStudio` | Indicates whether or not Visual Studio should be launched to open the solution file after it is generated. | `true` or `false` | `true` |
 | `SlnGenSolutionFileFullPath` | Specifies the full path to the Visual Studio solution file to generate.  By default, the path is the same as the project. | | ProjectPath.sln|
-| `SlnGenUseShellExecute` | Indicates whether or not the Visual Studio solution file should be opened by the registered file extension handler.  You can disable this setting to use whatever `devenv.exe` is on your `PATH` or you can specify a full path to `devenve.exe` with the `SlnGenDevEnvFullPath` property. | `true` or `false` | `true` |
 | `SlnGenDevEnvFullPath` | Specifies a full path to Visual Studio's `devenv.exe` to use when opening the solution file.  By default, SlnGen will launch the program associated with the `.sln` file extension.  However, in some cases you may want to specify a custom path to Visual Studio. | | |
 | `SlnGenGlobalProperties` | Specifies MSBuild properties to set when loading projects and project references. | | `DesignTimeBuild=true;BuildingProject=false` |
 | `SlnGenInheritGlobalProperties` | Indicates whether or not all global variables specified when loading the initial project should be passed around when loading project references. | `true` or `false` | `true` |
@@ -136,7 +132,6 @@ The following properties only apply when using SlnGen as an MSBuild target.
 Command-line argument
 ```cmd
 MSBuild.exe /Target:SlnGen /Property:"SlnGenLaunchVisualStudio=false"
-                           /Property:"SlnGenUseShellExecute=false"
                            /Property:"SlnGenDevEnvFullPath=%VSINSTALLDIR%Common7\IDE\devenv.exe"
 ```
 
@@ -145,7 +140,6 @@ MSBuild properties
 <PropertyGroup>
   <SlnGenLaunchVisualStudio>false</SlnGenLaunchVisualStudio>
   <SlnGenSolutionFileFullPath>$(MSBuildProjectDirectory)\$(MSBuildProjectName).sln</SlnGenSolutionFileFullPath>
-  <SlnGenUseShellExecute>false</SlnGenUseShellExecute>
   <SlnGenGlobalProperties>DoNotDoSomethingWhenLoadingProjects=true;TodayIsYesterday=false</SlnGenGlobalProperties>
   <SlnGenInheritGlobalProperties>false</SlnGenInheritGlobalProperties>
   <SlnGenGlobalPropertiesToRemove>Property1;Property2</SlnGenGlobalPropertiesToRemove>

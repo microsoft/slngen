@@ -110,11 +110,6 @@ namespace Microsoft.VisualStudio.SlnGen
         public const string SlnGenSolutionFolder = nameof(SlnGenSolutionFolder);
 
         /// <summary>
-        /// Represents the SlnGenUseShellExecute property.
-        /// </summary>
-        public const string SlnGenUseShellExecute = nameof(SlnGenUseShellExecute);
-
-        /// <summary>
         /// Represents the UsingMicrosoftNETSdk property.
         /// </summary>
         public const string UsingMicrosoftNETSdk = nameof(UsingMicrosoftNETSdk);
