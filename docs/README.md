@@ -25,39 +25,79 @@ See the [frequently asked questions](FAQ) if you are having any issues.
 
 ## Command-Line Reference
 
-```cmd
-slngen [switches] [project]
 ```
+Usage: slngen [options] <project path>
 
-### Arguments
+Arguments:
+  project path                        An optional path to a project which can include wildcards like **\*.csproj or directories which contain projects files. If not specified, all projects in the current directory will be used.
 
-| Argument | Description |
-|----------|-------------|
-| <code>project</code> | An optional path to a project to generate a solution file for which can include wildcards like **\*.csproj.  If you don't specify a project file, SlnGen searches the current working directory for a file name extension that ends in proj and uses that file. |
+Options:
+  -bl|--binarylogger[:<parameters>]   Serializes all build events to a compressed binary file.
+                                      By default the file is in the current directory and named "slngen.binlog" and contains the source text of project files, including all imported projects and target files encountered during the build. The optional ProjectImports switch controls this behavior:
 
-### Switches
+                                       ProjectImports=None - Don't collect the project imports.
+                                       ProjectImports=Embed - Embed project imports in the log file.
+                                       ProjectImports=ZipFile - Save project files to output.projectimports.zip where output is the same name as the binary log file name.
 
-| Switch | Short Form | Description |
-|--------|------------|-------------|
-| <code>--help</code> | <code>-?</code> | Show help information |
-| <code>--launch:true&#124;false</code> | | Launch Visual Studio after generating the Solution file. Default: `true` |
-| <code>--folders:true&#124;false</code> | | Enables the creation of hierarchical solution folders. Default: `false` |
-| <code>--collapsefolders:true&#124;false</code> | | Enables folders containing a single item to be collapsed into their parent folder. Default: `false` |
-| <code>--loadprojects:true&#124;false</code> | | When launching Visual Studio, opens the specified solution without loading any projects. Default: `true` |
-| <code>--useshellexecute:true&#124;false</code> | <code>-u:true&#124;false</code> | Indicates whether or not the Visual Studio solution file should be opened by the registered file extension handler. Default: `true` |
-| <code>--solutionfile:path</code> | `-o:file` | An optional path to the solution file to generate. Defaults to the same directory as the project. |
-| <code>--solutiondir:path</code> | `-d:path` | An optional path to the directory in which the solution file will be generated.  Defaults to the same directory as the project. --solutionfile will take precedence over this switch. |
-| <code>--devenvpath:path</code> | | Specifies a full path to Visual Studio's devenv.exe to use when opening the solution file. By default, SlnGen will launch the program associated with the .sln file extension. |
-| <code>--property:name=value</code> | `-p:name=value` | Set or override these project-level properties. Use a semicolon or a comma to separate multiple properties, or specify each property separately.|
-| <code>--configuration:value</code> | | (Optional) Specifies one or more values to use for the solution Configuration (i.e. Debug or Release).  By default, all projects' available values for Configuration are used.  In certain cases, projects do not properly convey the Configuration so it is desirable to generate a solution with your own values. |
-| <code>--platform:value</code> | | (Optional) Specifies one or more values to use for the solution Platform (i.e. Any CPU or x64).  By default, all projects' available values for Platform are used.  In certain cases, projects do not properly convey the Platform so it is desirable to generate a solution with your own values. |
-| <code>--verbosity:value</code> | `-v:value` | Display this amount of information in the event log. <br />The available verbosity levels are: `q[uiet]`, `m[inimal]`, `n[ormal]`, `d[etailed]`, and `diag[nostic]`.|
-| <code>--consolelogger:params</code> | | Parameters to console logger. The available parameters are:<br />&nbsp;&nbsp;`PerformanceSummary`--Show time spent in tasks, targets and projects.<br/>&nbsp;&nbsp;`Summary`--Show error and warning summary at the end.<br/>&nbsp;&nbsp;`NoSummary`--Don't show error and warning summary at the end.<br/>&nbsp;&nbsp;`ErrorsOnly`--Show only errors.<br/>&nbsp;&nbsp;`WarningsOnly`--Show only warnings.<br/>&nbsp;&nbsp;`ShowTimestamp`--Display the Timestamp as a prefix to any message.<br/>&nbsp;&nbsp;`ShowEventId`--Show eventId for started events, finished events, and messages<br/>&nbsp;&nbsp;`ForceNoAlign`--Does not align the text to the size of the console buffer<br/>&nbsp;&nbsp;`DisableConsoleColor`--Use the default console colors for all logging messages.<br/>&nbsp;&nbsp;`ForceConsoleColor`--Use ANSI console colors even if console does not support it<br/>&nbsp;&nbsp;`Verbosity`--overrides the -verbosity setting for this logger.|
-| <code>--filelogger[:params]</code> | | Provides any extra parameters for file loggers. The same parameters listed for the console logger are available.<br/>Some additional available parameters are:<br/>&nbsp;&nbsp;`LogFile`--path to the log file into which the build log will be written.<br/>&nbsp;&nbsp;`Append`--determines if the build log will be appended to or overwrite the log file.Setting the switch appends the build log to the log file;<br/>&nbsp;&nbsp;&nbsp;&nbsp;Not setting the switch overwrites the contents of an existing log file. The default is not to append to the log file.<br/>&nbsp;&nbsp;`Encoding`--specifies the encoding for the file, for example, UTF-8, Unicode, or ASCII |
-| <code>--binarylogger[:params]</code> | | Serializes all build events to a compressed binary file. By default the file is in the current directory and named `slngen.binlog` and contains the source text of project files, including all imported projects and target files encountered during the build. |
-| <code>--logger:params</code> | | Use this logger to log events from SlnGen. To specify multiple loggers, specify each logger separately.<br/>&nbsp;&nbsp;The `<params>` syntax is:<br/>&nbsp;&nbsp;  `[<class>,]<assembly>[;<parameters>]`<br/>&nbsp;&nbsp;The `<logger class>` syntax is:<br/>&nbsp;&nbsp;  `[<partial or full namespace>.]<logger class name>`<br/>&nbsp;&nbsp;The `<logger assembly>` syntax is:<br/>&nbsp;&nbsp;  `{<assembly name>[,<strong name>] | <assembly file>}`<br/>&nbsp;&nbsp;Logger options specify how SlnGen creates the logger. The `<logger parameters>` are optional, and are passed to the logger exactly as you typed them.|
-| <code>--nologo</code> | | Disables writing the SlnGen version and copyright information to the console. |
-| <code>--version</code> | | Display version information only. |
+                                      NOTE: The binary logger does not collect non-MSBuild source files such as .cs, .cpp etc.
+
+                                      Example: -bl:output.binlog;ProjectImports=ZipFile
+  --collapsefolders <true>            Enables folders containing a single item to be collapsed into their parent folder. Default: false
+  -c|--configuration <values>         Specifies one or more Configuration values to use when generating the solution.
+  -cl|--consolelogger[:<parameters>]  Parameters to console logger. The available parameters are:
+                                          PerformanceSummary--Show time spent in tasks, targets and projects.
+                                          Summary--Show error and warning summary at the end.
+                                          NoSummary--Don't show error and warning summary at the end.
+                                          ErrorsOnly--Show only errors.
+                                          WarningsOnly--Show only warnings.
+                                          ShowTimestamp--Display the Timestamp as a prefix to any message.
+                                          ShowEventId--Show eventId for started events, finished events, and messages
+                                          ForceNoAlign--Does not align the text to the size of the console buffer
+                                          DisableConsoleColor--Use the default console colors for all logging messages.
+                                          ForceConsoleColor--Use ANSI console colors even if console does not support it
+                                          Verbosity--overrides the -verbosity setting for this logger.
+                                       Example:
+                                          --consoleloggerparameters:PerformanceSummary;NoSummary;Verbosity=Minimal
+  -vs|--devenvfullpath                Specifies a full path to Visual Studio's devenv.exe to use when opening the solution file. By default, SlnGen will launch the program associated with the .sln file extension.
+  -fl|--filelogger[:<parameters>]     Provides any extra parameters for file loggers. The same parameters listed for the console logger are available.
+                                      Some additional available parameters are:
+                                          LogFile--path to the log file into which the build log will be written.
+                                          Append--determines if the build log will be appended to or overwrite the log file.Setting the switch appends the build log to the log file;
+                                              Not setting the switch overwrites the contents of an existing log file. The default is not to append to the log file.
+                                          Encoding--specifies the encoding for the file, for example, UTF-8, Unicode, or ASCII
+                                       Examples:
+                                          -fileLoggerParameters:LogFile=MyLog.log;Append;Verbosity=Diagnostic;Encoding=UTF-8
+  --folders <true>                    Enables the creation of hierarchical solution folders. Default: false
+  --ignoreMainProject                 None of the projects receive special treatment.
+  --launch <true|false>               Launch Visual Studio after generating the Solution file. Default: true on Windows
+  --loadprojects <false>              When launching Visual Studio, opens the specified solution without loading any projects. Default: true
+                                      You must disable shell execute when using this command-line option.
+                                        --useshellexecute:false
+  --logger                            Use this logger to log events from SlnGen. To specify multiple loggers, specify each logger separately.
+                                      The <logger> syntax is:
+                                        [<class>,]<assembly>[;<parameters>]
+                                      The <logger class> syntax is:
+                                        [<partial or full namespace>.]<logger class name>
+                                      The <logger assembly> syntax is:
+                                        {<assembly name>[,<strong name>] | <assembly file>}
+                                      Logger options specify how SlnGen creates the logger. The <logger parameters> are optional, and are passed to the logger exactly as you typed them.
+                                      Examples:
+                                        -logger:XMLLogger,MyLogger,Version=1.0.2,Culture=neutral
+                                        -logger:XMLLogger,C:\Loggers\MyLogger.dll;OutputAsHTML
+  --nologo                            Do not display the startup banner and copyright message.
+  --nowarn                            Suppress all warning messages
+  --platform <values>                 Specifies one or more Platform values to use when generating the solution.
+  -p|--property <name=value[;]>       Set or override these project-level properties. <name> is the property name, and <value> is the property value. Use a semicolon or a comma to separate multiple properties, or specify each property separately.
+                                        Example:
+                                          --property:WarningLevel=2;MyProperty=true
+  -u|--useshellexecute <false>        Indicates whether or not the Visual Studio solution file should be opened by the registered file extension handler. Default: true
+  -d|--solutiondir <path>             An optional path to the directory in which the solution file will be generated. Defaults to the same directory as the project. --solutionfile will take precedence over this switch.
+  -o|--solutionfile <path>            An optional path to the solution file to generate. Defaults to the same directory as the project.
+  -v|--verbosity                      Display this amount of information in the event log. The available verbosity levels are:
+                                        q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].
+  --version                           Display version information only.
+  -?|-h|--help                        Show help information.
+```
 
 # Getting Started (MSBuild Target)
 SlnGen is an MSBuild target so you will need to add a `<PackageReference />` to all projects that you want use it with.  We recommend that you simply add the `PackageReference` to a common import like [Directory.Build.props](https://docs.microsoft.com/en-us/visualstudio/msbuild/customize-your-build#directorybuildprops-example)
