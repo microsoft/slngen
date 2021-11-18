@@ -137,7 +137,6 @@ namespace Microsoft.VisualStudio.SlnGen.Tasks
             commandLineBuilder.AppendSwitchIfNotNull("--launch:", GetPropertyValue(MSBuildPropertyNames.SlnGenLaunchVisualStudio));
             commandLineBuilder.AppendSwitchIfNotNull("--loadprojects:", GetPropertyValue(MSBuildPropertyNames.SlnGenLoadProjects));
             commandLineBuilder.AppendSwitchIfNotNull("--solutionfile:", GetPropertyValue(MSBuildPropertyNames.SlnGenSolutionFileFullPath));
-            commandLineBuilder.AppendSwitchIfNotNull("--useshellexecute:", GetPropertyValue(MSBuildPropertyNames.SlnGenUseShellExecute));
             commandLineBuilder.AppendSwitchIfNotNull("--property:", globalProperties.Count == 0 ? null : string.Join(";", globalProperties.Select(i => $"{i.Key}={i.Value}")));
 
             if (string.Equals(GetPropertyValue(MSBuildPropertyNames.SlnGenDebug), bool.TrueString, StringComparison.OrdinalIgnoreCase))

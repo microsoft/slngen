@@ -40,90 +40,63 @@ namespace Microsoft.VisualStudio.SlnGen
                 return true;
             }
 
-            bool loadProjectsInVisualStudio = arguments.ShouldLoadProjectsInVisualStudio();
-            bool enableShellExecute = arguments.EnableShellExecute();
-
             string devEnvFullPath = arguments.DevEnvFullPath?.LastOrDefault();
 
-            if (!enableShellExecute || !loadProjectsInVisualStudio || Program.CurrentDevelopmentEnvironment.IsCorext)
+            if (!devEnvFullPath.IsNullOrWhiteSpace())
             {
-                if (devEnvFullPath.IsNullOrWhiteSpace())
-                {
-                    if (visualStudioInstance == null)
-                    {
-                        logger.LogError(
-                            Program.CurrentDevelopmentEnvironment.IsCorext
-                                ? $"Could not find a Visual Studio {Environment.GetEnvironmentVariable("VisualStudioVersion")} installation.  Please do one of the following:\n a) Specify a full path to devenv.exe via the -vs command-line argument\n b) Update your corext.config to specify a version of MSBuild.Corext that matches a Visual Studio version you have installed\n c) Install a version of Visual Studio that matches the version of MSBuild.Corext in your corext.config"
-                                : "Could not find a Visual Studio installation.  Please specify the full path to devenv.exe via the -vs command-line argument");
-
-                        return false;
-                    }
-
-                    if (visualStudioInstance.IsBuildTools)
-                    {
-                        logger.LogError("Cannot use a BuildTools instance of Visual Studio.");
-
-                        return false;
-                    }
-
-                    devEnvFullPath = Path.Combine(visualStudioInstance.InstallationPath, "Common7", "IDE", "devenv.exe");
-                }
+                visualStudioInstance = VisualStudioConfiguration.GetInstanceForPath(devEnvFullPath);
             }
 
-            if (solutionFileFullPath.IsNullOrWhiteSpace())
+            if (visualStudioInstance == null)
             {
-                throw new ArgumentNullException(nameof(solutionFileFullPath));
+                logger.LogError(
+                    Program.CurrentDevelopmentEnvironment.IsCorext
+                        ? $"Could not find a Visual Studio {Environment.GetEnvironmentVariable("VisualStudioVersion")} installation.  Please do one of the following:\n a) Specify a full path to devenv.exe via the -vs command-line argument\n b) Update your corext.config to specify a version of MSBuild.Corext that matches a Visual Studio version you have installed\n c) Install a version of Visual Studio that matches the version of MSBuild.Corext in your corext.config"
+                        : "Could not find a Visual Studio installation.  Please run from a command window that has MSBuild.exe on the PATH or specify the full path to devenv.exe via the -vs command-line argument");
+
+                return false;
+            }
+
+            if (visualStudioInstance.IsBuildTools)
+            {
+                logger.LogError("Cannot use a BuildTools instance of Visual Studio.");
+
+                return false;
+            }
+
+            devEnvFullPath = Path.Combine(visualStudioInstance.InstallationPath, "Common7", "IDE", "devenv.exe");
+
+            if (!File.Exists(devEnvFullPath))
+            {
+                logger.LogError($"The specified path to Visual Studio ({devEnvFullPath}) does not exist or is inaccessible.");
+
+                return false;
             }
 
             CommandLineBuilder commandLineBuilder = new CommandLineBuilder();
 
-            ProcessStartInfo processStartInfo;
+            commandLineBuilder.AppendFileNameIfNotNull(solutionFileFullPath);
 
-            if (!devEnvFullPath.IsNullOrWhiteSpace())
+            if (!arguments.ShouldLoadProjectsInVisualStudio())
             {
-                if (!File.Exists(devEnvFullPath))
-                {
-                    logger.LogError($"The specified path to Visual Studio ({devEnvFullPath}) does not exist or is inaccessible.");
-
-                    return false;
-                }
-
-                processStartInfo = new ProcessStartInfo
-                {
-                    FileName = devEnvFullPath!,
-                    UseShellExecute = false,
-                };
-
-                commandLineBuilder.AppendFileNameIfNotNull(solutionFileFullPath);
-
-                if (!arguments.ShouldLoadProjectsInVisualStudio())
-                {
-                    commandLineBuilder.AppendSwitch(DoNotLoadProjectsCommandLineArgument);
-                }
-            }
-            else
-            {
-                processStartInfo = new ProcessStartInfo
-                {
-                    FileName = solutionFileFullPath,
-                    UseShellExecute = true,
-                };
+                commandLineBuilder.AppendSwitch(DoNotLoadProjectsCommandLineArgument);
             }
 
             try
             {
-                processStartInfo.Arguments = commandLineBuilder.ToString();
-
                 Process process = new Process
                 {
-                    StartInfo = processStartInfo,
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = devEnvFullPath,
+                        Arguments = commandLineBuilder.ToString(),
+                        UseShellExecute = false,
+                    },
                 };
 
                 logger.LogMessageHigh("Launching Visual Studio...");
-                logger.LogMessageLow("  FileName = {0}", processStartInfo.FileName);
-                logger.LogMessageLow("  Arguments = {0}", processStartInfo.Arguments);
-                logger.LogMessageLow("  UseShellExecute = {0}", processStartInfo.UseShellExecute);
-                logger.LogMessageLow("  WindowStyle = {0}", processStartInfo.WindowStyle);
+                logger.LogMessageLow("  FileName = {0}", process.StartInfo.FileName);
+                logger.LogMessageLow("  Arguments = {0}", process.StartInfo.Arguments);
 
                 if (!process.Start())
                 {

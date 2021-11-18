@@ -369,7 +369,6 @@ namespace Microsoft.VisualStudio.SlnGen
 #endif
                             ["UseBinaryLogger"] = arguments.BinaryLogger.HasValue.ToString(),
                             ["UseFileLogger"] = arguments.FileLoggerParameters.HasValue.ToString(),
-                            ["UseShellExecute"] = arguments.EnableShellExecute().ToString(),
                             ["CustomProjectTypeGuidCount"] = customProjectTypeGuidCount,
                             ["ProjectCount"] = evaluationCount,
                             ["ProjectEvaluationMilliseconds"] = evaluationTime.TotalMilliseconds,

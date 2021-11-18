@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 
 namespace Microsoft.VisualStudio.SlnGen
 {
@@ -147,9 +146,7 @@ Some additional available parameters are:
             "--loadprojects",
             CommandOptionType.MultipleValue,
             ValueName = "false",
-            Description = @"When launching Visual Studio, opens the specified solution without loading any projects.  Default: true
-You must disable shell execute when using this command-line option.
-  --useshellexecute:false")]
+            Description = @"When launching Visual Studio, opens the specified solution without loading any projects.  Default: true")]
         public string[] LoadProjectsInVisualStudio { get; set; }
 
         /// <summary>
@@ -221,16 +218,6 @@ Examples:
         public string[] Property { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the shell should be used when starting the process.
-        /// </summary>
-        [Option(
-            "-u|--useshellexecute",
-            CommandOptionType.MultipleValue,
-            ValueName = "false",
-            Description = "Indicates whether or not the Visual Studio solution file should be opened by the registered file extension handler.  Default: true")]
-        public string[] ShellExecute { get; set; }
-
-        /// <summary>
         /// Gets or sets the full path to the solution file to generate.
         /// </summary>
         [Option(
@@ -283,12 +270,6 @@ Examples:
         /// </summary>
         /// <returns>true if folders should be used, otherwise false.</returns>
         public bool EnableFolders() => GetBoolean(Folders);
-
-        /// <summary>
-        /// Gets a value indicating whether or not shell execute should be used when launching the solution.
-        /// </summary>
-        /// <returns>true if shell executed should be used, otherwise false.</returns>
-        public bool EnableShellExecute() => GetBoolean(ShellExecute, defaultValue: true);
 
         /// <summary>
         /// Gets the Configuration values based on what was specified as command-line arguments.
