@@ -792,6 +792,40 @@ EndGlobal
             }
         }
 
+        [Fact]
+        public void VisualStudioVersionIsWritten()
+        {
+            string solutionFilePath = GetTempFileName();
+
+            SlnFile slnFile = new SlnFile
+            {
+                VisualStudioVersion = new Version(1, 2, 3, 4),
+                SolutionGuid = new Guid("{6370DE27-36B7-44AE-B47A-1ECF4A6D740A}"),
+            };
+
+            slnFile.Save(solutionFilePath, useFolders: false);
+
+            File.ReadAllText(solutionFilePath).ShouldBe(
+                @"Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 1
+VisualStudioVersion = 1.2.3.4
+MinimumVisualStudioVersion = 10.0.40219.1
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6370DE27-36B7-44AE-B47A-1ECF4A6D740A}
+	EndGlobalSection
+EndGlobal
+",
+                StringCompareShould.IgnoreLineEndings);
+        }
+
         private void ValidateProjectInSolution(Action<SlnProject, ProjectInSolution> customValidator, SlnProject[] projects, bool folders)
         {
             string solutionFilePath = GetTempFileName();

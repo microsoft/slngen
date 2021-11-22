@@ -93,6 +93,7 @@ Options:
   -v|--verbosity                      Display this amount of information in the event log. The available verbosity levels are:
                                         q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].
   --version                           Display version information only.
+  --vsversion                         Specifies that a version of Visual Studio should be included in the solution file. When specified with no value, the value will be set to the version of Visual Studio that is used to open the solution.
   -?|-h|--help                        Show help information.
 ```
 
