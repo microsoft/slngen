@@ -255,6 +255,15 @@ Examples:
         public bool Version { get; set; }
 
         /// <summary>
+        /// Gets or sets the Visual Studio version to include in the solution file header.
+        /// </summary>
+        [Option(
+            "--vsversion",
+            CommandOptionType.SingleOrNoValue,
+            Description = "Specifies that a version of Visual Studio should be included in the solution file.  When specified with no value, the value will be set to the version of Visual Studio that is used to open the solution.")]
+        public (bool HasValue, string Version) VisualStudioVersion { get; set; }
+
+        /// <summary>
         /// Gets or sets a <see cref="Func{ProgramArguments,IConsole,Int32}" /> to execute.
         /// </summary>
         internal static Func<ProgramArguments, IConsole, int> Execute { get; set; } = Program.Execute;
@@ -307,6 +316,23 @@ Examples:
         /// </summary>
         /// <returns>An <see cref="IReadOnlyCollection{T}" /> containing the unique values for Platform.</returns>
         public IReadOnlyCollection<string> GetPlatforms() => Platform.SplitValues();
+
+        /// <summary>
+        /// Gets the full path to devenv.exe based on the specified arguments.
+        /// </summary>
+        /// <param name="visualStudioInstance">An optional <see cref="VisualStudioInstance" />.</param>
+        /// <returns>The full path to devenv.exe if one is available, otherwise <c>null</c>.</returns>
+        public string GetDevEnvFullPath(VisualStudioInstance visualStudioInstance)
+        {
+            string devEnvFullPath = DevEnvFullPath?.LastOrDefault();
+
+            if (devEnvFullPath.IsNullOrWhiteSpace() && visualStudioInstance != null)
+            {
+                devEnvFullPath = Path.Combine(visualStudioInstance.InstallationPath, "Common7", "IDE", "devenv.exe");
+            }
+
+            return devEnvFullPath;
+        }
 
         /// <summary>
         /// Executes the current program.

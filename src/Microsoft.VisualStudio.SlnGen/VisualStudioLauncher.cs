@@ -40,7 +40,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 return true;
             }
 
-            string devEnvFullPath = arguments.DevEnvFullPath?.LastOrDefault();
+            string devEnvFullPath = arguments.GetDevEnvFullPath(visualStudioInstance);
 
             if (!devEnvFullPath.IsNullOrWhiteSpace())
             {
@@ -63,8 +63,6 @@ namespace Microsoft.VisualStudio.SlnGen
 
                 return false;
             }
-
-            devEnvFullPath = Path.Combine(visualStudioInstance.InstallationPath, "Common7", "IDE", "devenv.exe");
 
             if (!File.Exists(devEnvFullPath))
             {

@@ -5,6 +5,7 @@
 using Microsoft.Build.Evaluation;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -100,6 +101,11 @@ namespace Microsoft.VisualStudio.SlnGen
         public IReadOnlyDictionary<string, Guid> ExistingProjectGuids { get; set; }
 
         /// <summary>
+        /// Gets or sets an optional minumal Visual Studio version for the solution file.
+        /// </summary>
+        public string MinumumVisualStudioVersion { get; set; } = "10.0.40219.1";
+
+        /// <summary>
         /// Gets or sets a <see cref="IReadOnlyCollection{String}" /> of Platform values to use.
         /// </summary>
         public IReadOnlyCollection<string> Platforms { get; set; }
@@ -113,6 +119,11 @@ namespace Microsoft.VisualStudio.SlnGen
         /// Gets a list of solution items.
         /// </summary>
         public IReadOnlyCollection<string> SolutionItems => _solutionItems;
+
+        /// <summary>
+        /// Gets or sets an optional Visual Studio version for the solution file.
+        /// </summary>
+        public Version VisualStudioVersion { get; set; }
 
         /// <summary>
         /// Generates a solution file.
@@ -163,6 +174,26 @@ namespace Microsoft.VisualStudio.SlnGen
                 Platforms = arguments.GetPlatforms(),
                 Configurations = arguments.GetConfigurations(),
             };
+
+            if (arguments.VisualStudioVersion.HasValue)
+            {
+                if (arguments.VisualStudioVersion.Version != null && Version.TryParse(arguments.VisualStudioVersion.Version, out Version version))
+                {
+                    solution.VisualStudioVersion = version;
+                }
+
+                if (solution.VisualStudioVersion == null)
+                {
+                    string devEnvFullPath = arguments.GetDevEnvFullPath(Program.CurrentDevelopmentEnvironment.VisualStudio);
+
+                    if (!devEnvFullPath.IsNullOrWhiteSpace() && File.Exists(devEnvFullPath))
+                    {
+                        FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(devEnvFullPath);
+
+                        solution.VisualStudioVersion = new Version(fileVersionInfo.ProductMajorPart, fileVersionInfo.ProductMinorPart, fileVersionInfo.ProductBuildPart, fileVersionInfo.FilePrivatePart);
+                    }
+                }
+            }
 
             if (SlnFile.TryParseExistingSolution(solutionFileFullPath, out Guid solutionGuid, out IReadOnlyDictionary<string, Guid> projectGuidsByPath))
             {
@@ -355,6 +386,13 @@ namespace Microsoft.VisualStudio.SlnGen
         internal void Save(string rootPath, TextWriter writer, bool useFolders, bool collapseFolders = false)
         {
             writer.WriteLine(Header, _fileFormatVersion);
+
+            if (VisualStudioVersion != null)
+            {
+                writer.WriteLine($"# Visual Studio Version {VisualStudioVersion.Major}");
+                writer.WriteLine($"VisualStudioVersion = {VisualStudioVersion}");
+                writer.WriteLine($"MinimumVisualStudioVersion = {MinumumVisualStudioVersion}");
+            }
 
             if (SolutionItems.Count > 0)
             {
