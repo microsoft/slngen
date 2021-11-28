@@ -196,6 +196,7 @@ SlnGen knows about the following project types:
 * Visual Basic projects (.vbproj)
 * Visual C++ projects (.vcxproj)
 * Visual J# projects (.vjsproj)
+* Windows Application Packaging projects (.wapproj)
 * WiX projects (.wixproj)
 
 To add to this list or override an item, specify an `SlnGenCustomProjectTypeGuid` item in your projects.
