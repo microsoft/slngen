@@ -11,7 +11,7 @@
     <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'net5.0'">16.11.0</MicrosoftBuildPackageVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Update="McMaster.Extensions.CommandLineUtils" Version="3.1.0" />
+    <PackageReference Update="McMaster.Extensions.CommandLineUtils" Version="4.0.0" />
     <PackageReference Update="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" />
     <PackageReference Update="Microsoft.Build.Runtime" Version="$(MicrosoftBuildPackageVersion)" />
     <PackageReference Update="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageVersion)" />
