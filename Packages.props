@@ -18,7 +18,7 @@
     <PackageReference Update="Microsoft.Extensions.FileSystemGlobbing" Version="6.0.0" />
     <PackageReference Update="Microsoft.NET.Test.Sdk" Version="17.0.0" />
     <PackageReference Update="Microsoft.VisualStudio.ProjectSystem.SDK" Version="15.8.243" />
-    <PackageReference Update="Microsoft.VisualStudio.SDK" Version="17.0.31902.203" />
+    <PackageReference Update="Microsoft.VisualStudio.SDK" Version="17.0.32112.339" />
     <PackageReference Update="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="3.0.4492" />
     <PackageReference Update="Microsoft.VisualStudio.Telemetry" Version="16.3.250" />
     <PackageReference Update="Microsoft.VSSDK.BuildTools" Version="17.0.5232" />
@@ -32,7 +32,7 @@
     <GlobalPackageReference Include="Microsoft.Build.Artifacts" Version="2.2.0" />
     <GlobalPackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
     <GlobalPackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" Version="1.0.0" />
-    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.4.244" />
+    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.4.255" />
     <GlobalPackageReference Include="StyleCop.Analyzers" Version="1.1.118" />
   </ItemGroup>
 </Project>
