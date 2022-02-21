@@ -358,6 +358,7 @@ namespace Microsoft.VisualStudio.SlnGen
                             ["EntryProjectCount"] = arguments.Projects?.Length.ToString(),
                             ["Folders"] = arguments.EnableFolders().ToString(),
                             ["CollapseFolders"] = arguments.EnableCollapseFolders().ToString(),
+                            ["DisableDefaultConfig"] = arguments.DisableDefaultConfigurations().ToString(),
                             ["IsCoreXT"] = CurrentDevelopmentEnvironment.IsCorext.ToString(),
                             ["IsNetCore"] = IsNetCore.ToString(),
                             ["LaunchVisualStudio"] = arguments.ShouldLaunchVisualStudio().ToString(),

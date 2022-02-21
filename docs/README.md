@@ -58,6 +58,7 @@ Options:
                                           Verbosity--overrides the -verbosity setting for this logger.
                                        Example:
                                           --consoleloggerparameters:PerformanceSummary;NoSummary;Verbosity=Minimal
+  --disabledefaultconfig <true>       Disable building projects for configurations that are not supported by those projects. Default: false
   -vs|--devenvfullpath                Specifies a full path to Visual Studio's devenv.exe to use when opening the solution file. By default, SlnGen will launch the program associated with the .sln file extension.
   -fl|--filelogger[:<parameters>]     Provides any extra parameters for file loggers. The same parameters listed for the console logger are available.
                                       Some additional available parameters are:

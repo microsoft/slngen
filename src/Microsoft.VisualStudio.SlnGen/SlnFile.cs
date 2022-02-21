@@ -220,7 +220,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
             if (!logger.HasLoggedErrors)
             {
-                solution.Save(solutionFileFullPath, arguments.EnableFolders(), arguments.EnableCollapseFolders());
+                solution.Save(solutionFileFullPath, arguments.EnableFolders(), arguments.EnableCollapseFolders(), arguments.DisableDefaultConfigurations());
             }
 
             return (solutionFileFullPath, customProjectTypeGuids.Count, solutionItems.Count, solution.SolutionGuid);
@@ -360,7 +360,8 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <param name="path">The full path to the file to write to.</param>
         /// <param name="useFolders">Specifies if folders should be created.</param>
         /// <param name="collapseFolders">An optional value indicating whether or not folders containing a single item should be collapsed into their parent folder.</param>
-        public void Save(string path, bool useFolders, bool collapseFolders = false)
+        /// <param name="disableDefaultConfigurations">An optional value indicating whether or not to disable building projects for configurations that are not supported by those projects.</param>
+        public void Save(string path, bool useFolders, bool collapseFolders = false, bool disableDefaultConfigurations = false)
         {
             string directoryName = Path.GetDirectoryName(path);
 
@@ -373,7 +374,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
             using StreamWriter writer = new StreamWriter(fileStream, Encoding.UTF8);
 
-            Save(path, writer, useFolders, collapseFolders);
+            Save(path, writer, useFolders, collapseFolders, disableDefaultConfigurations);
         }
 
         /// <summary>
@@ -383,7 +384,8 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <param name="writer">The <see cref="TextWriter" /> to save the solution file to.</param>
         /// <param name="useFolders">Specifies if folders should be created.</param>
         /// <param name="collapseFolders">An optional value indicating whether or not folders containing a single item should be collapsed into their parent folder.</param>
-        internal void Save(string rootPath, TextWriter writer, bool useFolders, bool collapseFolders = false)
+        /// <param name="disableDefaultConfigurations">An optional value indicating whether or not to disable building projects for configurations that are not supported by those projects.</param>
+        internal void Save(string rootPath, TextWriter writer, bool useFolders, bool collapseFolders = false, bool disableDefaultConfigurations = false)
         {
             writer.WriteLine(Header, _fileFormatVersion);
 
@@ -483,7 +485,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
                 foreach (string configuration in solutionConfigurations)
                 {
-                    bool foundConfiguration = TryGetProjectSolutionConfiguration(configuration, project, out string projectSolutionConfiguration);
+                    bool foundConfiguration = TryGetProjectSolutionConfiguration(configuration, project, disableDefaultConfigurations, out string projectSolutionConfiguration);
 
                     foreach (string platform in solutionPlatforms)
                     {
@@ -560,7 +562,7 @@ namespace Microsoft.VisualStudio.SlnGen
             return values.Any() ? values : new List<string> { "Any CPU" };
         }
 
-        private bool TryGetProjectSolutionConfiguration(string solutionConfiguration, SlnProject project, out string projectSolutionConfiguration)
+        private bool TryGetProjectSolutionConfiguration(string solutionConfiguration, SlnProject project, bool disableDefaultConfigurations, out string projectSolutionConfiguration)
         {
             foreach (string projectConfiguration in project.Configurations)
             {
@@ -574,7 +576,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
             projectSolutionConfiguration = project.Configurations.First();
 
-            return true;
+            return !disableDefaultConfigurations;
         }
 
         private bool TryGetProjectSolutionPlatform(string solutionPlatform, SlnProject project, out string projectSolutionPlatform, out string projectBuildPlatform)

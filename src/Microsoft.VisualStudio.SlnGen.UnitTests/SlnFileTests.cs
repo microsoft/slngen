@@ -100,6 +100,89 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         }
 
         [Fact]
+        public void CustomConfigurationAndPlatformsWithDefaultDisabled()
+        {
+            SlnProject projectA = new SlnProject
+            {
+                Configurations = new[] { "Debug", "Release" },
+                FullPath = GetTempFileName(),
+                IsMainProject = true,
+                Name = "ProjectA",
+                Platforms = new[] { "AnyCPU", "x64", "x86" },
+                ProjectGuid = Guid.NewGuid(),
+                ProjectTypeGuid = Guid.NewGuid(),
+            };
+
+            SlnProject projectB = new SlnProject
+            {
+                Configurations = new[] { "Debug", "Release" },
+                FullPath = GetTempFileName(),
+                IsMainProject = true,
+                Name = "ProjectB",
+                Platforms = new[] { "x64", "x86" },
+                ProjectGuid = Guid.NewGuid(),
+                ProjectTypeGuid = Guid.NewGuid(),
+            };
+
+            SlnProject projectC = new SlnProject
+            {
+                Configurations = new[] { "Debug", "Release" },
+                FullPath = GetTempFileName(),
+                IsMainProject = true,
+                Name = "ProjectC",
+                Platforms = new[] { "amd64" },
+                ProjectGuid = Guid.NewGuid(),
+                ProjectTypeGuid = Guid.NewGuid(),
+            };
+
+            SlnProject projectD = new SlnProject
+            {
+                Configurations = new[] { "Debug", "Release" },
+                FullPath = GetTempFileName(),
+                IsMainProject = true,
+                Name = "ProjectD",
+                Platforms = new[] { "Razzle" },
+                ProjectGuid = Guid.NewGuid(),
+                ProjectTypeGuid = Guid.NewGuid(),
+            };
+
+            SlnProject projectE = new SlnProject
+            {
+                Configurations = new[] { "Release" },
+                FullPath = GetTempFileName(),
+                IsMainProject = true,
+                Name = "ProjectE",
+                Platforms = new[] { "AnyCPU" },
+                ProjectGuid = Guid.NewGuid(),
+                ProjectTypeGuid = Guid.NewGuid(),
+            };
+
+            SlnFile slnFile = new SlnFile()
+            {
+                Configurations = new[] { "Debug" },
+                Platforms = new[] { "Any CPU" },
+            };
+
+            slnFile.AddProjects(new[] { projectA, projectB, projectC, projectD, projectE });
+
+            string solutionFilePath = GetTempFileName();
+
+            slnFile.Save(solutionFilePath, useFolders: false, disableDefaultConfigurations: true);
+
+            SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
+
+            ValidateSolutionPlatformAndConfiguration(projectA, solutionFile, "Debug", "AnyCPU");
+
+            ValidateSolutionPlatformAndConfiguration(projectB, solutionFile, "Debug", "x64");
+
+            ValidateSolutionPlatformAndConfiguration(projectC, solutionFile, "Debug", "amd64");
+
+            ValidateSolutionPlatformAndConfiguration(projectD, solutionFile, "Debug", "Razzle", expectedIncludeInBuild: false);
+
+            ValidateSolutionPlatformAndConfiguration(projectE, solutionFile, "Release", "AnyCPU", expectedIncludeInBuild: false);
+        }
+
+        [Fact]
         public void CustomConfigurationAndPlatforms_IgnoresInvalidValues()
         {
             SlnProject project = new SlnProject

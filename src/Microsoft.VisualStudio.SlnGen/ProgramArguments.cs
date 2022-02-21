@@ -86,6 +86,16 @@ Example: -bl:output.binlog;ProjectImports=ZipFile")]
         public bool Debug { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether or not to disable building projects for configurations that are not supported by those projects
+        /// </summary>
+        [Option(
+            "--disabledefaultconfig",
+            CommandOptionType.MultipleValue,
+            ValueName = "true",
+            Description = "Disable building projects for configurations that are not supported by those projects.  Default: false")]
+        public string[] DisableDefaultConfig { get; set; }
+
+        /// <summary>
         /// Gets or sets the full path to devenv.exe.
         /// </summary>
         [Option(
@@ -267,6 +277,12 @@ Examples:
         /// Gets or sets a <see cref="Func{ProgramArguments,IConsole,Int32}" /> to execute.
         /// </summary>
         internal static Func<ProgramArguments, IConsole, int> Execute { get; set; } = Program.Execute;
+
+        /// <summary>
+        /// Gets a value indicating whether or not to disable building projects for configurations that are not supported by those projects.
+        /// </summary>
+        /// <returns>true if project build should be disabled, otherwise false.</returns>
+        public bool DisableDefaultConfigurations() => GetBoolean(DisableDefaultConfig);
 
         /// <summary>
         /// Gets a value indicating whether or not folders should be collapsed.
