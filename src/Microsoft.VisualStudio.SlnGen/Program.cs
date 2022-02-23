@@ -353,6 +353,7 @@ namespace Microsoft.VisualStudio.SlnGen
                         "execute",
                         new Dictionary<string, object>
                         {
+                            ["AlwaysBuild"] = arguments.EnableAlwaysBuild().ToString(),
                             ["AssemblyInformationalVersion"] = ThisAssembly.AssemblyInformationalVersion,
                             ["DevEnvFullPathSpecified"] = (!arguments.DevEnvFullPath?.LastOrDefault().IsNullOrWhiteSpace()).ToString(),
                             ["EntryProjectCount"] = arguments.Projects?.Length.ToString(),

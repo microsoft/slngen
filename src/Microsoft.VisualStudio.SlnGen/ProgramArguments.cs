@@ -86,6 +86,16 @@ Example: -bl:output.binlog;ProjectImports=ZipFile")]
         public bool Debug { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether or not to disable building projects for configurations that are not supported by those projects
+        /// </summary>
+        [Option(
+            "-ab|--alwaysbuild",
+            CommandOptionType.MultipleValue,
+            ValueName = "true",
+            Description = "Always include the project in the build even if it has no matching configuration.  Default: true")]
+        public string[] AlwaysBuild { get; set; }
+
+        /// <summary>
         /// Gets or sets the full path to devenv.exe.
         /// </summary>
         [Option(
@@ -267,6 +277,12 @@ Examples:
         /// Gets or sets a <see cref="Func{ProgramArguments,IConsole,Int32}" /> to execute.
         /// </summary>
         internal static Func<ProgramArguments, IConsole, int> Execute { get; set; } = Program.Execute;
+
+        /// <summary>
+        /// Gets a value indicating whether or not to always include the project in the build even if it has no matching configuration
+        /// </summary>
+        /// <returns>true to always include the project in the build even if it has no matching configuration, otherwise false.</returns>
+        public bool EnableAlwaysBuild() => GetBoolean(AlwaysBuild);
 
         /// <summary>
         /// Gets a value indicating whether or not folders should be collapsed.

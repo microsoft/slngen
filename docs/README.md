@@ -32,6 +32,7 @@ Arguments:
   project path                        An optional path to a project which can include wildcards like **\*.csproj or directories which contain projects files. If not specified, all projects in the current directory will be used.
 
 Options:
+  -ab|--alwaysbuild <true>            Always include the project in the build even if it has no matching configuration. Default: true
   -bl|--binarylogger[:<parameters>]   Serializes all build events to a compressed binary file.
                                       By default the file is in the current directory and named "slngen.binlog" and contains the source text of project files, including all imported projects and target files encountered during the build. The optional ProjectImports switch controls this behavior:
 
