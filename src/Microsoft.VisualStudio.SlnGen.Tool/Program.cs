@@ -76,6 +76,21 @@ namespace Microsoft.VisualStudio.SlnGen
                             return -1;
                     }
                 }
+                else
+                {
+                    FileVersionInfo msBuildVersionInfo = FileVersionInfo.GetVersionInfo(developmentEnvironment.MSBuildExe.FullName);
+
+                    switch (msBuildVersionInfo.FileMajorPart)
+                    {
+                        case 15:
+                            framework = "net461";
+                            break;
+
+                        default:
+                            framework = "net472";
+                            break;
+                    }
+                }
 
                 FileInfo slnGenFileInfo = new FileInfo(Path.Combine(thisAssemblyFileInfo.DirectoryName!, "..", thisAssemblyFileInfo.DirectoryName!.EndsWith("any") ? ".." : string.Empty, "slngen", framework, useDotnet ? "slngen.dll" : "slngen.exe"));
 

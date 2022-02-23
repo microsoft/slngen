@@ -15,6 +15,14 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj"
+                      SetTargetFramework="TargetFramework=net461"
+                      IncludeAssets="None"
+                      OutputItemType="SlnGenBuildOutput"
+                      PrivateAssets="All"
+                      ReferenceOutputAssembly="false"
+                      SkipGetTargetFrameworkProperties="true"
+                      TargetFramework="net461" />
+    <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj"
                       SetTargetFramework="TargetFramework=net472"
                       IncludeAssets="None"
                       OutputItemType="SlnGenBuildOutput"
