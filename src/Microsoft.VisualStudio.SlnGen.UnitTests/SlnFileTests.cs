@@ -100,7 +100,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         }
 
         [Fact]
-        public void CustomConfigurationAndPlatformsWithDefaultDisabled()
+        public void CustomConfigurationAndPlatformsWithAlwaysBuildDisabled()
         {
             SlnProject projectA = new SlnProject
             {
@@ -167,7 +167,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             string solutionFilePath = GetTempFileName();
 
-            slnFile.Save(solutionFilePath, useFolders: false, disableDefaultConfigurations: true);
+            slnFile.Save(solutionFilePath, useFolders: false, alwaysBuild: false);
 
             SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
 

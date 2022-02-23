@@ -353,12 +353,12 @@ namespace Microsoft.VisualStudio.SlnGen
                         "execute",
                         new Dictionary<string, object>
                         {
+                            ["AlwaysBuild"] = arguments.EnableAlwaysBuild().ToString(),
                             ["AssemblyInformationalVersion"] = ThisAssembly.AssemblyInformationalVersion,
                             ["DevEnvFullPathSpecified"] = (!arguments.DevEnvFullPath?.LastOrDefault().IsNullOrWhiteSpace()).ToString(),
                             ["EntryProjectCount"] = arguments.Projects?.Length.ToString(),
                             ["Folders"] = arguments.EnableFolders().ToString(),
                             ["CollapseFolders"] = arguments.EnableCollapseFolders().ToString(),
-                            ["DisableDefaultConfig"] = arguments.DisableDefaultConfigurations().ToString(),
                             ["IsCoreXT"] = CurrentDevelopmentEnvironment.IsCorext.ToString(),
                             ["IsNetCore"] = IsNetCore.ToString(),
                             ["LaunchVisualStudio"] = arguments.ShouldLaunchVisualStudio().ToString(),

@@ -32,6 +32,7 @@ Arguments:
   project path                        An optional path to a project which can include wildcards like **\*.csproj or directories which contain projects files. If not specified, all projects in the current directory will be used.
 
 Options:
+  -ab|--alwaysbuild <true>            Always include the project in the build even if it has no matching configuration. Default: true
   -bl|--binarylogger[:<parameters>]   Serializes all build events to a compressed binary file.
                                       By default the file is in the current directory and named "slngen.binlog" and contains the source text of project files, including all imported projects and target files encountered during the build. The optional ProjectImports switch controls this behavior:
 
@@ -58,7 +59,6 @@ Options:
                                           Verbosity--overrides the -verbosity setting for this logger.
                                        Example:
                                           --consoleloggerparameters:PerformanceSummary;NoSummary;Verbosity=Minimal
-  --disabledefaultconfig <true>       Disable building projects for configurations that are not supported by those projects. Default: false
   -vs|--devenvfullpath                Specifies a full path to Visual Studio's devenv.exe to use when opening the solution file. By default, SlnGen will launch the program associated with the .sln file extension.
   -fl|--filelogger[:<parameters>]     Provides any extra parameters for file loggers. The same parameters listed for the console logger are available.
                                       Some additional available parameters are:
