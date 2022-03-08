@@ -39,7 +39,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <returns>true if the value parameter occurs within this string, or if value is the empty string (""); otherwise, false.</returns>
         public static bool Contains(this string str, string value, StringComparison comparisonType)
         {
-            return value.IndexOf(str, comparisonType) >= 0;
+            return str.IndexOf(value, comparisonType) >= 0;
         }
 
         /// <summary>
