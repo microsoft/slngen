@@ -50,6 +50,11 @@ namespace Microsoft.VisualStudio.SlnGen
         public const string Native = ".nativeProj";
 
         /// <summary>
+        /// Node JS projects (.njsproj)
+        /// </summary>
+        public const string NodeJS = ".njsproj";
+
+        /// <summary>
         /// NuProj projects (.nuproj).
         /// </summary>
         public const string NuProj = ".nuproj";

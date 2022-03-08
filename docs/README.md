@@ -191,6 +191,7 @@ SlnGen knows about the following project types:
 * F# projects (.fsproj)
 * Legacy C++ projects (.vcproj)
 * Native projects (.nativeProj)
+* Node JS projects (.njsproj)
 * NuProj projects (.nuproj)
 * Scope SDK projects (.scopeproj)
 * SQL Server database projects (.sqlproj)
