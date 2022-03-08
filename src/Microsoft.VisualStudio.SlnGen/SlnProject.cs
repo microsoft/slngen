@@ -59,6 +59,7 @@ namespace Microsoft.VisualStudio.SlnGen
             [ProjectFileExtensions.JSharp] = new (VisualStudioProjectTypeGuids.JSharp),
             [ProjectFileExtensions.LegacyCpp] = new (VisualStudioProjectTypeGuids.Cpp),
             [ProjectFileExtensions.Native] = new (VisualStudioProjectTypeGuids.Cpp),
+            [ProjectFileExtensions.NodeJS] = new (VisualStudioProjectTypeGuids.NodeJSProject),
             [ProjectFileExtensions.NuProj] = new (VisualStudioProjectTypeGuids.NuProj),
             [ProjectFileExtensions.Scope] = new (VisualStudioProjectTypeGuids.ScopeProject),
             [ProjectFileExtensions.SqlServerDb] = new (VisualStudioProjectTypeGuids.SqlServerDbProject),

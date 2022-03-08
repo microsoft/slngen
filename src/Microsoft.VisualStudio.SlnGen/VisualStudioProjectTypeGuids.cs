@@ -55,6 +55,11 @@ namespace Microsoft.VisualStudio.SlnGen
         public const string NetSdkVisualBasicProject = "778DAE3C-4631-46EA-AA77-85C1314464D9";
 
         /// <summary>
+        /// Node JS projects (.njsproj)
+        /// </summary>
+        public const string NodeJSProject = "9092AA53-FB77-4645-B42D-1CCCA6BD08BD";
+
+        /// <summary>
         /// NuProj projects (.nuproj).
         /// </summary>
         public const string NuProj = "FF286327-C783-4F7A-AB73-9BCBAD0D4460";
