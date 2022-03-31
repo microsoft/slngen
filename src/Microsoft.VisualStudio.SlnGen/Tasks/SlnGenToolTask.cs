@@ -51,6 +51,12 @@ namespace Microsoft.VisualStudio.SlnGen.Tasks
         private readonly Lazy<ProjectInstance> _projectInstanceLazy;
 
         /// <summary>
+        /// The value for the SlnGenVSVersion property, that will activate version deduction instead of being
+        /// treated as a version.
+        /// </summary>
+        private static readonly string SlnGenVSVersionDefault = "default";
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SlnGenToolTask"/> class.
         /// </summary>
         public SlnGenToolTask()
@@ -138,6 +144,22 @@ namespace Microsoft.VisualStudio.SlnGen.Tasks
             commandLineBuilder.AppendSwitchIfNotNull("--loadprojects:", GetPropertyValue(MSBuildPropertyNames.SlnGenLoadProjects));
             commandLineBuilder.AppendSwitchIfNotNull("--solutionfile:", GetPropertyValue(MSBuildPropertyNames.SlnGenSolutionFileFullPath));
             commandLineBuilder.AppendSwitchIfNotNull("--property:", globalProperties.Count == 0 ? null : string.Join(";", globalProperties.Select(i => $"{i.Key}={i.Value}")));
+
+            // The vsversion switch can be passed without a value to ask slngen to deduce the desired version.
+            // We cannot differentiate between a property that is set to empty and a property that doesn't
+            // exist, so we use the special value "default" for SlnGenVSVersion to mark that the
+            // flag should be given without a value.
+            string vsVersion = GetPropertyValue(MSBuildPropertyNames.SlnGenVSVersion);
+            if (vsVersion == SlnGenVSVersionDefault)
+            {
+                // Specify the switch without a value to trigger version deduction.
+                commandLineBuilder.AppendSwitch("--vsversion");
+            }
+            else
+            {
+                // Pass the value if it was given.
+                commandLineBuilder.AppendSwitchIfNotNull("--vsversion:", vsVersion);
+            }
 
             if (string.Equals(GetPropertyValue(MSBuildPropertyNames.SlnGenDebug), bool.TrueString, StringComparison.OrdinalIgnoreCase))
             {

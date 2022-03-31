@@ -90,6 +90,12 @@ namespace Microsoft.VisualStudio.SlnGen
         public const string SlnGenLaunchVisualStudio = nameof(SlnGenLaunchVisualStudio);
 
         /// <summary>
+        /// Visual Studio version to add to the generated solution file.
+        /// Specify "default" to use the same version selection logic launching does.
+        /// </summary>
+        public const string SlnGenVSVersion = nameof(SlnGenVSVersion);
+
+        /// <summary>
         /// Represents the SlnGenLoadProjects property.
         /// </summary>
         public const string SlnGenLoadProjects = nameof(SlnGenLoadProjects);
