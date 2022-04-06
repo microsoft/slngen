@@ -46,15 +46,15 @@ namespace Microsoft.VisualStudio.SlnGen.Tasks
 
         private static readonly FileInfo ThisAssemblyFileInfo = new FileInfo(Assembly.GetExecutingAssembly().Location);
 
-        private readonly Lazy<IDictionary<string, string>> _globalPropertiesLazy;
-
-        private readonly Lazy<ProjectInstance> _projectInstanceLazy;
-
         /// <summary>
         /// The value for the SlnGenVSVersion property, that will activate version deduction instead of being
         /// treated as a version.
         /// </summary>
         private static readonly string SlnGenVSVersionDefault = "default";
+
+        private readonly Lazy<IDictionary<string, string>> _globalPropertiesLazy;
+
+        private readonly Lazy<ProjectInstance> _projectInstanceLazy;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SlnGenToolTask"/> class.
