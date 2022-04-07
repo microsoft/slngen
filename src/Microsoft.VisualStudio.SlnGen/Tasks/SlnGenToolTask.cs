@@ -150,7 +150,7 @@ namespace Microsoft.VisualStudio.SlnGen.Tasks
             // exist, so we use the special value "default" for SlnGenVSVersion to mark that the
             // flag should be given without a value.
             string vsVersion = GetPropertyValue(MSBuildPropertyNames.SlnGenVSVersion);
-            if (vsVersion == SlnGenVSVersionDefault)
+            if (string.Equals(vsVersion, SlnGenVSVersionDefault, StringComparison.OrdinalIgnoreCase))
             {
                 // Specify the switch without a value to trigger version deduction.
                 commandLineBuilder.AppendSwitch("--vsversion");
