@@ -88,7 +88,7 @@ namespace Microsoft.VisualStudio.SlnGen
                     {
                         FileName = devEnvFullPath,
                         Arguments = commandLineBuilder.ToString(),
-                        UseShellExecute = false,
+                        UseShellExecute = true,
                     },
                 };
 
