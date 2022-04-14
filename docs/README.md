@@ -126,6 +126,7 @@ The following properties only apply when using SlnGen as an MSBuild target.
 | `SlnGenSolutionFileFullPath` | Specifies the full path to the Visual Studio solution file to generate.  By default, the path is the same as the project. | | ProjectPath.sln|
 | `SlnGenDevEnvFullPath` | Specifies a full path to Visual Studio's `devenv.exe` to use when opening the solution file.  By default, SlnGen will launch the program associated with the `.sln` file extension.  However, in some cases you may want to specify a custom path to Visual Studio. | | |
 | `SlnGenGlobalProperties` | Specifies MSBuild properties to set when loading projects and project references. | | `DesignTimeBuild=true;BuildingProject=false` |
+| `SlnGenVSVersion` | Specifies a Visual Studio version to include in the generated solution. | "default" or a version number | | 
 | `SlnGenInheritGlobalProperties` | Indicates whether or not all global variables specified when loading the initial project should be passed around when loading project references. | `true` or `false` | `true` |
 | `SlnGenGlobalPropertiesToRemove` | Specifies a list of inherited global properties to remove when loading projects. | | |
 | `SlnGenBinLog` | Indicates whether or not SlnGen should emit a binary log. | `true` or `false` | `false` |

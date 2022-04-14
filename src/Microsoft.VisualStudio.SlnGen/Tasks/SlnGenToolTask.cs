@@ -46,6 +46,12 @@ namespace Microsoft.VisualStudio.SlnGen.Tasks
 
         private static readonly FileInfo ThisAssemblyFileInfo = new FileInfo(Assembly.GetExecutingAssembly().Location);
 
+        /// <summary>
+        /// The value for the SlnGenVSVersion property, that will activate version deduction instead of being
+        /// treated as a version.
+        /// </summary>
+        private static readonly string SlnGenVSVersionDefault = "default";
+
         private readonly Lazy<IDictionary<string, string>> _globalPropertiesLazy;
 
         private readonly Lazy<ProjectInstance> _projectInstanceLazy;
@@ -138,6 +144,22 @@ namespace Microsoft.VisualStudio.SlnGen.Tasks
             commandLineBuilder.AppendSwitchIfNotNull("--loadprojects:", GetPropertyValue(MSBuildPropertyNames.SlnGenLoadProjects));
             commandLineBuilder.AppendSwitchIfNotNull("--solutionfile:", GetPropertyValue(MSBuildPropertyNames.SlnGenSolutionFileFullPath));
             commandLineBuilder.AppendSwitchIfNotNull("--property:", globalProperties.Count == 0 ? null : string.Join(";", globalProperties.Select(i => $"{i.Key}={i.Value}")));
+
+            // The vsversion switch can be passed without a value to ask slngen to deduce the desired version.
+            // We cannot differentiate between a property that is set to empty and a property that doesn't
+            // exist, so we use the special value "default" for SlnGenVSVersion to mark that the
+            // flag should be given without a value.
+            string vsVersion = GetPropertyValue(MSBuildPropertyNames.SlnGenVSVersion);
+            if (string.Equals(vsVersion, SlnGenVSVersionDefault, StringComparison.OrdinalIgnoreCase))
+            {
+                // Specify the switch without a value to trigger version deduction.
+                commandLineBuilder.AppendSwitch("--vsversion");
+            }
+            else
+            {
+                // Pass the value if it was given.
+                commandLineBuilder.AppendSwitchIfNotNull("--vsversion:", vsVersion);
+            }
 
             if (string.Equals(GetPropertyValue(MSBuildPropertyNames.SlnGenDebug), bool.TrueString, StringComparison.OrdinalIgnoreCase))
             {

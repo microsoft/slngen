@@ -152,6 +152,49 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                     project.FullPath,
                 });
         }
+
+        [Fact]
+        public void InsertsVSVersion()
+        {
+            string requestedVSVersion = "17";
+            Dictionary<string, string> globalProperties = new Dictionary<string, string>
+            {
+                [MSBuildPropertyNames.DesignTimeBuild] = bool.TrueString,
+                [MSBuildPropertyNames.SlnGenLaunchVisualStudio] = bool.FalseString,
+                [MSBuildPropertyNames.SlnGenVSVersion] = requestedVSVersion,
+            };
+
+            ProjectCreator
+                .Create(Path.Combine(TestRootPath, "Directory.Build.props"))
+                .Save();
+            ProjectCreator
+                .Create(Path.Combine(TestRootPath, "Directory.Build.targets"))
+                .Property("SlnGenAssemblyFile", Path.Combine(Environment.CurrentDirectory, "slngen.exe"))
+                .Import(Path.Combine(Environment.CurrentDirectory, "build", "Microsoft.VisualStudio.SlnGen.targets"), condition: "'$(IsCrossTargetingBuild)' != 'true'")
+                .Import(Path.Combine(Environment.CurrentDirectory, "buildMultiTargeting", "Microsoft.VisualStudio.SlnGen.targets"), condition: "'$(IsCrossTargetingBuild)' == 'true'")
+                .Save();
+
+            ProjectCreator project = ProjectCreator.Templates
+                .SdkCsproj(
+                    Path.Combine(TestRootPath, "ProjectA", "ProjectA.csproj"),
+                    targetFramework: "netcoreapp2.0")
+                .Save()
+                .TryBuild("SlnGen", globalProperties, out bool result, out BuildOutput buildOutput, out IDictionary<string, TargetResult> targetOutputs);
+
+            result.ShouldBeTrue(buildOutput.GetConsoleLog());
+
+            KeyValuePair<string, TargetResult> targetOutput = targetOutputs.ShouldHaveSingleItem();
+
+            targetOutput.Key.ShouldBe("SlnGen");
+
+            FileInfo expected = new FileInfo(Path.Combine(Path.ChangeExtension(project.FullPath, ".sln")));
+
+            expected.Exists.ShouldBeTrue();
+
+            string[] solutionLines = File.ReadAllLines(expected.FullName);
+            solutionLines.ShouldContain($"# Visual Studio Version {requestedVSVersion}");
+            solutionLines.ShouldContain(line => line.StartsWith($"VisualStudioVersion = {requestedVSVersion}"));
+        }
     }
 }
 #endif
