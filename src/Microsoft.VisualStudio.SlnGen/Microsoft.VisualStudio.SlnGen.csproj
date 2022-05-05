@@ -24,8 +24,6 @@
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" />
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
     <PackageReference Include="Microsoft.VisualStudio.Telemetry" />
-    <!-- Transitive dependency of M.VS.Telemetry but referencing directly to upgrade the used version to not depend on old runtime packages. -->
-    <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net46\MSBuild.exe" Private="false" Condition="'$(TargetFramework)' == 'net461'" />
