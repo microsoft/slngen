@@ -22,7 +22,7 @@
     <PackageReference Update="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="3.1.2196" />
     <PackageReference Update="Microsoft.VisualStudio.Telemetry" Version="16.3.250" />
     <PackageReference Update="Microsoft.VSSDK.BuildTools" Version="17.2.2163" />
-    <PackageReference Update="MSBuild.ProjectCreation" Version="7.0.3-preview" />
+    <PackageReference Update="MSBuild.ProjectCreation" Version="8.0.0" />
     <PackageReference Update="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Update="Shouldly" Version="4.0.3" />
     <PackageReference Update="xunit" Version="2.4.1" />
