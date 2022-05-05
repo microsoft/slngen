@@ -26,7 +26,7 @@
     <PackageReference Update="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Update="Shouldly" Version="4.0.3" />
     <PackageReference Update="xunit" Version="2.4.1" />
-    <PackageReference Update="xunit.runner.visualstudio" Version="2.4.3" />
+    <PackageReference Update="xunit.runner.visualstudio" Version="2.4.4" />
   </ItemGroup>
   <ItemGroup>
     <GlobalPackageReference Include="Microsoft.Build.Artifacts" Version="4.0.4" />
