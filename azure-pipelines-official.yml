@@ -8,6 +8,7 @@ variables:
   DotNetCore3Version: '3.x'
   DotNet5Version: '5.x'
   DotNet6Version: '6.x'
+  DotNet7Version: '7.x'
   MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   SignType: 'Test'
 
@@ -57,6 +58,12 @@ stages:
       displayName: 'Install .NET $(DotNet6Version)'
       inputs:
         version: '$(DotNet6Version)'
+
+    - task: UseDotNet@2
+      displayName: 'Install .NET $(DotNet7Version)'
+      inputs:
+        version: '$(DotNet7Version)'
+        includePreviewVersions: true
 
     - task: MicroBuildSigningPlugin@1
       displayName: 'Install MicroBuild Signing Plugin'

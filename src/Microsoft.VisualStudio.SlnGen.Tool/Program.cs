@@ -70,8 +70,12 @@ namespace Microsoft.VisualStudio.SlnGen
                             framework = "net6.0";
                             break;
 
+                        case "7":
+                            framework = "net7.0";
+                            break;
+
                         default:
-                            Console.WriteLine($"The .NET SDK {developmentEnvironment.DotNetSdkVersion} is not supported");
+                            Console.WriteLine($"SlnGen does not currently support the .NET SDK {developmentEnvironment.DotNetSdkVersion} defined by in global.json.  Please update to the latest version and if you still get this error message, file an issue at https://github.com/microsoft/slngen/issues/new so it can be added.");
 
                             return -1;
                     }
