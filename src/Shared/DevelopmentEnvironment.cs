@@ -173,12 +173,14 @@ namespace Microsoft.VisualStudio.SlnGen
                 throw new ArgumentNullException(nameof(msbuildExeFileInfo));
             }
 
+#if NETFRAMEWORK
             AssemblyName assemblyName = AssemblyName.GetAssemblyName(msbuildExeFileInfo.FullName);
 
             if (RuntimeInformation.ProcessArchitecture == Architecture.X64 && assemblyName.ProcessorArchitecture != ProcessorArchitecture.Amd64)
             {
                 return new FileInfo(Path.Combine(msbuildExeFileInfo.DirectoryName!, "amd64", msbuildExeFileInfo.Name));
             }
+#endif
 
             return msbuildExeFileInfo;
         }

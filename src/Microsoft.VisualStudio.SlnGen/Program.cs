@@ -106,8 +106,12 @@ namespace Microsoft.VisualStudio.SlnGen
 
                 AssemblyName candidateAssemblyName = AssemblyName.GetAssemblyName(candidateAssemblyFileInfo.FullName);
 
+#if !NET7_0_OR_GREATER
                 if ((requestedAssemblyName.ProcessorArchitecture != ProcessorArchitecture.None && requestedAssemblyName.ProcessorArchitecture != candidateAssemblyName.ProcessorArchitecture)
-                    || (requestedAssemblyName.Flags.HasFlag(AssemblyNameFlags.PublicKey) && !requestedAssemblyName.GetPublicKeyToken() !.SequenceEqual(candidateAssemblyName.GetPublicKeyToken() !)))
+                    || (requestedAssemblyName.Flags.HasFlag(AssemblyNameFlags.PublicKey) && !requestedAssemblyName.GetPublicKeyToken() !.SequenceEqual(candidateAssemblyName.GetPublicKeyToken()) !))
+#else
+                if (requestedAssemblyName.Flags.HasFlag(AssemblyNameFlags.PublicKey) && !requestedAssemblyName.GetPublicKeyToken() !.SequenceEqual(candidateAssemblyName.GetPublicKeyToken() !))
+#endif
                 {
                     return null;
                 }

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net461;net472;netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net461;net472;netcoreapp3.1;net5.0;net6.0;net7.0</TargetFrameworks>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.config</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <IncludeReferenceCopyLocalPathsInBuildOutputInPackage>true</IncludeReferenceCopyLocalPathsInBuildOutputInPackage>
     <IsTool>true</IsTool>
@@ -30,7 +30,7 @@
     <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net472\MSBuild.exe" Private="false" Condition="'$(TargetFramework)' == 'net472'" />
     <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\netcoreapp2.1\MSBuild.dll" Private="false" Condition="'$(TargetFramework)' == 'netcoreapp3.1'" />
     <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net5.0\MSBuild.dll" Private="false" Condition="'$(TargetFramework)' == 'net5.0'" />
-    <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net6.0\MSBuild.dll" Private="false" Condition="'$(TargetFramework)' == 'net6.0'" />
+    <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net6.0\MSBuild.dll" Private="false" Condition="'$(TargetFramework)' == 'net6.0' Or '$(TargetFramework)' == 'net7.0'" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" Condition="'$(TargetFramework)' == 'net461' Or '$(TargetFramework)' == 'net472'" />
