@@ -32,7 +32,7 @@
     <GlobalPackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" />
     <GlobalPackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
     <GlobalPackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" Version="1.0.0" />
-    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.4.255" />
+    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.5.104" />
     <GlobalPackageReference Include="StyleCop.Analyzers" Version="1.1.118" />
   </ItemGroup>
 </Project>
