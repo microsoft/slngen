@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.Build.NoTargets/3.3.0">
+﻿<Project Sdk="Microsoft.Build.NoTargets/3.4.0">
   <PropertyGroup>
     <TargetFrameworks>net461;net472</TargetFrameworks>
     <ArtifactsPath>$(BaseArtifactsPath)\$(MSBuildProjectName)</ArtifactsPath>
