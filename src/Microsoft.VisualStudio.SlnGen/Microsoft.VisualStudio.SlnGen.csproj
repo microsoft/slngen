@@ -34,6 +34,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" Condition="'$(TargetFramework)' == 'net461' Or '$(TargetFramework)' == 'net472'" />
-    <None Include="Microsoft.VisualStudio.SlnGen.targets" Pack="true" PackagePath="build\;buildMultiTargeting\" />
+    <None Include="Microsoft.VisualStudio.SlnGen.targets" Pack="true" PackagePath="build/;buildMultiTargeting/" />
   </ItemGroup>
 </Project>

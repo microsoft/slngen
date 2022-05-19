@@ -69,13 +69,13 @@ jobs:
       includePreviewVersions: true
 
   - task: VSBuild@1
-    displayName: 'Build'
+    displayName: 'Build (Visual Studio)'
     inputs:
       msbuildArgs: '$(MSBuildArgs) "/BinaryLogger:$(ArtifactsDirectoryName)/build.binlog"'
     condition: eq(variables.osName, 'Windows')
 
   - task: DotNetCoreCLI@2
-    displayName: 'Build'
+    displayName: 'Build (dotnet)'
     inputs:
       command: 'build'
       arguments: '$(MSBuildArgs) "/BinaryLogger:$(ArtifactsDirectoryName)/build.binlog"'
