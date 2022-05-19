@@ -9,9 +9,8 @@ variables:
   DotNet5Version: '5.x'
   DotNet6Version: '6.x'
   DotNet7Version: '7.x'
-  MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)/$(ArtifactsDirectoryName)/msbuild.binlog"'
+  MSBuildArgs: '"/Property:Platform=$(BuildPlatform);Configuration=$(BuildConfiguration)"'
   SignType: 'Test'
-  UnitTestProjectPath: 'src/Microsoft.VisualStudio.SlnGen.UnitTests/Microsoft.VisualStudio.SlnGen.UnitTests.csproj'
 
 trigger:
   batch: 'true'
@@ -32,10 +31,21 @@ pr:
     - '*.md'
 
 jobs:
-- job: WindowsBuild
-  displayName: 'Build and Test (Windows)'
+- job: BuildAndTest
+  strategy:
+    matrix:
+      Windows:
+        vmImage: windows-latest
+        osName: Windows
+      Linux:
+        vmImage: ubuntu-latest
+        osName: Linux
+      MacOS:
+        vmImage: macOS-latest
+        osName: MacOS
+  displayName: 'Build and Test'
   pool:
-    vmImage: windows-2022
+    vmImage: $(vmImage)
   steps:
   - task: UseDotNet@2
     displayName: 'Install .NET Core $(DotNetCore3Version)'
@@ -59,204 +69,61 @@ jobs:
       includePreviewVersions: true
 
   - task: VSBuild@1
-    displayName: 'Build Solution'
+    displayName: 'Build'
     inputs:
-      solution: '**\*.sln'
-      msbuildArgs: '$(MSBuildArgs)'
+      msbuildArgs: '$(MSBuildArgs) "/BinaryLogger:$(ArtifactsDirectoryName)/build.binlog"'
+    condition: eq(variables.osName, 'Windows')
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Build'
+    inputs:
+      command: 'build'
+      arguments: '$(MSBuildArgs) "/BinaryLogger:$(ArtifactsDirectoryName)/build.binlog"'
+    condition: ne(variables.osName, 'Windows')
 
   - task: DotNetCoreCLI@2
     displayName: 'Run Unit Tests (.NET Framework v4.7.2)'
     inputs:
       command: 'test'
-      arguments: '--no-restore --no-build --framework net472 /noautorsp'
-      testRunTitle: 'Windows .NET Framework v4.7.2'
-    condition: succeededOrFailed()
+      arguments: '--no-restore --no-build --framework net472 /noautorsp $(MSBuildArgs) "/BinaryLogger:$(ArtifactsDirectoryName)/test-net472.binlog"'
+      testRunTitle: '$(osName) .NET Framework v4.7.2'
+    condition: and(succeededOrFailed(), eq(variables.osName, 'Windows'))
 
   - task: DotNetCoreCLI@2
     displayName: 'Run Unit Tests (.NET Core 3.1)'
     inputs:
       command: 'test'
-      arguments: '--no-restore --no-build --framework netcoreapp3.1 /noautorsp'
-      testRunTitle: 'Windows .NET Core 3.1'
+      arguments: '--no-restore --no-build --framework netcoreapp3.1 /noautorsp $(MSBuildArgs) "/BinaryLogger:$(ArtifactsDirectoryName)/test-netcoreapp3.1.binlog"'
+      testRunTitle: '$(osName) .NET Core 3.1'
     condition: succeededOrFailed()
 
   - task: DotNetCoreCLI@2
     displayName: 'Run Unit Tests (.NET 5)'
     inputs:
       command: 'test'
-      arguments: '--no-restore --no-build --framework net5.0 /noautorsp'
-      testRunTitle: 'Windows .NET 5.0'
+      arguments: '--no-restore --no-build --framework net5.0 /noautorsp $(MSBuildArgs) "/BinaryLogger:$(ArtifactsDirectoryName)/test-net5.0.binlog"'
+      testRunTitle: '$(osName) .NET 5.0'
     condition: succeededOrFailed()
 
   - task: DotNetCoreCLI@2
     displayName: 'Run Unit Tests (.NET 6)'
     inputs:
       command: 'test'
-      arguments: '--no-restore --no-build --framework net6.0 /noautorsp'
-      testRunTitle: 'Windows .NET 6.0'
+      arguments: '--no-restore --no-build --framework net6.0 /noautorsp $(MSBuildArgs) "/BinaryLogger:$(ArtifactsDirectoryName)/test-net6.0.binlog"'
+      testRunTitle: '$(osName) .NET 6.0'
     condition: succeededOrFailed()
 
   - task: DotNetCoreCLI@2
     displayName: 'Run Unit Tests (.NET 7)'
     inputs:
       command: 'test'
-      arguments: '--no-restore --no-build --framework net7.0 /noautorsp /BinaryLogger:$(Build.SourcesDirectory)/$(ArtifactsDirectoryName)/test.net7.0.binlog'
-      testRunTitle: 'Windows .NET 7.0'
+      arguments: '--no-restore --no-build --framework net7.0 /noautorsp $(MSBuildArgs) "/BinaryLogger:$(ArtifactsDirectoryName)/test-net6.0.binlog"'
+      testRunTitle: '$(osName) .NET 7.0'
     condition: succeededOrFailed()
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifacts'
     inputs:
       PathtoPublish: '$(ArtifactsDirectoryName)'
-      ArtifactName: $(ArtifactsDirectoryName)
-    condition: always()
-
-- job: LinuxBuild
-  displayName: 'Build and Test (Linux)'
-  pool:
-    vmImage: ubuntu-latest
-  steps:
-  - task: UseDotNet@2
-    displayName: 'Install .NET Core $(DotNetCore3Version)'
-    inputs:
-      version: '$(DotNetCore3Version)'
-
-  - task: UseDotNet@2
-    displayName: 'Install .NET $(DotNet5Version)'
-    inputs:
-      version: '$(DotNet5Version)'
-
-  - task: UseDotNet@2
-    displayName: 'Install .NET $(DotNet6Version)'
-    inputs:
-      version: '$(DotNet6Version)'
-
-  - task: UseDotNet@2
-    displayName: 'Install .NET $(DotNet7Version)'
-    inputs:
-      version: '$(DotNet7Version)'
-      includePreviewVersions: true
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Build'
-    inputs:
-      command: 'build'
-      projects: '$(UnitTestProjectPath)'
-      arguments: '$(MSBuildArgs)'
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Run Unit Tests (.NET Core 3.1)'
-    inputs:
-      command: 'test'
-      projects: '$(UnitTestProjectPath)'
-      arguments: '--framework netcoreapp3.1'
-      testRunTitle: 'Linux .NET Core 3.1'
-    condition: succeededOrFailed()
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Run Unit Tests (.NET 5)'
-    inputs:
-      command: 'test'
-      projects: '$(UnitTestProjectPath)'
-      arguments: '--framework net5.0'
-      testRunTitle: 'Linux .NET 5.0'
-    condition: succeededOrFailed()
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Run Unit Tests (.NET 6)'
-    inputs:
-      command: 'test'
-      projects: '$(UnitTestProjectPath)'
-      arguments: '--framework net6.0'
-      testRunTitle: 'Linux .NET 6.0'
-    condition: succeededOrFailed()
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Run Unit Tests (.NET 7)'
-    inputs:
-      command: 'test'
-      arguments: '--framework net7.0'
-      testRunTitle: 'Linux .NET 7.0'
-    condition: succeededOrFailed()
-
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifacts'
-    inputs:
-      PathtoPublish: '$(ArtifactsDirectoryName)'
-      ArtifactName: $(ArtifactsDirectoryName)-linux
-    condition: always()
-
-- job: MacOSBuild
-  displayName: 'Build and Test (MacOS)'
-  pool:
-    vmImage: macOS-latest
-  steps:
-  - task: UseDotNet@2
-    displayName: 'Install .NET Core $(DotNetCore3Version)'
-    inputs:
-      version: '$(DotNetCore3Version)'
-
-  - task: UseDotNet@2
-    displayName: 'Install .NET $(DotNet5Version)'
-    inputs:
-      version: '$(DotNet5Version)'
-
-  - task: UseDotNet@2
-    displayName: 'Install .NET $(DotNet6Version)'
-    inputs:
-      version: '$(DotNet6Version)'
-      
-  - task: UseDotNet@2
-    displayName: 'Install .NET $(DotNet7Version)'
-    inputs:
-      version: '$(DotNet7Version)'
-      includePreviewVersions: true
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Build'
-    inputs:
-      command: 'build'
-      projects: '$(UnitTestProjectPath)'
-      arguments: '$(MSBuildArgs)'
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Run Unit Tests (.NET Core 3.1)'
-    inputs:
-      command: 'test'
-      projects: '$(UnitTestProjectPath)'
-      arguments: '--framework netcoreapp3.1'
-      testRunTitle: 'MacOS .NET Core 3.1'
-    condition: succeededOrFailed()
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Run Unit Tests (.NET 5)'
-    inputs:
-      command: 'test'
-      projects: '$(UnitTestProjectPath)'
-      arguments: '--framework net5.0'
-      testRunTitle: 'MacOS .NET 5.0'
-    condition: succeededOrFailed()
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Run Unit Tests (.NET 6)'
-    inputs:
-      command: 'test'
-      projects: '$(UnitTestProjectPath)'
-      arguments: '--framework net6.0'
-      testRunTitle: 'MacOS .NET 6.0'
-    condition: succeededOrFailed()
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Run Unit Tests (.NET 7)'
-    inputs:
-      command: 'test'
-      arguments: '--framework net7.0'
-      testRunTitle: 'MacOS .NET 7.0'
-    condition: succeededOrFailed()
-
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifacts'
-    inputs:
-      PathtoPublish: '$(ArtifactsDirectoryName)'
-      ArtifactName: $(ArtifactsDirectoryName)-macOS
+      ArtifactName: $(ArtifactsDirectoryName)-$(osName)
     condition: always()
