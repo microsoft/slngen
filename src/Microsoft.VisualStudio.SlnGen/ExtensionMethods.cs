@@ -30,6 +30,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// </summary>
         private static readonly char[] ArgumentSplitChars = { ';', ',' };
 
+#if NETFRAMEWORK
         /// <summary>
         /// Returns a value indicating whether a specified substring occurs within this string.
         /// </summary>
@@ -41,6 +42,7 @@ namespace Microsoft.VisualStudio.SlnGen
         {
             return str.IndexOf(value, comparisonType) >= 0;
         }
+#endif
 
         /// <summary>
         /// Gets the value of the given conditioned property in this project.

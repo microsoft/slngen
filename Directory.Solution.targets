@@ -1,0 +1,23 @@
+<Project InitialTargets="RemoveProjectsToSkip">
+  <!--
+    RemoveProjectsToSkip removes projects from the solution if they can't be built.  It determines
+    this by calling the ShouldSkipProject target for each project so it can indicate if a project
+    cannot be built and why.
+  -->
+  <Target Name="RemoveProjectsToSkip">
+    <MSBuild BuildInParallel="True"
+             Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath);"
+             SkipNonexistentProjects="%(ProjectReference.SkipNonexistentProjects)"
+             Projects="@(ProjectReference)"
+             Targets="ShouldSkipProject">
+      <Output TaskParameter="TargetOutputs"
+              ItemName="ProjectToSkip" />
+    </MSBuild>
+    <ItemGroup>
+      <ProjectReference Remove="@(ProjectToSkip)" />
+    </ItemGroup>
+    <Message Text="Skipping project &quot;%(ProjectToSkip.Identity)&quot;. %(ProjectToSkip.Message)"
+             Condition="@(ProjectToSkip->Count()) > 0 And '$(MSBuildRestoreSessionId)' == ''"
+             Importance="High" />
+  </Target>
+</Project>

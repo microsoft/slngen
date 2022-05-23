@@ -1,12 +1,11 @@
 ﻿<Project>
   <PropertyGroup>
-    <EnableCentralPackageVersions>true</EnableCentralPackageVersions>
-    <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
+    <BaseArtifactsPath>$(MSBuildThisFileDirectory)artifacts</BaseArtifactsPath>
     <DefaultItemExcludes>*log</DefaultItemExcludes>
+    <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
+    <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
+    <LangVersion>Latest</LangVersion>
     <MSBuildTreatWarningsAsErrors>true</MSBuildTreatWarningsAsErrors>
     <NoWarn>$(NoWarn);SA0001;SA1515;SA1005;SA1629</NoWarn>
-    <LangVersion>Latest</LangVersion>
-    <BaseArtifactsPath>$(MSBuildThisFileDirectory)artifacts</BaseArtifactsPath>
-    <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
   </PropertyGroup>
 </Project>
