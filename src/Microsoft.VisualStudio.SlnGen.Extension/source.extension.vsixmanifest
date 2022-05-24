@@ -1,25 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
-    <Metadata>
-        <Identity Id="SlnGen.7f489eef-951a-410b-a5b8-777ee38447d5" Version="|%CurrentProject%;GetBuildVersion|" Language="en-US" Publisher="Microsoft Corporation" />
-        <DisplayName>SlnGen</DisplayName>
-        <Description xml:space="preserve">When opening a single project, generates a solution file containing all of the project's references.  Also adds support for opening traversal projects (dirs.proj) in Visual Studio.</Description>
-        <MoreInfo>https://github.com/Microsoft/SlnGen</MoreInfo>
-        <Preview>true</Preview>
-    </Metadata>
-    <Installation>
-      <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[17.0, 18.0)">
-        <ProductArchitecture>amd64</ProductArchitecture>
-      </InstallationTarget>
-    </Installation>
-    <Dependencies>
-        <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
-    </Dependencies>
-    <Prerequisites>
-      <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[17.0,18.0)" DisplayName="Visual Studio core editor" />
-    </Prerequisites>
-    <Assets>
-        <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
-        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
-    </Assets>
+  <Metadata>
+    <Identity Id="Microsoft.VisualStudio.SlnGen.Extension" Version="|%CurrentProject%;GetBuildVersion|" Language="en-US" Publisher="Microsoft Corporation" />
+    <DisplayName>SlnGen</DisplayName>
+    <Description xml:space="preserve">When opening a single project, generates a solution file containing all of the project's references.  Also adds support for opening traversal projects (dirs.proj) in Visual Studio.</Description>
+    <MoreInfo>https://github.com/microsoft/slngen</MoreInfo>
+    <License>LICENSE.txt</License>
+    <Preview>true</Preview>
+    <Icon>Icon.png</Icon>
+  </Metadata>
+  <Installation>
+    <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[17.0, 18.0)">
+      <ProductArchitecture>amd64</ProductArchitecture>
+    </InstallationTarget>
+  </Installation>
+  <Dependencies>
+    <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
+  </Dependencies>
+  <Prerequisites>
+    <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[17.0,18.0)" DisplayName="Visual Studio core editor" />
+  </Prerequisites>
+  <Assets>
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
+    <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
+  </Assets>
 </PackageManifest>
