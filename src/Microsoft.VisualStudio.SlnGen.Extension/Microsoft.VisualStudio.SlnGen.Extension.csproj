@@ -30,7 +30,9 @@
     <Compile Update="VSPackage.Designer.cs" AutoGen="true" DesignTime="true" DependentUpon="VSPackage.resx" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="source.extension.vsixmanifest" SubType="Designer" />
+    <None Include="source.extension.vsixmanifest" Generator="VsixManifestGenerator" SubType="Designer" />
+    <Content Include="..\..\LICENSE.txt" CopyToOutputDirectory="PreserveNewest" IncludeInVSIX="true" />
+    <Content Include="..\..\branding\Icon.png" CopyToOutputDirectory="PreserveNewest" IncludeInVSIX="true" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" />

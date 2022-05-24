@@ -9,7 +9,7 @@ variables:
   DotNet5Version: '5.x'
   DotNet6Version: '6.x'
   DotNet7Version: '7.x'
-  MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
+  MSBuildArgs: '"/Property:Platform=$(BuildPlatform);Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   SignType: 'Test'
 
 trigger:
@@ -18,15 +18,6 @@ trigger:
     include:
     - 'main'
     - 'refs/tags/*'
-  paths:
-    exclude:
-    - '*.md'
-
-pr:
-  branches:
-    include:
-    - 'main'
-    - 'rel/*'
   paths:
     exclude:
     - '*.md'
