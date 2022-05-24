@@ -70,6 +70,24 @@ namespace Microsoft.VisualStudio.SlnGen.Extension.csproj {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to SlnGen.
+        /// </summary>
+        internal static string _110 {
+            get {
+                return ResourceManager.GetString("110", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Generates a solution file containing all of a project&apos;s references and adds support for opening traversal projects (dirs.proj) in Visual Studio..
+        /// </summary>
+        internal static string _112 {
+            get {
+                return ResourceManager.GetString("112", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Traversal Project Files (dirs.proj);dirs.proj.
         /// </summary>
         internal static string _2 {

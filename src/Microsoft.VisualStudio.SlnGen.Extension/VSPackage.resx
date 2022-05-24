@@ -123,4 +123,10 @@
   <data name="2" xml:space="preserve">
     <value>Traversal Project Files (dirs.proj);dirs.proj</value>
   </data>
+  <data name="110" xml:space="preserve">
+    <value>SlnGen</value>
+  </data>
+  <data name="112" xml:space="preserve">
+    <value>Generates a solution file containing all of a project's references and adds support for opening traversal projects (dirs.proj) in Visual Studio.</value>
+  </data>
 </root>

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="Microsoft.VisualStudio.SlnGen.Extension" Version="|%CurrentProject%;GetBuildVersion|" Language="en-US" Publisher="Microsoft Corporation" />
+    <Identity Id="Microsoft.VisualStudio.SlnGen.Extension" Version="|%CurrentProject%;GetBuildVersion|" Language="en-US" Publisher="Microsoft" />
     <DisplayName>SlnGen</DisplayName>
-    <Description xml:space="preserve">When opening a single project, generates a solution file containing all of the project's references.  Also adds support for opening traversal projects (dirs.proj) in Visual Studio.</Description>
+    <Description xml:space="preserve">Generates a solution file containing all of a project's references and adds support for opening traversal projects (dirs.proj) in Visual Studio.</Description>
     <MoreInfo>https://github.com/microsoft/slngen</MoreInfo>
     <License>LICENSE.txt</License>
     <Preview>true</Preview>

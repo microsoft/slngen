@@ -22,6 +22,7 @@ namespace Microsoft.VisualStudio.SlnGen.Extension
     /// <summary>
     /// Represents the main entry point for the package.
     /// </summary>
+    [InstalledProductRegistration("#110", "#112", ThisAssembly.AssemblyInformationalVersion, LanguageIndependentName = "SlnGen")]
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
     [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionOpening_string, PackageAutoLoadFlags.BackgroundLoad)]
     [Guid(PackageGuidString)]
