@@ -36,7 +36,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{5CA3348C-8
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlnGen.Corext", "src\SlnGen.Corext\SlnGen.Corext.csproj", "{7E04B85F-7503-445D-9C38-99B8EE053C26}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.VisualStudio.SlnGen.Extension", "src\Microsoft.VisualStudio.SlnGen.Extension\Microsoft.VisualStudio.SlnGen.Extension.csproj", "{DE1E923E-19C0-4142-9889-6C860AB66BF4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.VisualStudio.SlnGen.Extension", "src\Microsoft.VisualStudio.SlnGen.Extension\Microsoft.VisualStudio.SlnGen.Extension.csproj", "{DE1E923E-19C0-4142-9889-6C860AB66BF4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

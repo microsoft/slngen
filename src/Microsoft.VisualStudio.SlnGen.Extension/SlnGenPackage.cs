@@ -3,6 +3,7 @@
 // Licensed under the MIT license.
 
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Events;
 using Microsoft.VisualStudio.Shell.Interop;
 using System;
 using System.Collections.Generic;
@@ -10,6 +11,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,11 +19,17 @@ using Task = System.Threading.Tasks.Task;
 
 namespace Microsoft.VisualStudio.SlnGen.Extension
 {
+    /// <summary>
+    /// Represents the main entry point for the package.
+    /// </summary>
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
-    [ProvideAutoLoad(UIContextGuids80.SolutionExists, PackageAutoLoadFlags.BackgroundLoad)]
+    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionOpening_string, PackageAutoLoadFlags.BackgroundLoad)]
     [Guid(PackageGuidString)]
     public sealed class SlnGenPackage : AsyncPackage
     {
+        /// <summary>
+        /// Represents the package GUID as a string.
+        /// </summary>
         public const string PackageGuidString = "7f489eef-951a-410b-a5b8-777ee38447d5";
 
         /// <summary>
@@ -34,60 +42,117 @@ namespace Microsoft.VisualStudio.SlnGen.Extension
         /// </summary>
         public const string ProjectTypeGuid = "bcc30a4b-97b0-44b3-9611-88c85c275ca7";
 
-        private SolutionEvents _solutionEvents;
+        /// <summary>
+        /// Represents the output window pane identifier.
+        /// </summary>
+        private static readonly Guid OutputWindowPaneId = new Guid("{6F361660-4673-45FF-ACB7-99D8A9AE9853}");
 
         private int _isSolutionReloading;
 
-        public uint SolutionCookie { get; set; }
+        /// <inheritdoc />
+        protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
+        {
+            await ReloadSolutionAsync(cancellationToken);
+        }
 
-        public async Task<int> ReloadSolutionAsync(CancellationToken cancellationToken)
+        /// <summary>
+        /// Activates the specified output window pane.
+        /// </summary>
+        /// <param name="paneId">The GUID of the pane.</param>
+        /// <param name="name">The name of the pane.</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken" /> to use.</param>
+        /// <returns>The <see cref="IVsOutputWindowPane" /> of the window pane.</returns>
+        private async Task<IVsOutputWindowPane> ActivateOutputWindowPaneAsync(Guid paneId, string name, CancellationToken cancellationToken)
+        {
+            await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+
+            IVsOutputWindow outputWindow = await GetServiceAsync(typeof(SVsOutputWindow)) as IVsOutputWindow;
+
+            Assumes.Present(outputWindow);
+
+            IVsUIShell uiShell = await GetServiceAsync(typeof(SVsUIShell)) as IVsUIShell;
+
+            Assumes.Present(uiShell);
+
+            if (!ErrorHandler.Succeeded(outputWindow.GetPane(paneId, out IVsOutputWindowPane outputPane)))
+            {
+                if (ErrorHandler.Failed(uiShell.FindToolWindow((uint)__VSFINDTOOLWIN.FTW_fForceCreate, VSConstants.StandardToolWindows.Output, out IVsWindowFrame windowFrame)))
+                {
+                    return null;
+                }
+
+                windowFrame.Show();
+
+                outputWindow.CreatePane(paneId, name, fInitVisible: 1, fClearWithSolution: 0);
+
+                outputWindow.GetPane(paneId, out outputPane);
+            }
+
+            outputPane.Activate();
+
+            return outputPane;
+        }
+
+        private void HandleOpenSolution(object sender, EventArgs e)
+        {
+            Task.Run(() => ReloadSolutionAsync(CancellationToken.None)).FileAndForget("slngen/execute/generatesolution");
+        }
+
+        private async Task ReloadSolutionAsync(CancellationToken cancellationToken)
         {
             if (_isSolutionReloading == 1 || Interlocked.Increment(ref _isSolutionReloading) != 1)
             {
-                return 0;
+                return;
             }
 
             try
             {
+                SolutionEvents.OnAfterOpenSolution -= HandleOpenSolution;
+
                 await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
                 IVsSolution solution = await GetServiceAsync(typeof(SVsSolution)) as IVsSolution;
 
                 Assumes.Present(solution);
 
+                if (!solution.GetProperty<bool>(__VSPROPID.VSPROPID_IsSolutionOpen) || !solution.GetProperty<bool>(__VSPROPID.VSPROPID_IsSolutionDirty))
+                {
+                    return;
+                }
+
                 List<IVsProject> projects = solution.GetProjects().ToList();
 
                 if (projects.Count != 1)
                 {
-                    return 0;
+                    return;
                 }
+
+                IVsOutputWindowPane outputWindowPane = await ActivateOutputWindowPaneAsync(OutputWindowPaneId, "SlnGen", cancellationToken);
+
+                outputWindowPane?.Clear();
 
                 string project = projects.Select(i => i.GetFullPath()).FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
 
-                int result = solution.CloseSolutionElement((uint)__VSSLNSAVEOPTIONS.SLNSAVEOPT_NoSave, null, 0);
+                outputWindowPane?.OutputStringThreadSafe("Closing solution...");
+                ErrorHandler.ThrowOnFailure(solution.CloseSolutionElement((uint)__VSSLNSAVEOPTIONS.SLNSAVEOPT_NoSave, null, 0));
+                outputWindowPane?.OutputStringThreadSafe($"Success{Environment.NewLine}");
 
-                ErrorHandler.ThrowOnFailure(result);
+                outputWindowPane?.OutputStringThreadSafe("Running SlnGen...");
 
-                result = await RunSlnGenAsync(project, cancellationToken);
+                (int exitCode, string output) = await RunSlnGenAsync(project, cancellationToken);
 
-                ErrorHandler.ThrowOnFailure(result);
+                outputWindowPane?.OutputStringThreadSafe($"{(exitCode == 0 ? "Success" : "Failed!")}{Environment.NewLine}");
 
-                result = solution.OpenSolutionFile((uint)__VSSLNOPENOPTIONS.SLNOPENOPT_Silent, Path.ChangeExtension(project, "sln"));
+                outputWindowPane?.OutputStringThreadSafe(output);
 
-                ErrorHandler.ThrowOnFailure(result);
-
-                if (SolutionCookie == default)
+                if (exitCode == 0)
                 {
-                    _solutionEvents ??= new SolutionEvents(this);
-
-                    result = solution.AdviseSolutionEvents(_solutionEvents, out uint cookie);
-
-                    ErrorHandler.ThrowOnFailure(result);
-
-                    SolutionCookie = cookie;
+                    outputWindowPane?.OutputStringThreadSafe("Opening solution...");
+                    ErrorHandler.ThrowOnFailure(solution.OpenSolutionFile((uint)__VSSLNOPENOPTIONS.SLNOPENOPT_Silent, Path.ChangeExtension(project, "sln")));
+                    outputWindowPane?.OutputStringThreadSafe($"Success{Environment.NewLine}");
                 }
 
-                return result;
+                SolutionEvents.OnAfterBackgroundSolutionLoadComplete += HandleOpenSolution;
             }
             finally
             {
@@ -95,12 +160,7 @@ namespace Microsoft.VisualStudio.SlnGen.Extension
             }
         }
 
-        protected override Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
-        {
-            return ReloadSolutionAsync(cancellationToken);
-        }
-
-        private async Task<int> RunSlnGenAsync(string project, CancellationToken cancellationToken)
+        private async Task<(int, string)> RunSlnGenAsync(string project, CancellationToken cancellationToken)
         {
             await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
@@ -120,7 +180,7 @@ namespace Microsoft.VisualStudio.SlnGen.Extension
                     CreateNoWindow = true,
                     RedirectStandardError = false,
                     RedirectStandardInput = false,
-                    RedirectStandardOutput = false,
+                    RedirectStandardOutput = true,
                 },
             };
 
@@ -128,15 +188,27 @@ namespace Microsoft.VisualStudio.SlnGen.Extension
 
             process.Start();
 
+            StringBuilder sb = new StringBuilder();
+
+            process.OutputDataReceived += (sender, args) =>
+            {
+                if (args?.Data != null)
+                {
+                    sb.AppendLine(args.Data);
+                }
+            };
+
+            process.BeginOutputReadLine();
+
             try
             {
                 await semaphore.WaitAsync(cancellationToken);
 
-                return process.ExitCode;
+                return (process.ExitCode, sb.ToString());
             }
             catch (OperationCanceledException)
             {
-                return 0;
+                return (0, null);
             }
         }
     }
