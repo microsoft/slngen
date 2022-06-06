@@ -25,6 +25,11 @@ namespace Microsoft.VisualStudio.SlnGen
         public const string Cpp = "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942";
 
         /// <summary>
+        /// Integration Services projects (.dtproj).
+        /// </summary>
+        public const string Dt = "159641D6-6404-4A2A-AE62-294DE0FE8301";
+
+        /// <summary>
         /// F# projects (.fsproj).
         /// </summary>
         public const string FSharp = "F2A71F9B-5D33-465A-A702-920D77279786";
@@ -63,6 +68,11 @@ namespace Microsoft.VisualStudio.SlnGen
         /// NuProj projects (.nuproj).
         /// </summary>
         public const string NuProj = "FF286327-C783-4F7A-AB73-9BCBAD0D4460";
+
+        /// <summary>
+        /// Reporting Services projects (.rptproj).
+        /// </summary>
+        public const string Rpt = "F14B399A-7131-4C87-9E4B-1186C45EF12D";
 
         /// <summary>
         /// Scope SDK projects (.scopeproj).

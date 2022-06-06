@@ -30,6 +30,11 @@ namespace Microsoft.VisualStudio.SlnGen
         public const string CSharp = ".csproj";
 
         /// <summary>
+        /// Integration Services projects (.dtproj).
+        /// </summary>
+        public const string Dt = ".dtproj";
+
+        /// <summary>
         /// F# projects (.fsproj).
         /// </summary>
         public const string FSharp = ".fsproj";
@@ -58,6 +63,11 @@ namespace Microsoft.VisualStudio.SlnGen
         /// NuProj projects (.nuproj).
         /// </summary>
         public const string NuProj = ".nuproj";
+
+        /// <summary>
+        /// Reporting Services projects (.rptproj).
+        /// </summary>
+        public const string Rpt = ".rptproj";
 
         /// <summary>
         /// Scope SDK projects (.scopeproj).
