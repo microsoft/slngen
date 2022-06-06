@@ -103,7 +103,7 @@ SlnGen is an MSBuild target so you will need to add a `<PackageReference />` to 
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="SlnGen" Version="3.0.0" />
+  <PackageReference Include="Microsoft.VisualStudio.SlnGen" Version="<Latest Version>" />
 </ItemGroup>
 ```
 
