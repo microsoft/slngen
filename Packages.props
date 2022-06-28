@@ -21,7 +21,7 @@
     <PackageReference Update="Microsoft.VisualStudio.SDK" Version="17.2.32505.173" />
     <PackageReference Update="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="3.2.2146" />
     <PackageReference Update="Microsoft.VisualStudio.Telemetry" Version="16.4.78" />
-    <PackageReference Update="Microsoft.VSSDK.BuildTools" Version="17.2.2186" />
+    <PackageReference Update="Microsoft.VSSDK.BuildTools" Version="17.3.2078" />
     <PackageReference Update="MSBuild.ProjectCreation" Version="8.0.0" />
     <PackageReference Update="Shouldly" Version="4.0.3" />
     <PackageReference Update="xunit" Version="2.4.1" />
