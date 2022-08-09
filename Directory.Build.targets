@@ -3,6 +3,7 @@
 
   <PropertyGroup>
     <MicroBuild_NuPkgSigningEnabled Condition="'$(SignType)' == 'Test'">false</MicroBuild_NuPkgSigningEnabled>
+    <EnableNETAnalyzers Condition="'$(TargetFramework)' == 'net7.0'">false</EnableNETAnalyzers>
   </PropertyGroup>
 
   <PropertyGroup>
