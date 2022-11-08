@@ -53,7 +53,7 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
                         ProjectCollection = projectCollection,
                     })
                 .CreateProjectInstance(
-                    ProjectInstanceSettings.ImmutableWithFastItemLookup,
+                    ProjectInstanceSettings.None,
                     ProjectLoader.SharedEvaluationContext);
 
             ProjectLoader.LogProjectStartedEvent(_logger, projectInstance);
