@@ -9,6 +9,7 @@ variables:
   DotNet5Version: '5.x'
   DotNet6Version: '6.x'
   DotNet7Version: '7.x'
+  DotNet8Version: '8.x'
   MSBuildArgs: '"/Property:Platform=$(BuildPlatform);Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   SignType: 'Test'
 
@@ -54,6 +55,12 @@ stages:
       displayName: 'Install .NET $(DotNet7Version)'
       inputs:
         version: '$(DotNet7Version)'
+        includePreviewVersions: true
+
+    - task: UseDotNet@2
+      displayName: 'Install .NET $(DotNet8Version)'
+      inputs:
+        version: '$(DotNet8Version)'
         includePreviewVersions: true
 
     - task: MicroBuildSigningPlugin@1

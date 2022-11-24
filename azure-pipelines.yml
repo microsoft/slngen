@@ -9,6 +9,7 @@ variables:
   DotNet5Version: '5.x'
   DotNet6Version: '6.x'
   DotNet7Version: '7.x'
+  DotNet8Version: '8.x'
   MSBuildArgs: '"/Property:Platform=$(BuildPlatform);Configuration=$(BuildConfiguration)"'
   SignType: 'Test'
 
@@ -68,6 +69,12 @@ jobs:
       version: '$(DotNet7Version)'
       includePreviewVersions: true
 
+  - task: UseDotNet@2
+    displayName: 'Install .NET $(DotNet8Version)'
+    inputs:
+      version: '$(DotNet8Version)'
+      includePreviewVersions: true
+
   - task: VSBuild@1
     displayName: 'Build (Visual Studio)'
     inputs:
@@ -117,8 +124,16 @@ jobs:
     displayName: 'Run Unit Tests (.NET 7)'
     inputs:
       command: 'test'
-      arguments: '--no-restore --no-build --framework net7.0 /noautorsp $(MSBuildArgs) "/BinaryLogger:$(ArtifactsDirectoryName)/test-net6.0.binlog"'
+      arguments: '--no-restore --no-build --framework net7.0 /noautorsp $(MSBuildArgs) "/BinaryLogger:$(ArtifactsDirectoryName)/test-net7.0.binlog"'
       testRunTitle: '$(osName) .NET 7.0'
+    condition: succeededOrFailed()
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Run Unit Tests (.NET 8)'
+    inputs:
+      command: 'test'
+      arguments: '--no-restore --no-build --framework net8.0 /noautorsp $(MSBuildArgs) "/BinaryLogger:$(ArtifactsDirectoryName)/test-net8.0.binlog"'
+      testRunTitle: '$(osName) .NET 8.0'
     condition: succeededOrFailed()
 
   - task: PublishBuildArtifacts@1

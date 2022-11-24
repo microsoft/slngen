@@ -7,5 +7,6 @@
     <LangVersion>Latest</LangVersion>
     <MSBuildTreatWarningsAsErrors>true</MSBuildTreatWarningsAsErrors>
     <NoWarn>$(NoWarn);SA0001;SA1515;SA1005;SA1629;NETSDK1192</NoWarn>
+    <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
   </PropertyGroup>
 </Project>
