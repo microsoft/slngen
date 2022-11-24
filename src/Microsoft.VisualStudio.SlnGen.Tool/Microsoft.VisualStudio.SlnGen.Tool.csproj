@@ -62,6 +62,14 @@
                       ReferenceOutputAssembly="false"
                       SkipGetTargetFrameworkProperties="true"
                       TargetFramework="net7.0" />
+    <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj"
+                      SetTargetFramework="TargetFramework=net8.0"
+                      IncludeAssets="None"
+                      OutputItemType="SlnGenBuildOutput"
+                      PrivateAssets="All"
+                      ReferenceOutputAssembly="false"
+                      SkipGetTargetFrameworkProperties="true"
+                      TargetFramework="net8.0" />
   </ItemGroup>
   <Target Name="CopySlnGenToOutputDirectoryAndPackage"
           AfterTargets="PrepareForRun"

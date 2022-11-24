@@ -9,6 +9,7 @@ variables:
   DotNet5Version: '5.x'
   DotNet6Version: '6.x'
   DotNet7Version: '7.x'
+  DotNet8Version: '8.x'
   MSBuildArgs: '"/Property:Platform=$(BuildPlatform);Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   SignType: 'Test'
 
@@ -55,6 +56,11 @@ stages:
       inputs:
         version: '$(DotNet7Version)'
         includePreviewVersions: true
+
+    - script: |
+        powershell -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -UseBasicParsing 'https://dot.net/v1/dotnet-install.ps1'))) -Channel 8.0 -Quality daily -InstallDir D:\a\_work\_tool\dotnet"
+        dotnet --info
+      displayName: 'Install .NET $(DotNet8Version)'
 
     - task: MicroBuildSigningPlugin@1
       displayName: 'Install MicroBuild Signing Plugin'
