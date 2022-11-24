@@ -69,11 +69,23 @@ jobs:
       version: '$(DotNet7Version)'
       includePreviewVersions: true
 
-  - task: UseDotNet@2
-    displayName: 'Install .NET $(DotNet8Version)'
-    inputs:
-      version: '$(DotNet8Version)'
-      includePreviewVersions: true
+  - script: |
+      powershell -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -UseBasicParsing 'https://dot.net/v1/dotnet-install.ps1'))) -Channel 8.0 -Quality daily -InstallDir C:\hostedtoolcache\windows\dotnet"
+      dotnet --info
+    displayName: 'Install .NET $(DotNet8Version) (Windows)'
+    condition: eq(variables.osName, 'Windows')
+
+  - script: |
+      curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 8.0 --quality daily --install-dir /opt/hostedtoolcache/dotnet
+      dotnet --info
+    displayName: 'Install .NET $(DotNet8Version) (Linux)'
+    condition: eq(variables.osName, 'Linux')
+
+  - script: |
+      curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 8.0 --quality daily --install-dir /Users/runner/hostedtoolcache/dotnet
+      dotnet --info
+    displayName: 'Install .NET $(DotNet8Version) (MacOS)'
+    condition: eq(variables.osName, 'MacOS')
 
   - task: VSBuild@1
     displayName: 'Build (Visual Studio)'

@@ -57,11 +57,10 @@ stages:
         version: '$(DotNet7Version)'
         includePreviewVersions: true
 
-    - task: UseDotNet@2
+    - script: |
+        powershell -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -UseBasicParsing 'https://dot.net/v1/dotnet-install.ps1'))) -Channel 8.0 -Quality daily -InstallDir D:\a\_work\_tool\dotnet"
+        dotnet --info
       displayName: 'Install .NET $(DotNet8Version)'
-      inputs:
-        version: '$(DotNet8Version)'
-        includePreviewVersions: true
 
     - task: MicroBuildSigningPlugin@1
       displayName: 'Install MicroBuild Signing Plugin'
