@@ -432,33 +432,26 @@ Examples:
             return result.Count > 0;
         }
 
-        internal static IEnumerable<string> ExpandWildcards(IEnumerable<string> paths)
+        internal static IEnumerable<string> ExpandWildcards(IEnumerable<string> paths, string directoryPath = default)
         {
-            List<string> results = new List<string>();
-            List<string> pathsWithWildcards = new List<string>();
-
             foreach (string path in paths)
             {
-                if (path.Contains("*", StringComparison.OrdinalIgnoreCase))
+                if (path.Contains("*", StringComparison.OrdinalIgnoreCase) || path.Contains("?", StringComparison.OrdinalIgnoreCase))
                 {
-                    pathsWithWildcards.Add(path);
+                    Matcher matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
+
+                    matcher.AddInclude(path);
+
+                    foreach (string expandedPath in matcher.GetResultsInFullPath(directoryPath ?? Environment.CurrentDirectory))
+                    {
+                        yield return expandedPath;
+                    }
                 }
                 else
                 {
-                    results.Add(path);
+                    yield return path;
                 }
             }
-
-            if (pathsWithWildcards.Any())
-            {
-                Matcher matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
-
-                matcher.AddIncludePatterns(pathsWithWildcards);
-
-                results.AddRange(matcher.GetResultsInFullPath(Environment.CurrentDirectory));
-            }
-
-            return results;
         }
 
         private bool GetBoolean(string[] values, bool defaultValue = false)

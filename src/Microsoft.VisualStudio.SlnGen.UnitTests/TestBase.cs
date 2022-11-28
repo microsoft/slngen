@@ -27,6 +27,15 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             GC.SuppressFinalize(this);
         }
 
+        protected string CreateTempProjectFile(string name, string directoryPath = default)
+        {
+            string filePath = GetTempProjectFile(name, directoryPath);
+
+            File.WriteAllText(filePath, "<Project />");
+
+            return filePath;
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
@@ -45,9 +54,9 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             return Path.Combine(TestRootPath, $"{Path.GetRandomFileName()}{extension ?? string.Empty}");
         }
 
-        protected string GetTempProjectFile(string name)
+        protected string GetTempProjectFile(string name, string directoryPath = default)
         {
-            DirectoryInfo projectDirectory = Directory.CreateDirectory(Path.Combine(TestRootPath, name));
+            DirectoryInfo projectDirectory = Directory.CreateDirectory(Path.Combine(TestRootPath, directoryPath ?? name));
 
             return Path.Combine(projectDirectory.FullName, $"{name}.csproj");
         }
