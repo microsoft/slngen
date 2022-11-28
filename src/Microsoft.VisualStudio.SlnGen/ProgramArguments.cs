@@ -14,6 +14,7 @@ namespace Microsoft.VisualStudio.SlnGen
     /// <summary>
     /// Represents the command-line arguments for this application.
     /// </summary>
+    [Command(ResponseFileHandling = ResponseFileHandling.ParseArgsAsSpaceSeparated)]
     public sealed class ProgramArguments
     {
         /// <summary>
@@ -207,12 +208,12 @@ Examples:
         public string[] Platform { get; set; }
 
         /// <summary>
-        /// Gets or sets the full path to the project to generate a solution for.
+        /// Gets or sets the full path to the projects to generate a solution for.
         /// </summary>
         [Argument(
             0,
-            Name = "project path",
-            Description = "An optional path to a project which can include wildcards like **\\*.csproj or directories which contain projects files.  If not specified, all projects in the current directory will be used.")]
+            Name = "project paths",
+            Description = "Optional path to one or more projects.  Paths can include wildcards like **\\*.csproj or directories which contain projects files.  If not specified, all projects in the current directory will be used.")]
         public string[] Projects { get; set; }
 
         /// <summary>

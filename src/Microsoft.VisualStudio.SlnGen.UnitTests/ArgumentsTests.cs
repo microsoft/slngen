@@ -61,6 +61,36 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             console.OutputLines.First().ShouldStartWith("Usage: ", Case.Sensitive, console.Output);
         }
 
+        [Fact]
+        public void ResponseFile()
+        {
+            var root = Path.GetTempPath();
+            var work = Directory.CreateDirectory(Path.Combine(root, Process.GetCurrentProcess().Id.ToString()));
+
+            try
+            {
+                TestConsole console = new TestConsole();
+
+                File.WriteAllText(Path.Combine(work.FullName, "response"), "3.csproj 4.csproj\n5.csproj \"6.csproj\" --ignoreMainProject");
+
+                var old = Environment.CurrentDirectory;
+                Environment.CurrentDirectory = work.FullName;
+                int exitCode = Program.Execute(new string[] { "1.csproj", "2.csproj", "@response" }, console, (arguments, console1) =>
+                {
+                    arguments.Projects.ShouldBe(new string[] { "1.csproj", "2.csproj", "3.csproj", "4.csproj", "5.csproj", "6.csproj" });
+                    arguments.IgnoreMainProject.ShouldBe(true);
+                    return 42;
+                });
+                Environment.CurrentDirectory = old;
+
+                exitCode.ShouldBe(42, console.AllOutput);
+            }
+            finally
+            {
+                Directory.Delete(work.FullName, true);
+            }
+        }
+
 #if !NETFRAMEWORK
         [Fact]
         public void ExpandWildcards()
