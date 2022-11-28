@@ -246,6 +246,28 @@ namespace Microsoft.VisualStudio.SlnGen
             return 0;
         }
 
+        /// <summary>
+        /// Writes the specified error to the console.
+        /// </summary>
+        /// <param name="console">An <see cref="IConsole" /> to write the error to.</param>
+        /// <param name="message">The message to write to <see cref="Console.Error" />.</param>
+        /// <param name="args">An array of objects to write using <see cref="message" />.</param>
+        internal static void WriteError(IConsole console, string message, params object[] args)
+        {
+            if (console is null)
+            {
+                throw new ArgumentNullException(nameof(console));
+            }
+
+            console.BackgroundColor = ConsoleColor.Black;
+
+            console.ForegroundColor = ConsoleColor.Red;
+
+            console.Error.WriteLine(message, args);
+
+            console.ResetColor();
+        }
+
         private static int Execute(string[] args, IConsole console)
         {
             try
@@ -294,7 +316,7 @@ namespace Microsoft.VisualStudio.SlnGen
             {
                 TelemetryClient.PostException(e);
 
-                Utility.WriteError(e.ToString());
+                WriteError(console, e.ToString());
 
                 return 2;
             }

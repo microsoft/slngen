@@ -3,8 +3,7 @@
 // Licensed under the MIT license.
 
 using Shouldly;
-using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Xunit;
@@ -13,6 +12,27 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 {
     public class ArgumentsTests : TestBase
     {
+        [Fact]
+        public void ExpandWildcards()
+        {
+            Directory.CreateDirectory(Path.Combine(TestRootPath, "t1", "t2", "t3"));
+            Directory.CreateDirectory(Path.Combine(TestRootPath, "t4"));
+
+            string[] projects = new[]
+            {
+                CreateTempProjectFile("1", string.Empty),
+                CreateTempProjectFile("2"),
+                CreateTempProjectFile("3", Path.Combine("3", "3B")),
+                CreateTempProjectFile("4", Path.Combine("4", "4B", "4C")),
+            };
+
+            File.WriteAllText(GetTempFileName(), string.Empty);
+
+            IEnumerable<string> result = ProgramArguments.ExpandWildcards(new[] { Path.Combine("**", "*.csproj") }, TestRootPath);
+
+            result.ShouldBe(projects, ignoreOrder: true);
+        }
+
         [Fact]
         public void ForwardSlashQuestionMarkDisplaysUsage()
         {
@@ -61,49 +81,30 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             console.OutputLines.First().ShouldStartWith("Usage: ", Case.Sensitive, console.Output);
         }
 
-#if !NETFRAMEWORK
         [Fact]
-        public void ExpandWildcards()
+        public void ResponseFile()
         {
-            var root = Path.GetTempPath();
-            var work = Directory.CreateDirectory(Path.Combine(root, Process.GetCurrentProcess().Id.ToString()));
+            TestConsole console = new TestConsole();
 
-            try
+            FileInfo responseFile = new FileInfo(Path.Combine(TestRootPath, "response.rsp"));
+
+            File.WriteAllText(responseFile.FullName, "3.csproj 4.csproj\n5.csproj \"6.csproj\" --ignoreMainProject");
+
+            string[] parseProjects = null;
+            bool? ignoreMainProject = null;
+
+            int exitCode = Program.Execute(new string[] { "1.csproj", "2.csproj", $"@{responseFile.FullName}" }, console, (arguments, _) =>
             {
-                // directory tree
-                _ = Directory.CreateDirectory(Path.Combine(work.FullName, "t1"));
-                _ = Directory.CreateDirectory(Path.Combine(work.FullName, "t1", "t2"));
-                _ = Directory.CreateDirectory(Path.Combine(work.FullName, "t1", "t2", "t3"));
-                _ = Directory.CreateDirectory(Path.Combine(work.FullName, "t4"));
+                parseProjects = arguments.Projects;
+                ignoreMainProject = arguments.IgnoreMainProject;
+                return 42;
+            });
 
-                // sprinkle some files around
-                File.WriteAllText(Path.Combine(work.FullName, "1.csproj"), string.Empty);
-                File.WriteAllText(Path.Combine(work.FullName, "2.csproj"), string.Empty);
-                File.WriteAllText(Path.Combine(work.FullName, "XXX"), string.Empty);
-                File.WriteAllText(Path.Combine(work.FullName, "t1", "3.csproj"), string.Empty);
-                File.WriteAllText(Path.Combine(work.FullName, "t1", "XXX"), string.Empty);
-                File.WriteAllText(Path.Combine(work.FullName, "t1", "t2", "4.csproj"), string.Empty);
-                File.WriteAllText(Path.Combine(work.FullName, "t1", "t2", "5.csproj"), string.Empty);
-                File.WriteAllText(Path.Combine(work.FullName, "t1", "t2", "t3", "6.csproj"), string.Empty);
+            exitCode.ShouldBe(42, console.AllOutput);
 
-                var old = Environment.CurrentDirectory;
-                Environment.CurrentDirectory = work.FullName;
-                var result = ProgramArguments.ExpandWildcards(new[] { "**\\*.csproj" });
-                Environment.CurrentDirectory = old;
+            parseProjects.ShouldBe(new string[] { "1.csproj", "2.csproj", "3.csproj", "4.csproj", "5.csproj", "6.csproj" });
 
-                var files = result.Select(x => Path.GetFileName(x)).OrderBy<string, string>(x => x).ToArray();
-
-                Assert.Equal(6, files.Length);
-                for (int i = 0; i < files.Length; i++)
-                {
-                    Assert.Equal(files[i], $"{i + 1}.csproj");
-                }
-            }
-            finally
-            {
-                Directory.Delete(work.FullName, true);
-            }
+            ignoreMainProject.ShouldBe(true);
         }
-#endif
     }
 }
