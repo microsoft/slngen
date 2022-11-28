@@ -14,6 +14,7 @@ namespace Microsoft.VisualStudio.SlnGen
     /// <summary>
     /// Represents the command-line arguments for this application.
     /// </summary>
+    [Command(ResponseFileHandling = ResponseFileHandling.ParseArgsAsSpaceSeparated)]
     public sealed class ProgramArguments
     {
         /// <summary>
@@ -207,22 +208,13 @@ Examples:
         public string[] Platform { get; set; }
 
         /// <summary>
-        /// Gets or sets the full path to the project to generate a solution for.
+        /// Gets or sets the full path to the projects to generate a solution for.
         /// </summary>
         [Argument(
             0,
-            Name = "project path",
-            Description = "An optional path to a project which can include wildcards like **\\*.csproj or directories which contain projects files.  If not specified, all projects in the current directory will be used.")]
+            Name = "project paths",
+            Description = "Optional path to one or more projects.  Paths can include wildcards like **\\*.csproj or directories which contain projects files.  If not specified, all projects in the current directory will be used.")]
         public string[] Projects { get; set; }
-
-        /// <summary>
-        /// Gets or sets the full path to the file containing projects to generate a solution for.
-        /// </summary>
-        [Option(
-            "-pf|--projectsfile <path>",
-            CommandOptionType.MultipleValue,
-            Description = "Optional path to a file containing list of projects to generate a solution for.")]
-        public string[] ProjectsFilePath { get; set; }
 
         /// <summary>
         /// Gets or sets the platforms to use when generating the solution.
@@ -405,14 +397,7 @@ Examples:
                 }
             }
 
-            var allProjects = Projects?.ToList() ?? new List<string>();
-            var projectsFilePath = ProjectsFilePath?.LastOrDefault();
-            if (projectsFilePath != null && File.Exists(projectsFilePath))
-            {
-                allProjects.AddRange(File.ReadLines(projectsFilePath));
-            }
-
-            if (allProjects.Count == 0)
+            if (Projects == null || !Projects.Any())
             {
                 SearchInDirectory(Environment.CurrentDirectory);
 
@@ -423,7 +408,7 @@ Examples:
             }
             else
             {
-                foreach (string projectPath in ExpandWildcards(allProjects).Select(Path.GetFullPath))
+                foreach (string projectPath in ExpandWildcards(Projects).Select(Path.GetFullPath))
                 {
                     if (File.Exists(projectPath))
                     {
@@ -447,33 +432,26 @@ Examples:
             return result.Count > 0;
         }
 
-        internal static IEnumerable<string> ExpandWildcards(IEnumerable<string> paths)
+        internal static IEnumerable<string> ExpandWildcards(IEnumerable<string> paths, string directoryPath = default)
         {
-            List<string> results = new List<string>();
-            List<string> pathsWithWildcards = new List<string>();
-
             foreach (string path in paths)
             {
-                if (path.Contains("*", StringComparison.OrdinalIgnoreCase))
+                if (path.Contains("*", StringComparison.OrdinalIgnoreCase) || path.Contains("?", StringComparison.OrdinalIgnoreCase))
                 {
-                    pathsWithWildcards.Add(path);
+                    Matcher matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
+
+                    matcher.AddInclude(path);
+
+                    foreach (string expandedPath in matcher.GetResultsInFullPath(directoryPath ?? Environment.CurrentDirectory))
+                    {
+                        yield return expandedPath;
+                    }
                 }
                 else
                 {
-                    results.Add(path);
+                    yield return path;
                 }
             }
-
-            if (pathsWithWildcards.Any())
-            {
-                Matcher matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
-
-                matcher.AddIncludePatterns(pathsWithWildcards);
-
-                results.AddRange(matcher.GetResultsInFullPath(Environment.CurrentDirectory));
-            }
-
-            return results;
         }
 
         private bool GetBoolean(string[] values, bool defaultValue = false)
