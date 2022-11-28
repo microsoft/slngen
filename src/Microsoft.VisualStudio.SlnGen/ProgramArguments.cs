@@ -217,6 +217,16 @@ Examples:
         public string[] Projects { get; set; }
 
         /// <summary>
+        /// Gets or sets the full path to the file containing projects to generate a solution for.
+        /// </summary>
+        [Option(
+            "-pf|--projectsfile <path>",
+            CommandOptionType.MultipleValue,
+            Description = "Optional path to a file containing list of projects to generate a solution for.")]
+        public string[] ProjectsFilePath { get; set; }
+
+
+        /// <summary>
         /// Gets or sets the platforms to use when generating the solution.
         /// </summary>
         [Option(
@@ -397,7 +407,14 @@ Examples:
                 }
             }
 
-            if (Projects == null || !Projects.Any())
+            var allProjects = Projects?.ToList() ?? new List<string>();
+            var projectsFilePath = ProjectsFilePath?.LastOrDefault();
+            if (projectsFilePath != null && File.Exists(projectsFilePath))
+            {
+                allProjects.AddRange(File.ReadLines(projectsFilePath));
+            }
+
+            if (allProjects.Count == 0)
             {
                 SearchInDirectory(Environment.CurrentDirectory);
 
@@ -408,7 +425,7 @@ Examples:
             }
             else
             {
-                foreach (string projectPath in ExpandWildcards(Projects).Select(Path.GetFullPath))
+                foreach (string projectPath in ExpandWildcards(allProjects).Select(Path.GetFullPath))
                 {
                     if (File.Exists(projectPath))
                     {
