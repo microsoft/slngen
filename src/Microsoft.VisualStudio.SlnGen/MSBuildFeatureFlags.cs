@@ -41,6 +41,25 @@ namespace Microsoft.VisualStudio.SlnGen
         /// </summary>
         private const string UseSimpleProjectRootElementCacheConcurrencyEnvironmentVariableName = "MSBUILDUSESIMPLEPROJECTROOTELEMENTCACHECONCURRENCY";
 
+        private readonly IEnvironmentProvider _environmentProvider;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MSBuildFeatureFlags"/> class.
+        /// </summary>
+        /// <param name="environmentProvider">An <see cref="IEnvironmentProvider" /> instance to use when manipulating the environment.</param>
+        public MSBuildFeatureFlags(IEnvironmentProvider environmentProvider)
+        {
+            _environmentProvider = environmentProvider;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MSBuildFeatureFlags"/> class.
+        /// </summary>
+        public MSBuildFeatureFlags()
+            : this(SystemEnvironmentProvider.Instance)
+        {
+        }
+
         /// <summary>
         /// Gets or sets a value indicating whether wildcard expansions for the entire process should be cached.
         /// </summary>
@@ -49,8 +68,8 @@ namespace Microsoft.VisualStudio.SlnGen
         /// </remarks>
         public bool CacheFileEnumerations
         {
-            get => string.Equals(Environment.GetEnvironmentVariable(CacheFileEnumerationsEnvironmentVariableName), "1");
-            set => Environment.SetEnvironmentVariable(CacheFileEnumerationsEnvironmentVariableName, value ? "1" : null);
+            get => string.Equals(_environmentProvider.GetEnvironmentVariable(CacheFileEnumerationsEnvironmentVariableName), "1");
+            set => _environmentProvider.SetEnvironmentVariable(CacheFileEnumerationsEnvironmentVariableName, value ? "1" : null);
         }
 
         /// <summary>
@@ -62,8 +81,8 @@ namespace Microsoft.VisualStudio.SlnGen
         /// </remarks>
         public bool LoadAllFilesAsReadOnly
         {
-            get => string.Equals(Environment.GetEnvironmentVariable(LoadAllFilesAsReadonlyEnvironmentVariableName), "1");
-            set => Environment.SetEnvironmentVariable(LoadAllFilesAsReadonlyEnvironmentVariableName, value ? "1" : null);
+            get => string.Equals(_environmentProvider.GetEnvironmentVariable(LoadAllFilesAsReadonlyEnvironmentVariableName), "1");
+            set => _environmentProvider.SetEnvironmentVariable(LoadAllFilesAsReadonlyEnvironmentVariableName, value ? "1" : null);
         }
 
         /// <summary>
@@ -76,8 +95,8 @@ namespace Microsoft.VisualStudio.SlnGen
         /// </remarks>
         public string MSBuildExePath
         {
-            get => Environment.GetEnvironmentVariable(MSBuildExePathEnvironmentVariableName);
-            set => Environment.SetEnvironmentVariable(MSBuildExePathEnvironmentVariableName, value);
+            get => _environmentProvider.GetEnvironmentVariable(MSBuildExePathEnvironmentVariableName);
+            set => _environmentProvider.SetEnvironmentVariable(MSBuildExePathEnvironmentVariableName, value);
         }
 
         /// <summary>
@@ -88,8 +107,8 @@ namespace Microsoft.VisualStudio.SlnGen
         /// </remarks>
         public bool MSBuildSkipEagerWildCardEvaluationRegexes
         {
-            get => !string.Equals(Environment.GetEnvironmentVariable(SkipWildcardEvaluationRegularExpressionsEnvironmentVariableName), null);
-            set => Environment.SetEnvironmentVariable(SkipWildcardEvaluationRegularExpressionsEnvironmentVariableName, value ? SkipWildcardRegularExpression : null);
+            get => !string.Equals(_environmentProvider.GetEnvironmentVariable(SkipWildcardEvaluationRegularExpressionsEnvironmentVariableName), null);
+            set => _environmentProvider.SetEnvironmentVariable(SkipWildcardEvaluationRegularExpressionsEnvironmentVariableName, value ? SkipWildcardRegularExpression : null);
         }
 
         /// <summary>
@@ -100,18 +119,18 @@ namespace Microsoft.VisualStudio.SlnGen
         /// </remarks>
         public bool UseSimpleProjectRootElementCacheConcurrency
         {
-            get => !string.Equals(Environment.GetEnvironmentVariable(UseSimpleProjectRootElementCacheConcurrencyEnvironmentVariableName), "1");
-            set => Environment.SetEnvironmentVariable(UseSimpleProjectRootElementCacheConcurrencyEnvironmentVariableName, value ? "1" : null);
+            get => !string.Equals(_environmentProvider.GetEnvironmentVariable(UseSimpleProjectRootElementCacheConcurrencyEnvironmentVariableName), "1");
+            set => _environmentProvider.SetEnvironmentVariable(UseSimpleProjectRootElementCacheConcurrencyEnvironmentVariableName, value ? "1" : null);
         }
 
         /// <inheritdoc/>
         public void Dispose()
         {
-            Environment.SetEnvironmentVariable(CacheFileEnumerationsEnvironmentVariableName, null);
-            Environment.SetEnvironmentVariable(LoadAllFilesAsReadonlyEnvironmentVariableName, null);
-            Environment.SetEnvironmentVariable(MSBuildExePathEnvironmentVariableName, null);
-            Environment.SetEnvironmentVariable(SkipWildcardEvaluationRegularExpressionsEnvironmentVariableName, null);
-            Environment.SetEnvironmentVariable(UseSimpleProjectRootElementCacheConcurrencyEnvironmentVariableName, null);
+            _environmentProvider.SetEnvironmentVariable(CacheFileEnumerationsEnvironmentVariableName, null);
+            _environmentProvider.SetEnvironmentVariable(LoadAllFilesAsReadonlyEnvironmentVariableName, null);
+            _environmentProvider.SetEnvironmentVariable(MSBuildExePathEnvironmentVariableName, null);
+            _environmentProvider.SetEnvironmentVariable(SkipWildcardEvaluationRegularExpressionsEnvironmentVariableName, null);
+            _environmentProvider.SetEnvironmentVariable(UseSimpleProjectRootElementCacheConcurrencyEnvironmentVariableName, null);
         }
     }
 }

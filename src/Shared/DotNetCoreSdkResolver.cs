@@ -23,11 +23,17 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <summary>
         /// Attempts to locate the .NET Core SDK for the current working directory.
         /// </summary>
+        /// <param name="environmentProvider">An <see cref="IEnvironmentProvider" /> to use when accessing the environment.</param>
         /// <param name="dotnetFileInfo">A <see cref="FileInfo" /> representing the path to dotnet.exe.</param>
         /// <param name="basePath">Receives the root path of the .NET Core SDK if one is found.</param>
         /// <returns><code>true</code> if a .NET Core SDK could be located, otherwise <code>false</code>.</returns>
-        public static bool TryResolveDotNetCoreSdk(FileInfo dotnetFileInfo, out DirectoryInfo basePath)
+        public static bool TryResolveDotNetCoreSdk(IEnvironmentProvider environmentProvider, FileInfo dotnetFileInfo, out DirectoryInfo basePath)
         {
+            if (environmentProvider is null)
+            {
+                throw new ArgumentNullException(nameof(environmentProvider));
+            }
+
             basePath = null;
 
             string parsedBasePath = null;
@@ -43,7 +49,7 @@ namespace Microsoft.VisualStudio.SlnGen
                     FileName = "dotnet",
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
-                    WorkingDirectory = Environment.CurrentDirectory,
+                    WorkingDirectory = environmentProvider.CurrentDirectory,
                 },
             };
 
@@ -113,14 +119,14 @@ namespace Microsoft.VisualStudio.SlnGen
             Console.ForegroundColor = ConsoleColor.Red;
             Console.BackgroundColor = ConsoleColor.Black;
 
-            ResolveSdk(dotnetFileInfo.FullName);
+            ResolveSdk(environmentProvider, dotnetFileInfo.FullName);
 
             Console.ResetColor();
 
             return false;
         }
 
-        private static (string sdkDirectory, string globalJsonPath) ResolveSdk(string dotnetExeDirectory)
+        private static (string sdkDirectory, string globalJsonPath) ResolveSdk(IEnvironmentProvider environmentProvider, string dotnetExeDirectory)
         {
             string sdkDirectory = null;
             string globalJsonPath = null;
@@ -141,11 +147,11 @@ namespace Microsoft.VisualStudio.SlnGen
 
             if (Utility.RunningOnWindows)
             {
-                Windows.ResolveSdk(dotnetExeDirectory, Environment.CurrentDirectory, 0 /* None */, HandleResolveSdkResult);
+                Windows.ResolveSdk(dotnetExeDirectory, environmentProvider.CurrentDirectory, 0 /* None */, HandleResolveSdkResult);
             }
             else
             {
-                Unix.ResolveSdk(dotnetExeDirectory, Environment.CurrentDirectory, 0 /* None */, HandleResolveSdkResult);
+                Unix.ResolveSdk(dotnetExeDirectory, environmentProvider.CurrentDirectory, 0 /* None */, HandleResolveSdkResult);
             }
 
             return (sdkDirectory, globalJsonPath);

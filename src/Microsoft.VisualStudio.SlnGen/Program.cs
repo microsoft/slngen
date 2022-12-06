@@ -18,13 +18,18 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.VisualStudio.SlnGen
 {
+    /// <summary>
+    /// Represents the main entry point of the application.
+    /// </summary>
     public static partial class Program
     {
         private static readonly TelemetryClient TelemetryClient;
 
+        private static readonly IEnvironmentProvider EnvironmentProvider = SystemEnvironmentProvider.Instance;
+
         static Program()
         {
-            if (Environment.GetCommandLineArgs().Any(i => i.Equals("--debug", StringComparison.OrdinalIgnoreCase)))
+            if (EnvironmentProvider.GetCommandLineArgs().Any(i => i.Equals("--debug", StringComparison.OrdinalIgnoreCase)))
             {
                 Debugger.Launch();
             }
@@ -47,6 +52,9 @@ namespace Microsoft.VisualStudio.SlnGen
         /// </summary>
         public static bool IsNetCore { get; } = !RuntimeInformation.FrameworkDescription.StartsWith(".NET Framework", StringComparison.Ordinal);
 
+        /// <summary>
+        /// Gets a value indicating whether or not the application logo should be shown.
+        /// </summary>
         public static bool NoLogo { get; private set; }
 
         /// <summary>
@@ -56,7 +64,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <returns>Zero if the program executed successfully, otherwise a non-zero value.</returns>
         public static int Main(string[] args)
         {
-            CurrentDevelopmentEnvironment = DevelopmentEnvironment.LoadCurrentDevelopmentEnvironment();
+            CurrentDevelopmentEnvironment = DevelopmentEnvironment.LoadCurrentDevelopmentEnvironment(EnvironmentProvider);
 
             if (!CurrentDevelopmentEnvironment.Success || CurrentDevelopmentEnvironment.Errors.Count > 0)
             {
@@ -173,7 +181,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 Verbosity = verbosity,
             };
 
-            ForwardingLogger forwardingLogger = new ForwardingLogger(GetLoggers(consoleLogger, arguments), arguments.NoWarn)
+            ForwardingLogger forwardingLogger = new ForwardingLogger(EnvironmentProvider, GetLoggers(consoleLogger, arguments), arguments.NoWarn)
             {
                 Verbosity = verbosity,
             };
@@ -182,7 +190,7 @@ namespace Microsoft.VisualStudio.SlnGen
             {
                 try
                 {
-                    forwardingLogger.LogMessageLow("Command Line Arguments: {0}", Environment.CommandLine);
+                    forwardingLogger.LogMessageLow("Command Line Arguments: {0}", EnvironmentProvider.CommandLine);
 
 #if !NETFRAMEWORK
                     forwardingLogger.LogMessageLow("Using .NET Core MSBuild from \"{0}\"", CurrentDevelopmentEnvironment.MSBuildDll);
@@ -223,7 +231,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
                     featureFlags.Dispose();
 
-                    if (!VisualStudioLauncher.TryLaunch(arguments, CurrentDevelopmentEnvironment.VisualStudio, solutionFileFullPath, forwardingLogger))
+                    if (!VisualStudioLauncher.TryLaunch(arguments, CurrentDevelopmentEnvironment.VisualStudio, solutionFileFullPath, forwardingLogger, EnvironmentProvider))
                     {
                         return 1;
                     }
@@ -390,9 +398,9 @@ namespace Microsoft.VisualStudio.SlnGen
                             ["LaunchVisualStudio"] = arguments.ShouldLaunchVisualStudio().ToString(),
                             ["SolutionFileFullPathSpecified"] = (!arguments.SolutionFileFullPath?.LastOrDefault().IsNullOrWhiteSpace()).ToString(),
 #if NETFRAMEWORK
-                            ["Runtime"] = $".NET Framework {Environment.Version}",
+                            ["Runtime"] = $".NET Framework {EnvironmentProvider.Version}",
 #elif NETCOREAPP
-                            ["Runtime"] = $".NET Core {Environment.Version}",
+                            ["Runtime"] = $".NET Core {EnvironmentProvider.Version}",
 #endif
                             ["UseBinaryLogger"] = arguments.BinaryLogger.HasValue.ToString(),
                             ["UseFileLogger"] = arguments.FileLoggerParameters.HasValue.ToString(),

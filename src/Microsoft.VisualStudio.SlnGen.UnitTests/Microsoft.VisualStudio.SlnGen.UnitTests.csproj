@@ -5,6 +5,8 @@
     <NoWarn>$(NoWarn);SA1600</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="EnvironmentAbstractions" />
+    <PackageReference Include="EnvironmentAbstractions.TestHelpers" />
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" />
     <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" />
     <PackageReference Include="Microsoft.Build.Runtime" IncludeAssets="None" GeneratePathProperty="true" />

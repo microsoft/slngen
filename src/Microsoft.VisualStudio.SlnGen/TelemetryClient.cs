@@ -5,7 +5,6 @@
 using Microsoft.VisualStudio.Telemetry;
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,6 +21,15 @@ namespace Microsoft.VisualStudio.SlnGen
         /// Initializes a new instance of the <see cref="TelemetryClient"/> class.
         /// </summary>
         public TelemetryClient()
+            : this(SystemEnvironmentProvider.Instance)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TelemetryClient"/> class.
+        /// </summary>
+        /// <param name="environmentProvider">An <see cref="IEnvironmentProvider" /> instance to use when accessing the environment.</param>
+        public TelemetryClient(IEnvironmentProvider environmentProvider)
         {
             if (Utility.RunningOnWindows)
             {
@@ -32,7 +40,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 {
                     _telemetrySession = TelemetryService.DefaultSession;
 
-                    GitRepositoryInfo repositoryInfo = GitRepositoryInfo.GetRepoInfoForCurrentDirectory();
+                    GitRepositoryInfo repositoryInfo = GitRepositoryInfo.GetRepoInfoForCurrentDirectory(environmentProvider);
 
                     if (repositoryInfo?.Origin != null)
                     {

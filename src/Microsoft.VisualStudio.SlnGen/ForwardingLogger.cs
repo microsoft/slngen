@@ -50,8 +50,8 @@ namespace Microsoft.VisualStudio.SlnGen
                 typeof(ProcessVerbositySwitchDelegate),
                 typeof(MSBuildApp).GetMethod("ProcessVerbositySwitch", BindingFlags.Static | BindingFlags.NonPublic) !) as ProcessVerbositySwitchDelegate);
 
+        private readonly IEnvironmentProvider _environmentProvider;
         private readonly bool _noWarn;
-
         private IEventSource _eventSource;
         private int _hasLoggedErrors;
         private int _projectId;
@@ -59,15 +59,23 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <summary>
         /// Initializes a new instance of the <see cref="ForwardingLogger"/> class.
         /// </summary>
+        /// <param name="environmentProvider">An <see cref="IEnvironmentProvider" /> instance to use when accessing the environment.</param>
         /// <param name="loggers">A <see cref="IEnumerable{ILogger}" /> to forward logging events to.</param>
         /// <param name="noWarn">Indicates whether or not all warnings should be suppressed.</param>
-        public ForwardingLogger(IEnumerable<ILogger> loggers, bool noWarn)
+        /// <exception cref="ArgumentNullException"><paramref name="environmentProvider" /> or <paramref name="loggers" /> is <c>null</c>.</exception>
+        public ForwardingLogger(IEnvironmentProvider environmentProvider, IEnumerable<ILogger> loggers, bool noWarn)
         {
+            if (environmentProvider is null)
+            {
+                throw new ArgumentNullException(nameof(environmentProvider));
+            }
+
             if (loggers == null)
             {
                 throw new ArgumentNullException(nameof(loggers));
             }
 
+            _environmentProvider = environmentProvider;
             _noWarn = noWarn;
 
             Loggers = loggers.ToList();
@@ -217,7 +225,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 logger.Initialize(this);
             }
 
-            Dispatch(new BuildStartedEventArgs("Build Started", null, environmentOfBuild: Environment.GetEnvironmentVariables().Cast<DictionaryEntry>().OrderBy(i => (string)i.Key).ToDictionary(i => (string)i.Key, i => (string)i.Value)));
+            Dispatch(new BuildStartedEventArgs("Build Started", null, environmentOfBuild: _environmentProvider.GetEnvironmentVariables().Cast<DictionaryEntry>().OrderBy(i => (string)i.Key).ToDictionary(i => (string)i.Key, i => (string)i.Value)));
         }
 
         /// <inheritdoc />
