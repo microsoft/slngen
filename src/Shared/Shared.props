@@ -14,7 +14,9 @@
     <DevelopmentDependency>true</DevelopmentDependency>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" />
+    <PackageReference Include="EnvironmentAbstractions" />
+    <PackageReference Include="EnvironmentAbstractions.BannedApiAnalyzer" />
+    <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" ExcludeAssets="Runtime" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)**\*.cs" />

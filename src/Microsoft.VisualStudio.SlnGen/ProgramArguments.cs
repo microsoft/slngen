@@ -17,6 +17,35 @@ namespace Microsoft.VisualStudio.SlnGen
     [Command(ResponseFileHandling = ResponseFileHandling.ParseArgsAsSpaceSeparated)]
     public sealed class ProgramArguments
     {
+        private readonly IEnvironmentProvider _environmentProvider;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ProgramArguments"/> class.
+        /// </summary>
+        /// <param name="environmentProvider">An <see cref="IEnvironmentProvider" /> instance to use when accessing the environment.</param>
+        public ProgramArguments(IEnvironmentProvider environmentProvider)
+        {
+            _environmentProvider = environmentProvider ?? throw new ArgumentNullException(nameof(environmentProvider));
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ProgramArguments"/> class.
+        /// </summary>
+        public ProgramArguments()
+            : this(SystemEnvironmentProvider.Instance)
+        {
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether or not to disable building projects for configurations that are not supported by those projects
+        /// </summary>
+        [Option(
+            "-ab|--alwaysbuild",
+            CommandOptionType.MultipleValue,
+            ValueName = "true",
+            Description = "Always include the project in the build even if it has no matching configuration.  Default: true")]
+        public string[] AlwaysBuild { get; set; }
+
         /// <summary>
         /// Gets or sets the binary logger arguments.
         /// </summary>
@@ -85,16 +114,6 @@ Example: -bl:output.binlog;ProjectImports=ZipFile")]
             CommandOptionType.NoValue,
             ShowInHelpText = false)]
         public bool Debug { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether or not to disable building projects for configurations that are not supported by those projects
-        /// </summary>
-        [Option(
-            "-ab|--alwaysbuild",
-            CommandOptionType.MultipleValue,
-            ValueName = "true",
-            Description = "Always include the project in the build even if it has no matching configuration.  Default: true")]
-        public string[] AlwaysBuild { get; set; }
 
         /// <summary>
         /// Gets or sets the full path to devenv.exe.
@@ -304,6 +323,23 @@ Examples:
         public IReadOnlyCollection<string> GetConfigurations() => Configuration.SplitValues();
 
         /// <summary>
+        /// Gets the full path to devenv.exe based on the specified arguments.
+        /// </summary>
+        /// <param name="visualStudioInstance">An optional <see cref="VisualStudioInstance" />.</param>
+        /// <returns>The full path to devenv.exe if one is available, otherwise <c>null</c>.</returns>
+        public string GetDevEnvFullPath(VisualStudioInstance visualStudioInstance)
+        {
+            string devEnvFullPath = DevEnvFullPath?.LastOrDefault();
+
+            if (devEnvFullPath.IsNullOrWhiteSpace() && visualStudioInstance != null)
+            {
+                devEnvFullPath = Path.Combine(visualStudioInstance.InstallationPath, "Common7", "IDE", "devenv.exe");
+            }
+
+            return devEnvFullPath;
+        }
+
+        /// <summary>
         /// Gets the global properties to use when evaluating projects.
         /// </summary>
         /// <returns>An <see cref="IDictionary{String,String}" /> containing the global properties to use when evaluating projects.</returns>
@@ -333,23 +369,6 @@ Examples:
         /// </summary>
         /// <returns>An <see cref="IReadOnlyCollection{T}" /> containing the unique values for Platform.</returns>
         public IReadOnlyCollection<string> GetPlatforms() => Platform.SplitValues();
-
-        /// <summary>
-        /// Gets the full path to devenv.exe based on the specified arguments.
-        /// </summary>
-        /// <param name="visualStudioInstance">An optional <see cref="VisualStudioInstance" />.</param>
-        /// <returns>The full path to devenv.exe if one is available, otherwise <c>null</c>.</returns>
-        public string GetDevEnvFullPath(VisualStudioInstance visualStudioInstance)
-        {
-            string devEnvFullPath = DevEnvFullPath?.LastOrDefault();
-
-            if (devEnvFullPath.IsNullOrWhiteSpace() && visualStudioInstance != null)
-            {
-                devEnvFullPath = Path.Combine(visualStudioInstance.InstallationPath, "Common7", "IDE", "devenv.exe");
-            }
-
-            return devEnvFullPath;
-        }
 
         /// <summary>
         /// Executes the current program.
@@ -399,7 +418,7 @@ Examples:
 
             if (Projects == null || !Projects.Any())
             {
-                SearchInDirectory(Environment.CurrentDirectory);
+                SearchInDirectory(_environmentProvider.CurrentDirectory);
 
                 if (result.Count == 0)
                 {
@@ -408,7 +427,7 @@ Examples:
             }
             else
             {
-                foreach (string projectPath in ExpandWildcards(Projects).Select(Path.GetFullPath))
+                foreach (string projectPath in ExpandWildcards(_environmentProvider, Projects).Select(Path.GetFullPath))
                 {
                     if (File.Exists(projectPath))
                     {
@@ -432,7 +451,14 @@ Examples:
             return result.Count > 0;
         }
 
-        internal static IEnumerable<string> ExpandWildcards(IEnumerable<string> paths, string directoryPath = default)
+        /// <summary>
+        /// Expands wildcards for the specified paths.
+        /// </summary>
+        /// <param name="environmentProvider">An <see cref="IEnvironmentProvider" /> instance to use when accessing the environment</param>
+        /// <param name="paths">A list of paths to expand the wildcards in.</param>
+        /// <param name="directoryPath">An optional base directory to use when relative paths are specified.</param>
+        /// <returns>An <see cref="IEnumerable{T}" /> containing the paths with expanded wildcards.</returns>
+        internal static IEnumerable<string> ExpandWildcards(IEnvironmentProvider environmentProvider, IEnumerable<string> paths, string directoryPath = default)
         {
             foreach (string path in paths)
             {
@@ -442,7 +468,7 @@ Examples:
 
                     matcher.AddInclude(path);
 
-                    foreach (string expandedPath in matcher.GetResultsInFullPath(directoryPath ?? Environment.CurrentDirectory))
+                    foreach (string expandedPath in matcher.GetResultsInFullPath(directoryPath ?? environmentProvider.CurrentDirectory))
                     {
                         yield return expandedPath;
                     }

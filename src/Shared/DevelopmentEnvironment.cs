@@ -71,19 +71,20 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <summary>
         /// Loads the current development environment.
         /// </summary>
+        /// <param name="environmentProvider">An <see cref="IEnvironmentProvider" /> to use when accessing the environment.</param>
         /// <returns>A <see cref="DevelopmentEnvironment" /> object containing information about the current development environment.</returns>
-        public static DevelopmentEnvironment LoadCurrentDevelopmentEnvironment()
+        public static DevelopmentEnvironment LoadCurrentDevelopmentEnvironment(IEnvironmentProvider environmentProvider)
         {
-            string msbuildToolset = Environment.GetEnvironmentVariable("MSBuildToolset")?.Trim();
+            string msbuildToolset = environmentProvider.GetEnvironmentVariable("MSBuildToolset")?.Trim();
 
             if (!msbuildToolset.IsNullOrWhiteSpace())
             {
-                string msbuildToolsPath = Environment.GetEnvironmentVariable($"MSBuildToolsPath_{msbuildToolset}")?.Trim();
+                string msbuildToolsPath = environmentProvider.GetEnvironmentVariable($"MSBuildToolsPath_{msbuildToolset}")?.Trim();
 
                 if (!msbuildToolsPath.IsNullOrWhiteSpace())
                 {
 #if NETFRAMEWORK
-                    if (!Version.TryParse(Environment.GetEnvironmentVariable("VisualStudioVersion") ?? string.Empty, out Version visualStudioVersion))
+                    if (!Version.TryParse(environmentProvider.GetEnvironmentVariable("VisualStudioVersion") ?? string.Empty, out Version visualStudioVersion))
                     {
                         return new DevelopmentEnvironment("The VisualStudioVersion environment variable must be set in CoreXT");
                     }
@@ -108,7 +109,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 }
             }
 #if NETFRAMEWORK
-            if (Utility.TryFindOnPath("MSBuild.exe", IsMSBuildExeCompatible, out FileInfo msbuildExeFileInfo))
+            if (Utility.TryFindOnPath(environmentProvider, "MSBuild.exe", IsMSBuildExeCompatible, out FileInfo msbuildExeFileInfo))
             {
                 return new DevelopmentEnvironment
                 {
@@ -119,12 +120,12 @@ namespace Microsoft.VisualStudio.SlnGen
 
             return new DevelopmentEnvironment("SlnGen must be run from a command-line window where MSBuild.exe is on the PATH.");
 #else
-            if (!Utility.TryFindOnPath(Utility.RunningOnWindows ? "dotnet.exe" : "dotnet", null, out FileInfo dotnetFileInfo))
+            if (!Utility.TryFindOnPath(environmentProvider, Utility.RunningOnWindows ? "dotnet.exe" : "dotnet", null, out FileInfo dotnetFileInfo))
             {
                 return new DevelopmentEnvironment("SlnGen must be run from a command-line window where dotnet.exe is on the PATH.");
             }
 
-            if (!DotNetCoreSdkResolver.TryResolveDotNetCoreSdk(dotnetFileInfo, out DirectoryInfo dotnetCoreSdkDirectoryInfo))
+            if (!DotNetCoreSdkResolver.TryResolveDotNetCoreSdk(environmentProvider, dotnetFileInfo, out DirectoryInfo dotnetCoreSdkDirectoryInfo))
             {
                 return new DevelopmentEnvironment(string.Empty);
             }
@@ -136,7 +137,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 MSBuildDll = new FileInfo(Path.Combine(dotnetCoreSdkDirectoryInfo.FullName, "MSBuild.dll")),
             };
 
-            if (Utility.RunningOnWindows && Utility.TryFindOnPath("MSBuild.exe", IsMSBuildExeCompatible, out FileInfo msbuildExeFileInfo))
+            if (Utility.RunningOnWindows && Utility.TryFindOnPath(environmentProvider, "MSBuild.exe", IsMSBuildExeCompatible, out FileInfo msbuildExeFileInfo))
             {
                 developmentEnvironment.MSBuildExe = GetPathToMSBuildExe(msbuildExeFileInfo);
                 developmentEnvironment.VisualStudio = VisualStudioConfiguration.GetInstanceForPath(msbuildExeFileInfo.FullName);

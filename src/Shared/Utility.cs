@@ -22,13 +22,20 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <summary>
         /// Attempts to find the specified executable on the PATH.
         /// </summary>
+        /// <param name="environmentProvider">An <see cref="IEnvironmentProvider" /> to use when accessing the environment.</param>
         /// <param name="exe">The name of the executable to find.</param>
         /// <param name="validator">A <see cref="Func{T, TResult}" /> that validates if a found item on the PATH is what the caller is looking for.</param>
         /// <param name="fileInfo">Receives a <see cref="FileInfo" /> object with details about the executable if found.</param>
         /// <returns><code>true</code> if an executable could be found, otherwise <code>false</code>.</returns>
-        public static bool TryFindOnPath(string exe, Func<FileInfo, bool> validator, out FileInfo fileInfo)
+        /// <exception cref="ArgumentNullException"><paramref name="environmentProvider" /> is <c>null</c>.</exception>
+        public static bool TryFindOnPath(IEnvironmentProvider environmentProvider, string exe, Func<FileInfo, bool> validator, out FileInfo fileInfo)
         {
-            fileInfo = (Environment.GetEnvironmentVariable("PATH") ?? string.Empty)
+            if (environmentProvider is null)
+            {
+                throw new ArgumentNullException(nameof(environmentProvider));
+            }
+
+            fileInfo = (environmentProvider.GetEnvironmentVariable("PATH") ?? string.Empty)
                 .Split(Path.PathSeparator)
                 .Where(i => !string.IsNullOrWhiteSpace(i))
                 .Select(i => new DirectoryInfo(i.Trim()))

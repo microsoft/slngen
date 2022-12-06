@@ -3,6 +3,7 @@
 // Licensed under the MIT license.
 
 using Shouldly;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -28,7 +29,12 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             File.WriteAllText(GetTempFileName(), string.Empty);
 
-            IEnumerable<string> result = ProgramArguments.ExpandWildcards(new[] { Path.Combine("**", "*.csproj") }, TestRootPath);
+            IEnvironmentProvider environmentProvider = new MockEnvironmentProvider
+            {
+                CurrentDirectory = TestRootPath,
+            };
+
+            IEnumerable<string> result = ProgramArguments.ExpandWildcards(environmentProvider, new[] { Path.Combine("**", "*.csproj") }, TestRootPath);
 
             result.ShouldBe(projects, ignoreOrder: true);
         }

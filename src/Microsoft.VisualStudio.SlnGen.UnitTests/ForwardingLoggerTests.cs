@@ -3,6 +3,7 @@
 // Licensed under the MIT license.
 #if NETFRAMEWORK
 using Shouldly;
+using System;
 using System.Linq;
 using Xunit;
 
@@ -13,9 +14,11 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         [Fact]
         public void NoWarn()
         {
+            IEnvironmentProvider environmentProvider = new MockEnvironmentProvider();
+
             MockLogger logger = new MockLogger();
 
-            ForwardingLogger forwardingLogger = new ForwardingLogger(new[] { logger }, noWarn: true);
+            ForwardingLogger forwardingLogger = new ForwardingLogger(environmentProvider, new[] { logger }, noWarn: true);
 
             MockEventSource eventSource = new MockEventSource(forwardingLogger);
 

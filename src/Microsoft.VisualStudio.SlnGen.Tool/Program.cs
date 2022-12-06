@@ -16,9 +16,11 @@ namespace Microsoft.VisualStudio.SlnGen
     /// </summary>
     public static class Program
     {
+        private static readonly IEnvironmentProvider EnvironmentProvider = SystemEnvironmentProvider.Instance;
+
         static Program()
         {
-            if (Environment.GetCommandLineArgs().Any(i => i.Equals("--debug", StringComparison.OrdinalIgnoreCase)))
+            if (EnvironmentProvider.GetCommandLineArgs().Any(i => i.Equals("--debug", StringComparison.OrdinalIgnoreCase)))
             {
                 Debugger.Launch();
             }
@@ -36,7 +38,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 // Determine the path to the current slngen.exe
                 FileInfo thisAssemblyFileInfo = new FileInfo(Assembly.GetExecutingAssembly().Location);
 
-                DevelopmentEnvironment developmentEnvironment = DevelopmentEnvironment.LoadCurrentDevelopmentEnvironment();
+                DevelopmentEnvironment developmentEnvironment = DevelopmentEnvironment.LoadCurrentDevelopmentEnvironment(EnvironmentProvider);
 
                 if (!developmentEnvironment.Success)
                 {
@@ -122,7 +124,7 @@ namespace Microsoft.VisualStudio.SlnGen
                     process.StartInfo.ArgumentList.Add(slnGenFileInfo.FullName);
                 }
 
-                foreach (string argument in Environment.GetCommandLineArgs().Skip(1))
+                foreach (string argument in EnvironmentProvider.GetCommandLineArgs().Skip(1))
                 {
                     process.StartInfo.ArgumentList.Add(argument);
                 }

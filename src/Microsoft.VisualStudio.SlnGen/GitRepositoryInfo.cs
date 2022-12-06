@@ -20,10 +20,17 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <summary>
         /// Gets the information for the current Git repository if available.
         /// </summary>
+        /// <param name="environmentProvider">An <see cref="IEnvironmentProvider" /> instance to use to access the environment.</param>
         /// <returns>A <see cref="GitRepositoryInfo" /> object if the current directory is in a Git repository, otherwise <code>null</code>.</returns>
-        public static GitRepositoryInfo GetRepoInfoForCurrentDirectory()
+        /// <exception cref="ArgumentNullException"><paramref name="environmentProvider" /> is <c>null</c>.</exception>
+        public static GitRepositoryInfo GetRepoInfoForCurrentDirectory(IEnvironmentProvider environmentProvider)
         {
-            return TryGetRemoteUri(out Uri remoteUri)
+            if (environmentProvider is null)
+            {
+                throw new ArgumentNullException(nameof(environmentProvider));
+            }
+
+            return TryGetRemoteUri(environmentProvider, out Uri remoteUri)
                 ? new GitRepositoryInfo
                 {
                     Origin = remoteUri,
@@ -50,11 +57,18 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <summary>
         /// Gets the Git URL for the specified remote.
         /// </summary>
+        /// <param name="environmentProvider">An <see cref="IEnvironmentProvider" /> instance to use to access the environment.</param>
         /// <param name="remoteUri">Receives the <see cref="Uri" /> of the remote if available.</param>
         /// <param name="name">The optional name of the remote. Default value is &quot;origin&quot;.</param>
         /// <returns><code>true</code> if the remote URL could be determined, otherwise <code>false</code>.</returns>
-        private static bool TryGetRemoteUri(out Uri remoteUri, string name = "origin")
+        /// <exception cref="ArgumentNullException"><paramref name="environmentProvider" /> is <c>null</c>.</exception>
+        private static bool TryGetRemoteUri(IEnvironmentProvider environmentProvider, out Uri remoteUri, string name = "origin")
         {
+            if (environmentProvider is null)
+            {
+                throw new ArgumentNullException(nameof(environmentProvider));
+            }
+
             remoteUri = null;
 
             Process process = new Process
@@ -66,7 +80,7 @@ namespace Microsoft.VisualStudio.SlnGen
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
-                    WorkingDirectory = Environment.CurrentDirectory,
+                    WorkingDirectory = environmentProvider.CurrentDirectory,
                 },
             };
 

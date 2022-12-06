@@ -44,13 +44,15 @@ namespace Microsoft.VisualStudio.SlnGen.Tasks
         /// </summary>
         private static readonly Lazy<Type> BuildRequestEntryTypeLazy = new Lazy<Type>(() => BuildManagerAssemblyLazy.Value.GetType("Microsoft.Build.BackEnd.BuildRequestEntry", throwOnError: false));
 
-        private static readonly FileInfo ThisAssemblyFileInfo = new FileInfo(Assembly.GetExecutingAssembly().Location);
-
         /// <summary>
         /// The value for the SlnGenVSVersion property, that will activate version deduction instead of being
         /// treated as a version.
         /// </summary>
         private static readonly string SlnGenVSVersionDefault = "default";
+
+        private static readonly FileInfo ThisAssemblyFileInfo = new FileInfo(Assembly.GetExecutingAssembly().Location);
+
+        private readonly IEnvironmentProvider _environmentProvider;
 
         private readonly Lazy<IDictionary<string, string>> _globalPropertiesLazy;
 
@@ -59,12 +61,24 @@ namespace Microsoft.VisualStudio.SlnGen.Tasks
         /// <summary>
         /// Initializes a new instance of the <see cref="SlnGenToolTask"/> class.
         /// </summary>
-        public SlnGenToolTask()
+        /// <param name="environmentProvider">An <see cref="IEnvironmentProvider" /> to use when accessing the environment.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="environmentProvider" /> is <c>null</c>.</exception>
+        public SlnGenToolTask(IEnvironmentProvider environmentProvider)
             : base(Strings.ResourceManager)
         {
+            _environmentProvider = environmentProvider ?? throw new ArgumentNullException(nameof(environmentProvider));
+
             _projectInstanceLazy = new Lazy<ProjectInstance>(GetProjectInstance);
 
             _globalPropertiesLazy = new Lazy<IDictionary<string, string>>(GetGlobalProperties);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SlnGenToolTask"/> class.
+        /// </summary>
+        public SlnGenToolTask()
+            : this(SystemEnvironmentProvider.Instance)
+        {
         }
 
         /// <summary>
@@ -114,7 +128,7 @@ namespace Microsoft.VisualStudio.SlnGen.Tasks
         /// <inheritdoc />
         public override bool Execute()
         {
-            Dictionary<string, string> environmentVariables = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process).Cast<DictionaryEntry>().OrderBy(i => (string)i.Key).ToDictionary(i => (string)i.Key, i => (string)i.Value, StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, string> environmentVariables = _environmentProvider.GetEnvironmentVariables(EnvironmentVariableTarget.Process).Cast<DictionaryEntry>().OrderBy(i => (string)i.Key).ToDictionary(i => (string)i.Key, i => (string)i.Value, StringComparer.OrdinalIgnoreCase);
 
             environmentVariables.TryGetValue("PATH", out string path);
 
