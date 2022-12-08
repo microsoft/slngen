@@ -11,9 +11,9 @@
     <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'net5.0'">16.11.0</MicrosoftBuildPackageVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Update="EnvironmentAbstractions" Version="2.0.4-preview" />
-    <PackageReference Update="EnvironmentAbstractions.BannedApiAnalyzer" Version="2.0.4-preview" />
-    <PackageReference Update="EnvironmentAbstractions.TestHelpers" Version="2.0.4-preview" />
+    <PackageReference Update="EnvironmentAbstractions" Version="2.0.6" />
+    <PackageReference Update="EnvironmentAbstractions.BannedApiAnalyzer" Version="2.0.6" />
+    <PackageReference Update="EnvironmentAbstractions.TestHelpers" Version="2.0.6" />
     <PackageReference Update="McMaster.Extensions.CommandLineUtils" Version="4.0.1" />
     <PackageReference Update="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" />
     <PackageReference Update="Microsoft.Build.Runtime" Version="$(MicrosoftBuildPackageVersion)" />
