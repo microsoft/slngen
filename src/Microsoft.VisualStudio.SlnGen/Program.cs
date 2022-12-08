@@ -23,9 +23,10 @@ namespace Microsoft.VisualStudio.SlnGen
     /// </summary>
     public static partial class Program
     {
-        private static readonly TelemetryClient TelemetryClient;
-
+        private static readonly Assembly CurrentAssembly;
+        private static readonly FileInfo CurrentAssemblyFileInfo;
         private static readonly IEnvironmentProvider EnvironmentProvider = SystemEnvironmentProvider.Instance;
+        private static readonly TelemetryClient TelemetryClient;
 
         static Program()
         {
@@ -35,6 +36,10 @@ namespace Microsoft.VisualStudio.SlnGen
             }
 
             TelemetryClient = new TelemetryClient();
+
+            CurrentAssembly = Assembly.GetExecutingAssembly();
+
+            CurrentAssemblyFileInfo = new FileInfo(CurrentAssembly.Location);
         }
 
         /// <summary>
@@ -76,13 +81,11 @@ namespace Microsoft.VisualStudio.SlnGen
                 return -1;
             }
 
-            Assembly thisAssembly = Assembly.GetExecutingAssembly();
-
 #if NETFRAMEWORK
             if (AppDomain.CurrentDomain.IsDefaultAppDomain())
             {
                 AppDomain appDomain = AppDomain.CreateDomain(
-                    thisAssembly.FullName,
+                    CurrentAssembly.FullName,
                     securityInfo: null,
                     info: new AppDomainSetup
                     {
@@ -92,40 +95,11 @@ namespace Microsoft.VisualStudio.SlnGen
 
                 return appDomain
                     .ExecuteAssembly(
-                        thisAssembly.Location,
+                        CurrentAssemblyFileInfo.FullName,
                         args);
             }
 #endif
-            FileInfo thisAssemblyFileInfo = new FileInfo(thisAssembly.Location);
-
-            AppDomain.CurrentDomain.AssemblyResolve += (sender, eventArgs) =>
-            {
-                AssemblyName requestedAssemblyName = new AssemblyName(eventArgs.Name);
-
-#if NETFRAMEWORK
-                FileInfo candidateAssemblyFileInfo = new FileInfo(Path.Combine(thisAssemblyFileInfo.DirectoryName, $"{requestedAssemblyName.Name}.dll"));
-#else
-                FileInfo candidateAssemblyFileInfo = new FileInfo(Path.Combine(CurrentDevelopmentEnvironment.MSBuildDll.DirectoryName!, $"{requestedAssemblyName.Name}.dll"));
-#endif
-                if (!candidateAssemblyFileInfo.Exists)
-                {
-                    return null;
-                }
-
-                AssemblyName candidateAssemblyName = AssemblyName.GetAssemblyName(candidateAssemblyFileInfo.FullName);
-
-#if !NET7_0_OR_GREATER
-                if ((requestedAssemblyName.ProcessorArchitecture != ProcessorArchitecture.None && requestedAssemblyName.ProcessorArchitecture != candidateAssemblyName.ProcessorArchitecture)
-                    || (requestedAssemblyName.Flags.HasFlag(AssemblyNameFlags.PublicKey) && !requestedAssemblyName.GetPublicKeyToken() !.SequenceEqual(candidateAssemblyName.GetPublicKeyToken()) !))
-#else
-                if (requestedAssemblyName.Flags.HasFlag(AssemblyNameFlags.PublicKey) && !requestedAssemblyName.GetPublicKeyToken() !.SequenceEqual(candidateAssemblyName.GetPublicKeyToken() !))
-#endif
-                {
-                    return null;
-                }
-
-                return Assembly.LoadFrom(candidateAssemblyFileInfo.FullName);
-            };
+            AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
 
             return Execute(args, PhysicalConsole.Singleton);
         }
@@ -415,6 +389,35 @@ namespace Microsoft.VisualStudio.SlnGen
             {
                 // Ignored
             }
+        }
+
+        private static Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            AssemblyName requestedAssemblyName = new AssemblyName(args.Name);
+
+#if NETFRAMEWORK
+            FileInfo candidateAssemblyFileInfo = new FileInfo(Path.Combine(CurrentAssemblyFileInfo.DirectoryName, $"{requestedAssemblyName.Name}.dll"));
+#else
+            FileInfo candidateAssemblyFileInfo = new FileInfo(Path.Combine(CurrentDevelopmentEnvironment.MSBuildDll.DirectoryName!, $"{requestedAssemblyName.Name}.dll"));
+#endif
+            if (!candidateAssemblyFileInfo.Exists)
+            {
+                return null;
+            }
+
+            AssemblyName candidateAssemblyName = AssemblyName.GetAssemblyName(candidateAssemblyFileInfo.FullName);
+
+#if !NET7_0_OR_GREATER
+            if ((requestedAssemblyName.ProcessorArchitecture != ProcessorArchitecture.None && requestedAssemblyName.ProcessorArchitecture != candidateAssemblyName.ProcessorArchitecture)
+                || (requestedAssemblyName.Flags.HasFlag(AssemblyNameFlags.PublicKey) && !requestedAssemblyName.GetPublicKeyToken() !.SequenceEqual(candidateAssemblyName.GetPublicKeyToken()) !))
+#else
+            if (requestedAssemblyName.Flags.HasFlag(AssemblyNameFlags.PublicKey) && !requestedAssemblyName.GetPublicKeyToken() !.SequenceEqual(candidateAssemblyName.GetPublicKeyToken() !))
+#endif
+            {
+                return null;
+            }
+
+            return Assembly.LoadFrom(candidateAssemblyFileInfo.FullName);
         }
     }
 }

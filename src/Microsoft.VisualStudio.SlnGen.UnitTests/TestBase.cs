@@ -10,14 +10,42 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 {
     public abstract class TestBase : MSBuildTestBase
     {
-        private readonly string _testRootPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        private const string DotNetSdkVersion =
+#if NETCOREAPP3_1
+                "3.1.0";
+#elif NET5_0
+                "5.0.0";
+#elif NET6_0
+                "6.0.0";
+#elif NET7_0 || NETFRAMEWORK
+                "7.0.0";
+#elif NET8_0
+                "8.0.0";
+#else
+                Unknown target framework
+#endif
+
+        private readonly DirectoryInfo _testRootPath;
+
+        protected TestBase()
+        {
+            _testRootPath = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()));
+
+            File.WriteAllText(
+                Path.Combine(TestRootPath, "global.json"),
+                $@"{{
+  ""sdk"": {{
+    ""version"": ""{DotNetSdkVersion}"",
+    ""rollForward"": ""latestMinor""
+  }}
+}}");
+        }
 
         public string TestRootPath
         {
             get
             {
-                Directory.CreateDirectory(_testRootPath);
-                return _testRootPath;
+                return _testRootPath.FullName;
             }
         }
 
@@ -40,17 +68,15 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         {
             if (disposing)
             {
-                if (Directory.Exists(TestRootPath))
+                if (_testRootPath.Exists)
                 {
-                    Directory.Delete(TestRootPath, recursive: true);
+                    _testRootPath.Delete(recursive: true);
                 }
             }
         }
 
         protected string GetTempFileName(string extension = null)
         {
-            Directory.CreateDirectory(TestRootPath);
-
             return Path.Combine(TestRootPath, $"{Path.GetRandomFileName()}{extension ?? string.Empty}");
         }
 
