@@ -5,30 +5,35 @@
 -->
 <Project>
   <PropertyGroup>
-    <MicrosoftBuildPackageVersion>17.3.2</MicrosoftBuildPackageVersion>
+    <MicrosoftBuildPackageVersion>17.4.0</MicrosoftBuildPackageVersion>
     <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'net461'">15.9.20</MicrosoftBuildPackageVersion>
     <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'netcoreapp3.1'">16.9.0</MicrosoftBuildPackageVersion>
     <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'net5.0'">16.11.0</MicrosoftBuildPackageVersion>
+    <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'net6.0'">17.3.2</MicrosoftBuildPackageVersion>
+    <SystemConfigurationConfigurationManagerPackageVersion>7.0.0</SystemConfigurationConfigurationManagerPackageVersion>
+    <SystemConfigurationConfigurationManagerPackageVersion Condition="'$(TargetFramework)' != 'net7.0' And '$(TargetFramework)' != 'net8.0'">6.0.0</SystemConfigurationConfigurationManagerPackageVersion>
+    <MicrosoftExtensionsFileSystemGlobbingPackageVersion>6.0.0</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
+    <MicrosoftExtensionsFileSystemGlobbingPackageVersion Condition="'$(TargetFramework)' != 'net7.0' And '$(TargetFramework)' != 'net8.0'">6.0.0</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Update="EnvironmentAbstractions" Version="2.0.6" />
     <PackageReference Update="EnvironmentAbstractions.BannedApiAnalyzer" Version="2.0.6" />
     <PackageReference Update="EnvironmentAbstractions.TestHelpers" Version="2.0.6" />
-    <PackageReference Update="McMaster.Extensions.CommandLineUtils" Version="4.0.1" />
+    <PackageReference Update="McMaster.Extensions.CommandLineUtils" Version="4.0.2" />
     <PackageReference Update="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" />
     <PackageReference Update="Microsoft.Build.Runtime" Version="$(MicrosoftBuildPackageVersion)" />
     <PackageReference Update="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageVersion)" />
-    <PackageReference Update="Microsoft.Extensions.FileSystemGlobbing" Version="6.0.0" />
-    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="17.3.2" />
+    <PackageReference Update="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsFileSystemGlobbingPackageVersion)" />
+    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="17.4.0" />
     <PackageReference Update="Microsoft.VisualStudio.ProjectSystem.SDK" Version="15.8.243" />
-    <PackageReference Update="Microsoft.VisualStudio.SDK" Version="17.3.32804.24" />
-    <PackageReference Update="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="3.3.2180" />
-    <PackageReference Update="Microsoft.VisualStudio.Telemetry" Version="16.6.7" />
-    <PackageReference Update="Microsoft.VSSDK.BuildTools" Version="17.4.2118" />
-    <PackageReference Update="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Update="MSBuild.ProjectCreation" Version="8.3.0" />
+    <PackageReference Update="Microsoft.VisualStudio.SDK" Version="17.4.33103.184" />
+    <PackageReference Update="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="3.4.2244" />
+    <PackageReference Update="Microsoft.VisualStudio.Telemetry" Version="16.6.9" />
+    <PackageReference Update="Microsoft.VSSDK.BuildTools" Version="17.4.2119" />
+    <PackageReference Update="Newtonsoft.Json" Version="13.0.2" />
+    <PackageReference Update="MSBuild.ProjectCreation" Version="9.0.1" />
     <PackageReference Update="Shouldly" Version="4.1.0" />
-    <PackageReference Update="System.Configuration.ConfigurationManager" Version="6.0.0" />
+    <PackageReference Update="System.Configuration.ConfigurationManager" Version="$(SystemConfigurationConfigurationManagerPackageVersion)" />
     <PackageReference Update="xunit" Version="2.4.2" />
     <PackageReference Update="xunit.runner.visualstudio" Version="2.4.5" />
   </ItemGroup>

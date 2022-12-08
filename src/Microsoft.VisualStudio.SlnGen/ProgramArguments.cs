@@ -23,6 +23,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// Initializes a new instance of the <see cref="ProgramArguments"/> class.
         /// </summary>
         /// <param name="environmentProvider">An <see cref="IEnvironmentProvider" /> instance to use when accessing the environment.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="environmentProvider" /> is <c>null</c>.</exception>
         public ProgramArguments(IEnvironmentProvider environmentProvider)
         {
             _environmentProvider = environmentProvider ?? throw new ArgumentNullException(nameof(environmentProvider));
