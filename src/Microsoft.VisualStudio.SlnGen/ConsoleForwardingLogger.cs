@@ -81,7 +81,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
             if (e is ProjectStartedEventArgs || e is ProjectFinishedEventArgs)
             {
-                // Don't send these events to the ConsoleLogger because its not useful when running SlnGen like they are when running MSBuild
+                // Don't send these events to the ConsoleLogger because it's not useful when running SlnGen like they are when running MSBuild
                 return;
             }
 
