@@ -12,7 +12,7 @@ SlnGen does its best to correctly map projects with their corresponding project 
 
 Also, if you have a custom project like `build.proj`, it probably won't load properly in Visual Studio.  It is best to leave this projects out of generated solutions as they can cause issues.
 
-SlnGen does not interact with Visual Studio at all, so if Visual Studio is having issues its most likely not related to SlnGen.
+SlnGen does not interact with Visual Studio at all, so if Visual Studio is having issues it's most likely not related to SlnGen.
 
 ## Why doesn't SlnGen load my projects?
 SlnGen uses the standard MSBuild API to evaluate projects.  If the project contains invalid MSBUild project XML or custom build logic prevents them from being loaded, then SlnGen will not work properly.  Ensure that your projects can be evaluated before using SlnGen.
