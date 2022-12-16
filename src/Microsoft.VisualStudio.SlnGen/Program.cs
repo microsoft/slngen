@@ -189,7 +189,7 @@ namespace Microsoft.VisualStudio.SlnGen
                     forwardingLogger.LogMessageLow("  MSBuildExe: \"{0}\"", CurrentDevelopmentEnvironment.MSBuildExe);
                     forwardingLogger.LogMessageLow("  VisualStudio: \"{0}\"", CurrentDevelopmentEnvironment.VisualStudio?.InstallationPath);
 
-                    if (!arguments.TryGetEntryProjectPaths(forwardingLogger, out IReadOnlyList<string> projectEntryPaths))
+                    if (!arguments.TryGetEntryProjectPaths(EnvironmentProvider, forwardingLogger, out IReadOnlyList<string> projectEntryPaths))
                     {
                         return 1;
                     }

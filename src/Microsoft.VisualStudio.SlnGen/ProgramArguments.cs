@@ -125,6 +125,16 @@ Example: -bl:output.binlog;ProjectImports=ZipFile")]
             Description = "Specifies a full path to Visual Studio’s devenv.exe to use when opening the solution file. By default, SlnGen will launch the program associated with the .sln file extension.")]
         public string[] DevEnvFullPath { get; set; }
 
+         /// <summary>
+        /// Gets or sets exclude paths when searching for project files.
+        /// </summary>
+        [Option(
+            "-e|--exclude",
+            CommandOptionType.MultipleValue,
+            ValueName = "values",
+            Description = "Specifies one or more paths to exclude when searching for project files.")]
+        public string[] Exclude { get; set; }
+
         /// <summary>
         /// Gets or sets the file logger parameters.
         /// </summary>
@@ -396,10 +406,11 @@ Examples:
         /// <summary>
         /// Gets specified projects or all projects in the current working directory.
         /// </summary>
+        /// <param name="environmentProvider">An <see cref="IEnvironmentProvider" /> instance to use when accessing the environment.</param>
         /// <param name="logger"> A <see cref="ISlnGenLogger" /> to use.</param>
         /// <param name="projectEntryPaths">Receives a <see cref="IReadOnlyList{String}" /> containing the project entry paths.</param>
         /// <returns>An <see cref="IEnumerable{String}" /> containing the full paths to projects to generate a solution for.</returns>
-        public bool TryGetEntryProjectPaths(ISlnGenLogger logger, out IReadOnlyList<string> projectEntryPaths)
+        public bool TryGetEntryProjectPaths(IEnvironmentProvider environmentProvider, ISlnGenLogger logger, out IReadOnlyList<string> projectEntryPaths)
         {
             List<string> result = new List<string>();
 
@@ -419,7 +430,7 @@ Examples:
 
             if (Projects == null || !Projects.Any())
             {
-                SearchInDirectory(_environmentProvider.CurrentDirectory);
+                SearchInDirectory(environmentProvider.CurrentDirectory);
 
                 if (result.Count == 0)
                 {
@@ -428,7 +439,7 @@ Examples:
             }
             else
             {
-                foreach (string projectPath in ExpandWildcards(_environmentProvider, Projects).Select(Path.GetFullPath))
+                foreach (string projectPath in ExpandWildcards(environmentProvider, Projects, Exclude).Select(Path.GetFullPath))
                 {
                     if (File.Exists(projectPath))
                     {
@@ -457,9 +468,10 @@ Examples:
         /// </summary>
         /// <param name="environmentProvider">An <see cref="IEnvironmentProvider" /> instance to use when accessing the environment</param>
         /// <param name="paths">A list of paths to expand the wildcards in.</param>
+        /// <param name="excludePaths">An optional array of paths to exclude from search for project files.</param>
         /// <param name="directoryPath">An optional base directory to use when relative paths are specified.</param>
         /// <returns>An <see cref="IEnumerable{T}" /> containing the paths with expanded wildcards.</returns>
-        internal static IEnumerable<string> ExpandWildcards(IEnvironmentProvider environmentProvider, IEnumerable<string> paths, string directoryPath = default)
+        internal static IEnumerable<string> ExpandWildcards(IEnvironmentProvider environmentProvider, IEnumerable<string> paths, string[] excludePaths = null, string directoryPath = default)
         {
             foreach (string path in paths)
             {
@@ -468,6 +480,11 @@ Examples:
                     Matcher matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
 
                     matcher.AddInclude(path);
+
+                    if (excludePaths is not null)
+                    {
+                        matcher.AddExcludePatterns(excludePaths);
+                    }
 
                     foreach (string expandedPath in matcher.GetResultsInFullPath(directoryPath ?? environmentProvider.CurrentDirectory))
                     {

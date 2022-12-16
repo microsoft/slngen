@@ -34,7 +34,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 CurrentDirectory = TestRootPath,
             };
 
-            IEnumerable<string> result = ProgramArguments.ExpandWildcards(environmentProvider, new[] { Path.Combine("**", "*.csproj") }, TestRootPath);
+            IEnumerable<string> result = ProgramArguments.ExpandWildcards(environmentProvider, new[] { Path.Combine("**", "*.csproj") }, null, TestRootPath);
 
             result.ShouldBe(projects, ignoreOrder: true);
         }
@@ -111,6 +111,47 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             parseProjects.ShouldBe(new string[] { "1.csproj", "2.csproj", "3.csproj", "4.csproj", "5.csproj", "6.csproj" });
 
             ignoreMainProject.ShouldBe(true);
+        }
+
+        [Fact]
+        public void ExcludePaths()
+        {
+            Directory.CreateDirectory(Path.Combine(TestRootPath, "dir1"));
+            Directory.CreateDirectory(Path.Combine(TestRootPath, "dir2"));
+            Directory.CreateDirectory(Path.Combine(TestRootPath, "dir2", "dir3"));
+
+            string[] projects = new[]
+            {
+                CreateTempProjectFile("1"),
+                CreateTempProjectFile("2", Path.Combine(TestRootPath, "dir1")),
+                CreateTempProjectFile("3", Path.Combine(TestRootPath, "dir2")),
+                CreateTempProjectFile("4", Path.Combine(TestRootPath, "dir2", "dir3")),
+            };
+
+            File.WriteAllText(GetTempFileName(), string.Empty);
+            IEnvironmentProvider environmentProvider = new MockEnvironmentProvider
+            {
+                CurrentDirectory = TestRootPath,
+            };
+
+            TestConsole console = new TestConsole();
+            TestLogger logger = new TestLogger();
+
+            string[] result = null;
+
+            int exitCode = Program.Execute(
+                new string[] { Path.Combine("**", "*.csproj"), $"--exclude {Path.Combine("dir1", "2*")}", $"-e {Path.Combine("**", "dir3")}" },
+                console,
+                (arguments, _) =>
+                {
+                    arguments.TryGetEntryProjectPaths(environmentProvider, logger, out var paths);
+                    result = paths.Select(p => Path.GetFileName(p)).ToArray();
+                    return 42;
+                });
+
+            exitCode.ShouldBe(42, console.AllOutput);
+
+            result.ShouldBe(new string[] { "1.csproj", "3.csproj" }, ignoreOrder: true);
         }
     }
 }
