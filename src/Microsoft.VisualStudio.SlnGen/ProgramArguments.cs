@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.VisualStudio.SlnGen
 {
@@ -124,6 +125,16 @@ Example: -bl:output.binlog;ProjectImports=ZipFile")]
             CommandOptionType.MultipleValue,
             Description = "Specifies a full path to Visual Studio’s devenv.exe to use when opening the solution file. By default, SlnGen will launch the program associated with the .sln file extension.")]
         public string[] DevEnvFullPath { get; set; }
+
+         /// <summary>
+        /// Gets or sets exclude paths when searching for project files.
+        /// </summary>
+        [Option(
+            "-e|--excludepath",
+            CommandOptionType.MultipleValue,
+            ValueName = "values",
+            Description = "Specifies one or more paths to exclude when searching for project files.")]
+        public string[] ExcludePath { get; set; }
 
         /// <summary>
         /// Gets or sets the file logger parameters.
@@ -396,10 +407,11 @@ Examples:
         /// <summary>
         /// Gets specified projects or all projects in the current working directory.
         /// </summary>
+        /// <param name="environmentProvider">An <see cref="IEnvironmentProvider" /> instance to use when accessing the environment.</param>
         /// <param name="logger"> A <see cref="ISlnGenLogger" /> to use.</param>
         /// <param name="projectEntryPaths">Receives a <see cref="IReadOnlyList{String}" /> containing the project entry paths.</param>
         /// <returns>An <see cref="IEnumerable{String}" /> containing the full paths to projects to generate a solution for.</returns>
-        public bool TryGetEntryProjectPaths(ISlnGenLogger logger, out IReadOnlyList<string> projectEntryPaths)
+        public bool TryGetEntryProjectPaths(IEnvironmentProvider environmentProvider, ISlnGenLogger logger, out IReadOnlyList<string> projectEntryPaths)
         {
             List<string> result = new List<string>();
 
@@ -411,15 +423,13 @@ Examples:
 
                 foreach (string projectPath in Directory.EnumerateFiles(directory, "*.*proj"))
                 {
-                    result.Add(projectPath);
-
-                    logger.LogMessageNormal("Generating solution for project \"{0}\"", projectPath);
+                    TryAddProjectPath(result, projectPath, logger);
                 }
             }
 
             if (Projects == null || !Projects.Any())
             {
-                SearchInDirectory(_environmentProvider.CurrentDirectory);
+                SearchInDirectory(environmentProvider.CurrentDirectory);
 
                 if (result.Count == 0)
                 {
@@ -428,13 +438,11 @@ Examples:
             }
             else
             {
-                foreach (string projectPath in ExpandWildcards(_environmentProvider, Projects).Select(Path.GetFullPath))
+                foreach (string projectPath in ExpandWildcards(environmentProvider, Projects).Select(Path.GetFullPath))
                 {
                     if (File.Exists(projectPath))
                     {
-                        logger.LogMessageNormal("Generating solution for project \"{0}\"", projectPath);
-
-                        result.Add(projectPath);
+                        TryAddProjectPath(result, projectPath, logger);
                     }
                     else if (Directory.Exists(projectPath))
                     {
@@ -478,6 +486,18 @@ Examples:
                 {
                     yield return path;
                 }
+            }
+        }
+
+        private void TryAddProjectPath(List<string> result, string projectPath, ISlnGenLogger logger)
+        {
+            if (ExcludePath is null ||
+                ExcludePath.Length == 0 ||
+                ExcludePath.All(excludePath => !Regex.IsMatch(projectPath, excludePath)))
+            {
+                result.Add(projectPath);
+
+                logger.LogMessageNormal("Generating solution for project \"{0}\"", projectPath);
             }
         }
 

@@ -112,5 +112,46 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             ignoreMainProject.ShouldBe(true);
         }
+
+        [Fact]
+        public void ExcludePath()
+        {
+            Directory.CreateDirectory(Path.Combine(TestRootPath, "dir1"));
+            Directory.CreateDirectory(Path.Combine(TestRootPath, "dir2"));
+            Directory.CreateDirectory(Path.Combine(TestRootPath, "dir2", "dir3"));
+
+            string[] projects = new[]
+            {
+                CreateTempProjectFile("1"),
+                CreateTempProjectFile("2", Path.Combine(TestRootPath, "dir1")),
+                CreateTempProjectFile("3", Path.Combine(TestRootPath, "dir2")),
+                CreateTempProjectFile("4", Path.Combine(TestRootPath, "dir2", "dir3")),
+            };
+
+            File.WriteAllText(GetTempFileName(), string.Empty);
+            IEnvironmentProvider environmentProvider = new MockEnvironmentProvider
+            {
+                CurrentDirectory = TestRootPath,
+            };
+
+            TestConsole console = new TestConsole();
+            TestLogger logger = new TestLogger();
+
+            string[] result = null;
+
+            int exitCode = Program.Execute(
+                new string[] { Path.Combine("**", "*.csproj"), @"--excludepath dir1\\2", @"-e dir3" },
+                console,
+                (arguments, _) =>
+                {
+                    arguments.TryGetEntryProjectPaths(environmentProvider, logger, out var paths);
+                    result = paths.Select(p => Path.GetFileName(p)).ToArray();
+                    return 42;
+                });
+
+            exitCode.ShouldBe(42, console.AllOutput);
+
+            result.ShouldBe(new string[] { "1.csproj", "3.csproj" });
+        }
     }
 }
