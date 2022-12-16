@@ -422,9 +422,9 @@ Examples:
 
                 foreach (string projectPath in Directory.EnumerateFiles(directory, "*.*proj"))
                 {
-                    logger.LogMessageNormal("Generating solution for project \"{0}\"", projectPath);
-
                     result.Add(projectPath);
+
+                    logger.LogMessageNormal("Generating solution for project \"{0}\"", projectPath);
                 }
             }
 
@@ -443,9 +443,9 @@ Examples:
                 {
                     if (File.Exists(projectPath))
                     {
-                        result.Add(projectPath);
-
                         logger.LogMessageNormal("Generating solution for project \"{0}\"", projectPath);
+
+                        result.Add(projectPath);
                     }
                     else if (Directory.Exists(projectPath))
                     {
