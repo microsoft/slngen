@@ -34,7 +34,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 CurrentDirectory = TestRootPath,
             };
 
-            IEnumerable<string> result = ProgramArguments.ExpandWildcards(environmentProvider, new[] { Path.Combine("**", "*.csproj") }, TestRootPath);
+            IEnumerable<string> result = ProgramArguments.ExpandWildcards(environmentProvider, new[] { Path.Combine("**", "*.csproj") }, null, TestRootPath);
 
             result.ShouldBe(projects, ignoreOrder: true);
         }
@@ -140,7 +140,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             string[] result = null;
 
             int exitCode = Program.Execute(
-                new string[] { Path.Combine("**", "*.csproj"), @"--excludepath dir1\\2", @"-e dir3" },
+                new string[] { Path.Combine("**", "*.csproj"), @"--excludepath dir1/2*", @"-e **/dir3" },
                 console,
                 (arguments, _) =>
                 {

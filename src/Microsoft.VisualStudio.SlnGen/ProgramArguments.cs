@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace Microsoft.VisualStudio.SlnGen
 {
@@ -423,7 +422,9 @@ Examples:
 
                 foreach (string projectPath in Directory.EnumerateFiles(directory, "*.*proj"))
                 {
-                    TryAddProjectPath(result, projectPath, logger);
+                    logger.LogMessageNormal("Generating solution for project \"{0}\"", projectPath);
+
+                    result.Add(projectPath);
                 }
             }
 
@@ -438,11 +439,13 @@ Examples:
             }
             else
             {
-                foreach (string projectPath in ExpandWildcards(environmentProvider, Projects).Select(Path.GetFullPath))
+                foreach (string projectPath in ExpandWildcards(environmentProvider, Projects, ExcludePath).Select(Path.GetFullPath))
                 {
                     if (File.Exists(projectPath))
                     {
-                        TryAddProjectPath(result, projectPath, logger);
+                        result.Add(projectPath);
+
+                        logger.LogMessageNormal("Generating solution for project \"{0}\"", projectPath);
                     }
                     else if (Directory.Exists(projectPath))
                     {
@@ -465,9 +468,10 @@ Examples:
         /// </summary>
         /// <param name="environmentProvider">An <see cref="IEnvironmentProvider" /> instance to use when accessing the environment</param>
         /// <param name="paths">A list of paths to expand the wildcards in.</param>
+        /// <param name="excludePaths">An optional array of paths to exclude from search for project files.</param>
         /// <param name="directoryPath">An optional base directory to use when relative paths are specified.</param>
         /// <returns>An <see cref="IEnumerable{T}" /> containing the paths with expanded wildcards.</returns>
-        internal static IEnumerable<string> ExpandWildcards(IEnvironmentProvider environmentProvider, IEnumerable<string> paths, string directoryPath = default)
+        internal static IEnumerable<string> ExpandWildcards(IEnvironmentProvider environmentProvider, IEnumerable<string> paths, string[] excludePaths = null, string directoryPath = default)
         {
             foreach (string path in paths)
             {
@@ -476,6 +480,11 @@ Examples:
                     Matcher matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
 
                     matcher.AddInclude(path);
+
+                    if (excludePaths is not null)
+                    {
+                        matcher.AddExcludePatterns(excludePaths);
+                    }
 
                     foreach (string expandedPath in matcher.GetResultsInFullPath(directoryPath ?? environmentProvider.CurrentDirectory))
                     {
@@ -486,18 +495,6 @@ Examples:
                 {
                     yield return path;
                 }
-            }
-        }
-
-        private void TryAddProjectPath(List<string> result, string projectPath, ISlnGenLogger logger)
-        {
-            if (ExcludePath is null ||
-                ExcludePath.Length == 0 ||
-                ExcludePath.All(excludePath => !Regex.IsMatch(projectPath, excludePath)))
-            {
-                result.Add(projectPath);
-
-                logger.LogMessageNormal("Generating solution for project \"{0}\"", projectPath);
             }
         }
 
