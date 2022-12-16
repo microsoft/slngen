@@ -140,7 +140,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             string[] result = null;
 
             int exitCode = Program.Execute(
-                new string[] { Path.Combine("**", "*.csproj"), @"--exclude dir1/2*", @"-e **/dir3" },
+                new string[] { Path.Combine("**", "*.csproj"), $"--exclude {Path.Combine("dir1", "2*")}", $"-e {Path.Combine("**", "dir3")}" },
                 console,
                 (arguments, _) =>
                 {
@@ -151,7 +151,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             exitCode.ShouldBe(42, console.AllOutput);
 
-            result.ShouldBe(new string[] { "1.csproj", "3.csproj" });
+            result.ShouldBe(new string[] { "1.csproj", "3.csproj" }, ignoreOrder: true);
         }
     }
 }
