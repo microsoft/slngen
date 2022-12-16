@@ -114,7 +114,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         }
 
         [Fact]
-        public void ExcludePath()
+        public void ExcludePaths()
         {
             Directory.CreateDirectory(Path.Combine(TestRootPath, "dir1"));
             Directory.CreateDirectory(Path.Combine(TestRootPath, "dir2"));
@@ -140,7 +140,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             string[] result = null;
 
             int exitCode = Program.Execute(
-                new string[] { Path.Combine("**", "*.csproj"), @"--excludepath dir1/2*", @"-e **/dir3" },
+                new string[] { Path.Combine("**", "*.csproj"), @"--exclude dir1/2*", @"-e **/dir3" },
                 console,
                 (arguments, _) =>
                 {

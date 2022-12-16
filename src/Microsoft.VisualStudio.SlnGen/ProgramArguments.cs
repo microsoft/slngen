@@ -129,11 +129,11 @@ Example: -bl:output.binlog;ProjectImports=ZipFile")]
         /// Gets or sets exclude paths when searching for project files.
         /// </summary>
         [Option(
-            "-e|--excludepath",
+            "-e|--exclude",
             CommandOptionType.MultipleValue,
             ValueName = "values",
             Description = "Specifies one or more paths to exclude when searching for project files.")]
-        public string[] ExcludePath { get; set; }
+        public string[] Exclude { get; set; }
 
         /// <summary>
         /// Gets or sets the file logger parameters.
@@ -439,7 +439,7 @@ Examples:
             }
             else
             {
-                foreach (string projectPath in ExpandWildcards(environmentProvider, Projects, ExcludePath).Select(Path.GetFullPath))
+                foreach (string projectPath in ExpandWildcards(environmentProvider, Projects, Exclude).Select(Path.GetFullPath))
                 {
                     if (File.Exists(projectPath))
                     {
