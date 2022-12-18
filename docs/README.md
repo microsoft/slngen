@@ -60,6 +60,7 @@ Options:
                                        Example:
                                           --consoleloggerparameters:PerformanceSummary;NoSummary;Verbosity=Minimal
   -vs|--devenvfullpath                Specifies a full path to Visual Studio's devenv.exe to use when opening the solution file. By default, SlnGen will launch the program associated with the .sln file extension.
+  -e|--excludepath <values>           Specifies one or more paths to exclude when searching for project files.
   -fl|--filelogger[:<parameters>]     Provides any extra parameters for file loggers. The same parameters listed for the console logger are available.
                                       Some additional available parameters are:
                                           LogFile--path to the log file into which the build log will be written.
