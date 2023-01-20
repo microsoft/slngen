@@ -479,14 +479,13 @@ namespace Microsoft.VisualStudio.SlnGen
 
             writer.WriteLine("	GlobalSection(ProjectConfigurationPlatforms) = postSolution");
 
-            List<SlnProject> sharedProjects = new List<SlnProject>();
+            bool hasSharedProject = false;
 
             foreach (SlnProject project in sortedProjects)
             {
                 if (project.IsSharedProject)
                 {
-                    sharedProjects.Add(project);
-
+                    hasSharedProject = true;
                     continue;
                 }
 
@@ -545,22 +544,15 @@ namespace Microsoft.VisualStudio.SlnGen
             writer.WriteLine($"		SolutionGuid = {SolutionGuid.ToSolutionString()}");
             writer.WriteLine("	EndGlobalSection");
 
-            if (sharedProjects.Any())
+            if (hasSharedProject)
             {
                 writer.WriteLine("	GlobalSection(SharedMSBuildProjectFiles) = preSolution");
-                foreach (SlnProject sharedProject in sharedProjects)
-                {
-                    foreach (string sharedProjectItem in sharedProject.SharedProjectItems)
-                    {
-                        writer.WriteLine($"		{sharedProjectItem.ToRelativePath(rootPath).ToSolutionPath()}*{sharedProject.ProjectGuid.ToSolutionString(uppercase: false).ToLowerInvariant()}*SharedItemsImports = 13");
-                    }
-                }
 
-                foreach (SlnProject project in sortedProjects.Where(i => !i.IsSharedProject))
+                foreach (SlnProject project in sortedProjects)
                 {
                     foreach (string sharedProjectItem in project.SharedProjectItems)
                     {
-                        writer.WriteLine($"		{sharedProjectItem.ToRelativePath(rootPath).ToSolutionPath()}*{project.ProjectGuid.ToSolutionString(uppercase: false).ToLowerInvariant()}*SharedItemsImports = 4");
+                        writer.WriteLine($"		{sharedProjectItem.ToRelativePath(rootPath).ToSolutionPath()}*{project.ProjectGuid.ToSolutionString(uppercase: false).ToLowerInvariant()}*SharedItemsImports = {(project.IsSharedProject ? "13" : "4")}");
                     }
                 }
 

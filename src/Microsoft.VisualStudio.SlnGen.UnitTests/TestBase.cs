@@ -80,11 +80,11 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             return Path.Combine(TestRootPath, $"{Path.GetRandomFileName()}{extension ?? string.Empty}");
         }
 
-        protected string GetTempProjectFile(string name, string directoryPath = default)
+        protected string GetTempProjectFile(string name, string extension = ".csproj", string directoryPath = default)
         {
             DirectoryInfo projectDirectory = Directory.CreateDirectory(Path.Combine(TestRootPath, directoryPath ?? name));
 
-            return Path.Combine(projectDirectory.FullName, $"{name}.csproj");
+            return Path.Combine(projectDirectory.FullName, $"{name}{extension}");
         }
     }
 }

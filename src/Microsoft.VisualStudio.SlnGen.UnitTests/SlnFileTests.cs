@@ -642,6 +642,50 @@ EndGlobal
         }
 
         [Fact]
+        public void SharedProject()
+        {
+            Project sharedProject1 = ProjectCreator.Templates.SharedProject(
+                path: GetTempProjectFile("SharedProject1", extension: ".shproj"),
+                out ProjectCreator sharedProject1Items)
+                    .Save();
+
+            Project project1 = ProjectCreator.Templates.LegacyCsproj(
+                path: GetTempProjectFile("ClassLibrary1"),
+                projectCreator: (project) => project.Import(sharedProject1Items, label: "Shared"))
+                    .Save();
+
+            sharedProject1Items.Save();
+
+            Project[] projects = new Project[]
+            {
+                project1,
+                sharedProject1,
+            };
+
+            string solutionFileFullPath = GetTempFileName(".sln");
+
+            ProgramArguments programArguments = new ProgramArguments
+            {
+                LaunchVisualStudio = new[] { bool.FalseString },
+                SolutionFileFullPath = new[] { solutionFileFullPath },
+            };
+
+            TestLogger testLogger = new TestLogger();
+
+            (string _, int customProjectTypeGuidCount, int solutionItemCount, Guid solutionGuid) = SlnFile.GenerateSolutionFile(programArguments, projects, testLogger);
+
+            SolutionFile solutionFile = SolutionFile.Parse(solutionFileFullPath);
+
+            ProjectInSolution project1InSolution = solutionFile.ProjectsByGuid[GetProjectGuid(project1)].ShouldNotBeNull();
+
+            project1InSolution.ProjectType.ShouldBe(SolutionProjectType.KnownToBeMSBuildFormat);
+
+            ProjectInSolution sharedProject1InSolution = solutionFile.ProjectsByGuid[GetProjectGuid(sharedProject1)].ShouldNotBeNull();
+
+            sharedProject1InSolution.ProjectType.ShouldBe(SolutionProjectType.SharedProject);
+        }
+
+        [Fact]
         public void SingleProject()
         {
             SlnProject projectA = new SlnProject
@@ -959,6 +1003,18 @@ EndGlobal
             projectConfigurationInSolution!.ConfigurationName.ShouldBe(expectedConfiguration);
             projectConfigurationInSolution.PlatformName.ShouldBe(expectedPlatform);
             projectConfigurationInSolution.IncludeInBuild.ShouldBe(expectedIncludeInBuild);
+        }
+
+        private string GetProjectGuid(Project project)
+        {
+            string projectGuidValue = project.GetPropertyValue(MSBuildPropertyNames.ProjectGuid);
+
+            if (string.IsNullOrWhiteSpace(projectGuidValue) || !Guid.TryParse(projectGuidValue, out Guid projectGuid))
+            {
+                return null;
+            }
+
+            return projectGuid.ToSolutionString();
         }
     }
 }
