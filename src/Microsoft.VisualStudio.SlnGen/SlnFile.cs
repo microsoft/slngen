@@ -400,7 +400,7 @@ namespace Microsoft.VisualStudio.SlnGen
             {
                 writer.WriteLine($@"Project(""{SlnFolder.FolderProjectTypeGuidString}"") = ""Solution Items"", ""Solution Items"", ""{{B283EBC2-E01F-412D-9339-FD56EF114549}}"" ");
                 writer.WriteLine("	ProjectSection(SolutionItems) = preProject");
-                foreach (string solutionItem in SolutionItems.Select(i => i.ToRelativePath(rootPath).ToSolutionPath()))
+                foreach (string solutionItem in SolutionItems.Select(i => i.ToRelativePath(rootPath).ToSolutionPath()).Where(i => !string.IsNullOrWhiteSpace(i)))
                 {
                     writer.WriteLine($"		{solutionItem} = {solutionItem}");
                 }
