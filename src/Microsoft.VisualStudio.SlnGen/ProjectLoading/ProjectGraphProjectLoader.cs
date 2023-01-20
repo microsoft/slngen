@@ -45,7 +45,7 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
                 projectPaths.Select(i => new ProjectGraphEntryPoint(i, globalProperties)),
                 projectCollection,
                 CreateProjectInstance);
-
+#if NETFRAMEWORK
             foreach (ProjectInstance projectInstance in projectGraph.ProjectNodes.Select(i => i.ProjectInstance))
             {
                 if (!string.Equals(projectInstance.GetPropertyValue("HasSharedItems"), bool.TrueString, StringComparison.OrdinalIgnoreCase))
@@ -70,6 +70,7 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
                     }
                 }
             }
+#endif
         }
 
         private ProjectInstance CreateProjectInstance(string projectFullPath, IDictionary<string, string> globalProperties, ProjectCollection projectCollection)

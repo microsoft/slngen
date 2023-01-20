@@ -641,6 +641,7 @@ EndGlobal
             File.Exists(fullPath).ShouldBeTrue();
         }
 
+#if NETFRAMEWORK
         [Fact]
         public void SharedProject()
         {
@@ -684,6 +685,7 @@ EndGlobal
 
             sharedProject1InSolution.ProjectType.ShouldBe(SolutionProjectType.SharedProject);
         }
+#endif
 
         [Fact]
         public void SingleProject()

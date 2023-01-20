@@ -58,6 +58,7 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
         public void LoadProjects(IEnumerable<string> projectPaths, ProjectCollection projectCollection, IDictionary<string, string> globalProperties)
         {
             Parallel.ForEach(projectPaths, projectPath => { LoadProject(projectPath, projectCollection, globalProperties); });
+#if NETFRAMEWORK
 
             foreach (Project project in projectCollection.LoadedProjects)
             {
@@ -83,6 +84,7 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
                     }
                 }
             }
+#endif
         }
 
         /// <summary>
