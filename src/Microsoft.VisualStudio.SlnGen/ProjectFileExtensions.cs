@@ -80,6 +80,11 @@ namespace Microsoft.VisualStudio.SlnGen
         public const string SqlServerDb = ".sqlproj";
 
         /// <summary>
+        /// Visual C++ Shared Project Items.
+        /// </summary>
+        public const string VcxItems = ".vcxitems";
+
+        /// <summary>
         /// Visual Basic projects (.vbproj).
         /// </summary>
         public const string VisualBasic = ".vbproj";

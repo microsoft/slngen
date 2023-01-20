@@ -49,14 +49,14 @@ namespace Microsoft.VisualStudio.SlnGen
         private const string SectionSettingSolutionGuid = "\t\tSolutionGuid = ";
 
         /// <summary>
-        /// The separator to split project information by.
-        /// </summary>
-        private static readonly string[] ProjectSectionSeparator = { "\", \"" };
-
-        /// <summary>
         /// A regular expression used to parse the project section.
         /// </summary>
         private static readonly Regex GuidRegex = new (@"(?<Guid>\{[0-9a-fA-F\-]+\})");
+
+        /// <summary>
+        /// The separator to split project information by.
+        /// </summary>
+        private static readonly string[] ProjectSectionSeparator = { "\", \"" };
 
         /// <summary>
         /// The file format version.
@@ -552,7 +552,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 {
                     foreach (string sharedProjectItem in project.SharedProjectItems)
                     {
-                        writer.WriteLine($"		{sharedProjectItem.ToRelativePath(rootPath).ToSolutionPath()}*{project.ProjectGuid.ToSolutionString(uppercase: false).ToLowerInvariant()}*SharedItemsImports = {(project.IsSharedProject ? "13" : "4")}");
+                        writer.WriteLine($"		{sharedProjectItem.ToRelativePath(rootPath).ToSolutionPath()}*{project.ProjectGuid.ToSolutionString(uppercase: false).ToLowerInvariant()}*SharedItemsImports = {GetSharedProjectOptions(project)}");
                     }
                 }
 
@@ -560,6 +560,21 @@ namespace Microsoft.VisualStudio.SlnGen
             }
 
             writer.WriteLine("EndGlobal");
+        }
+
+        private string GetSharedProjectOptions(SlnProject project)
+        {
+            if (project.FullPath.EndsWith(ProjectFileExtensions.VcxItems))
+            {
+                return "9";
+            }
+
+            if (project.FullPath.EndsWith(ProjectFileExtensions.Shproj))
+            {
+                return "13";
+            }
+
+            return "4";
         }
 
         private IEnumerable<string> GetValidSolutionPlatforms(IEnumerable<string> platforms)

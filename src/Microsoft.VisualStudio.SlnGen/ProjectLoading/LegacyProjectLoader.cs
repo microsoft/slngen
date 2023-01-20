@@ -66,13 +66,20 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
                     continue;
                 }
 
-                foreach (ResolvedImport import in project.Imports.Where(i => i.ImportedProject.FullPath.EndsWith(ProjectFileExtensions.ProjItems, StringComparison.Ordinal)))
+                foreach (ResolvedImport import in project.Imports)
                 {
-                    FileInfo projectPath = new FileInfo(Path.ChangeExtension(import.ImportedProject.FullPath, ProjectFileExtensions.Shproj));
-
-                    if (projectPath.Exists)
+                    if (import.ImportedProject.FullPath.EndsWith(ProjectFileExtensions.ProjItems, StringComparison.Ordinal))
                     {
-                        TryLoadProject(projectPath.FullName, projectCollection.DefaultToolsVersion, projectCollection, globalProperties, out _);
+                        FileInfo projectPath = new FileInfo(Path.ChangeExtension(import.ImportedProject.FullPath, ProjectFileExtensions.Shproj));
+
+                        if (projectPath.Exists)
+                        {
+                            TryLoadProject(projectPath.FullName, projectCollection.DefaultToolsVersion, projectCollection, globalProperties, out _);
+                        }
+                    }
+                    else if (import.ImportedProject.FullPath.EndsWith(ProjectFileExtensions.VcxItems))
+                    {
+                        TryLoadProject(import.ImportedProject.FullPath, projectCollection.DefaultToolsVersion, projectCollection, globalProperties, out _);
                     }
                 }
             }

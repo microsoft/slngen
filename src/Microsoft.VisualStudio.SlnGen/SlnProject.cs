@@ -64,6 +64,7 @@ namespace Microsoft.VisualStudio.SlnGen
             [ProjectFileExtensions.Scope] = new (VisualStudioProjectTypeGuids.ScopeProject),
             [ProjectFileExtensions.Shproj] = new (VisualStudioProjectTypeGuids.SharedProject),
             [ProjectFileExtensions.SqlServerDb] = new (VisualStudioProjectTypeGuids.SqlServerDbProject),
+            [ProjectFileExtensions.VcxItems] = new (VisualStudioProjectTypeGuids.Cpp),
             [ProjectFileExtensions.Wap] = new (VisualStudioProjectTypeGuids.WapProject),
             [ProjectFileExtensions.Wix] = new (VisualStudioProjectTypeGuids.Wix),
         };
@@ -160,15 +161,22 @@ namespace Microsoft.VisualStudio.SlnGen
 
             string projectFileExtension = Path.GetExtension(fullPath);
 
-            bool isSharedProject = string.Equals(projectFileExtension, ProjectFileExtensions.Shproj, StringComparison.Ordinal);
+            bool isSharedProject = string.Equals(projectFileExtension, ProjectFileExtensions.Shproj, StringComparison.Ordinal) || string.Equals(projectFileExtension, ProjectFileExtensions.VcxItems, StringComparison.Ordinal);
 
             List<string> sharedProjectItemPaths = new List<string>();
 
-            if (string.Equals(project.GetPropertyValue("HasSharedItems"), bool.TrueString, System.StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(project.GetPropertyValue("HasSharedItems"), bool.TrueString, StringComparison.OrdinalIgnoreCase))
             {
-                foreach (ResolvedImport import in project.Imports.Where(i => i.ImportedProject.FullPath.EndsWith(ProjectFileExtensions.ProjItems, StringComparison.Ordinal)))
+                if (project.FullPath.EndsWith(ProjectFileExtensions.VcxItems, StringComparison.Ordinal))
                 {
-                    sharedProjectItemPaths.Add(import.ImportedProject.FullPath);
+                    sharedProjectItemPaths.Add(project.FullPath);
+                }
+                else
+                {
+                    foreach (ResolvedImport import in project.Imports.Where(i => i.ImportedProject.FullPath.EndsWith(ProjectFileExtensions.ProjItems, StringComparison.Ordinal) || i.ImportedProject.FullPath.EndsWith(ProjectFileExtensions.VcxItems, StringComparison.Ordinal)))
+                    {
+                        sharedProjectItemPaths.Add(import.ImportedProject.FullPath);
+                    }
                 }
             }
 
