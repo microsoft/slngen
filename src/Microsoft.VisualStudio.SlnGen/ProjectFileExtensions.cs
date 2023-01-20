@@ -60,14 +60,29 @@ namespace Microsoft.VisualStudio.SlnGen
         public const string NuProj = ".nuproj";
 
         /// <summary>
+        /// Shared project items (.projitems)
+        /// </summary>
+        public const string ProjItems = ".projitems";
+
+        /// <summary>
         /// Scope SDK projects (.scopeproj).
         /// </summary>
         public const string Scope = ".scopeproj";
 
         /// <summary>
+        /// Shared project (.shproj)
+        /// </summary>
+        public const string Shproj = ".shproj";
+
+        /// <summary>
         /// SQL Server database projects (.sqlproj).
         /// </summary>
         public const string SqlServerDb = ".sqlproj";
+
+        /// <summary>
+        /// Visual C++ Shared Project Items.
+        /// </summary>
+        public const string VcxItems = ".vcxitems";
 
         /// <summary>
         /// Visual Basic projects (.vbproj).

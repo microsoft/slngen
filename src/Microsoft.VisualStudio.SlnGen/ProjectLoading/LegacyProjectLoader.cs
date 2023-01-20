@@ -58,6 +58,33 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
         public void LoadProjects(IEnumerable<string> projectPaths, ProjectCollection projectCollection, IDictionary<string, string> globalProperties)
         {
             Parallel.ForEach(projectPaths, projectPath => { LoadProject(projectPath, projectCollection, globalProperties); });
+#if NETFRAMEWORK
+
+            foreach (Project project in projectCollection.LoadedProjects)
+            {
+                if (!string.Equals(project.GetPropertyValue("HasSharedItems"), bool.TrueString, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                foreach (ResolvedImport import in project.Imports)
+                {
+                    if (import.ImportedProject.FullPath.EndsWith(ProjectFileExtensions.ProjItems, StringComparison.Ordinal))
+                    {
+                        FileInfo projectPath = new FileInfo(Path.ChangeExtension(import.ImportedProject.FullPath, ProjectFileExtensions.Shproj));
+
+                        if (projectPath.Exists)
+                        {
+                            TryLoadProject(projectPath.FullName, projectCollection.DefaultToolsVersion, projectCollection, globalProperties, out _);
+                        }
+                    }
+                    else if (import.ImportedProject.FullPath.EndsWith(ProjectFileExtensions.VcxItems))
+                    {
+                        TryLoadProject(import.ImportedProject.FullPath, projectCollection.DefaultToolsVersion, projectCollection, globalProperties, out _);
+                    }
+                }
+            }
+#endif
         }
 
         /// <summary>

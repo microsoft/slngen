@@ -57,7 +57,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
         protected string CreateTempProjectFile(string name, string directoryPath = default)
         {
-            string filePath = GetTempProjectFile(name, directoryPath);
+            string filePath = GetTempProjectFile(name, directoryPath: directoryPath);
 
             File.WriteAllText(filePath, "<Project />");
 
@@ -80,11 +80,11 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             return Path.Combine(TestRootPath, $"{Path.GetRandomFileName()}{extension ?? string.Empty}");
         }
 
-        protected string GetTempProjectFile(string name, string directoryPath = default)
+        protected string GetTempProjectFile(string name, string extension = default, string directoryPath = default)
         {
             DirectoryInfo projectDirectory = Directory.CreateDirectory(Path.Combine(TestRootPath, directoryPath ?? name));
 
-            return Path.Combine(projectDirectory.FullName, $"{name}.csproj");
+            return Path.Combine(projectDirectory.FullName, $"{name}{extension ?? ".csproj"}");
         }
     }
 }
