@@ -231,12 +231,13 @@ namespace Microsoft.VisualStudio.SlnGen
         /// Gets the current Guid as a string for use in a Visual Studio solution file.
         /// </summary>
         /// <param name="guid">The unique identifier.</param>
+        /// <param name="uppercase"><c>true</c> to return the solution string as uppercase, otherwise <c>false</c> to return the solution string as lowercase.</param>
         /// <returns>
         /// The current GUID in as a string with braces and in upper case.
         /// </returns>
-        public static string ToSolutionString(this Guid guid)
+        public static string ToSolutionString(this Guid guid, bool uppercase = true)
         {
-            return guid.ToString("B").ToUpperInvariant();
+            return uppercase ? guid.ToString("B").ToUpperInvariant() : guid.ToString("B").ToLowerInvariant();
         }
     }
 }

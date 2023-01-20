@@ -62,6 +62,7 @@ namespace Microsoft.VisualStudio.SlnGen
             [ProjectFileExtensions.NodeJS] = new (VisualStudioProjectTypeGuids.NodeJSProject),
             [ProjectFileExtensions.NuProj] = new (VisualStudioProjectTypeGuids.NuProj),
             [ProjectFileExtensions.Scope] = new (VisualStudioProjectTypeGuids.ScopeProject),
+            [ProjectFileExtensions.Shproj] = new (VisualStudioProjectTypeGuids.SharedProject),
             [ProjectFileExtensions.SqlServerDb] = new (VisualStudioProjectTypeGuids.SqlServerDbProject),
             [ProjectFileExtensions.Wap] = new (VisualStudioProjectTypeGuids.WapProject),
             [ProjectFileExtensions.Wix] = new (VisualStudioProjectTypeGuids.Wix),
@@ -93,6 +94,11 @@ namespace Microsoft.VisualStudio.SlnGen
         public bool IsMainProject { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this is a shared project.
+        /// </summary>
+        public bool IsSharedProject { get; set; }
+
+        /// <summary>
         /// Gets or sets the friendly name of the project.
         /// </summary>
         public string Name { get; set; }
@@ -111,6 +117,11 @@ namespace Microsoft.VisualStudio.SlnGen
         /// Gets or sets a GUID representing the project type.
         /// </summary>
         public Guid ProjectTypeGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets a list of shared project items.
+        /// </summary>
+        public IReadOnlyList<string> SharedProjectItems { get; set; } = Array.Empty<string>();
 
         /// <summary>
         /// Gets or sets the name of a solution folder to place the project in.
@@ -149,16 +160,30 @@ namespace Microsoft.VisualStudio.SlnGen
 
             string projectFileExtension = Path.GetExtension(fullPath);
 
+            bool isSharedProject = string.Equals(projectFileExtension, ProjectFileExtensions.Shproj, StringComparison.Ordinal);
+
+            List<string> sharedProjectItemPaths = new List<string>();
+
+            if (string.Equals(project.GetPropertyValue("HasSharedItems"), bool.TrueString, System.StringComparison.OrdinalIgnoreCase))
+            {
+                foreach (ResolvedImport import in project.Imports.Where(i => i.ImportedProject.FullPath.EndsWith(ProjectFileExtensions.ProjItems, StringComparison.Ordinal)))
+                {
+                    sharedProjectItemPaths.Add(import.ImportedProject.FullPath);
+                }
+            }
+
             return new SlnProject
             {
                 Configurations = GetConfigurations(project, projectFileExtension, isUsingMicrosoftNETSdk),
                 FullPath = fullPath,
                 IsDeployable = GetIsDeployable(project, projectFileExtension),
                 IsMainProject = isMainProject,
+                IsSharedProject = isSharedProject,
                 Name = name,
                 Platforms = GetPlatforms(project, projectFileExtension, isUsingMicrosoftNETSdk),
                 ProjectGuid = GetProjectGuid(project, isUsingMicrosoftNETSdk),
                 ProjectTypeGuid = GetProjectTypeGuid(projectFileExtension, isUsingMicrosoftNETSdk, customProjectTypeGuids),
+                SharedProjectItems = sharedProjectItemPaths.Any() ? sharedProjectItemPaths : Array.Empty<string>(),
                 SolutionFolder = project.GetPropertyValueOrDefault(MSBuildPropertyNames.SlnGenSolutionFolder, string.Empty),
             };
         }

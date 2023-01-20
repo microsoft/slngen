@@ -479,8 +479,17 @@ namespace Microsoft.VisualStudio.SlnGen
 
             writer.WriteLine("	GlobalSection(ProjectConfigurationPlatforms) = postSolution");
 
+            List<SlnProject> sharedProjects = new List<SlnProject>();
+
             foreach (SlnProject project in sortedProjects)
             {
+                if (project.IsSharedProject)
+                {
+                    sharedProjects.Add(project);
+
+                    continue;
+                }
+
                 string projectGuid = project.ProjectGuid.ToSolutionString();
 
                 foreach (string configuration in solutionConfigurations)
@@ -535,6 +544,28 @@ namespace Microsoft.VisualStudio.SlnGen
             writer.WriteLine("	GlobalSection(ExtensibilityGlobals) = postSolution");
             writer.WriteLine($"		SolutionGuid = {SolutionGuid.ToSolutionString()}");
             writer.WriteLine("	EndGlobalSection");
+
+            if (sharedProjects.Any())
+            {
+                writer.WriteLine("	GlobalSection(SharedMSBuildProjectFiles) = preSolution");
+                foreach (SlnProject sharedProject in sharedProjects)
+                {
+                    foreach (string sharedProjectItem in sharedProject.SharedProjectItems)
+                    {
+                        writer.WriteLine($"		{sharedProjectItem.ToRelativePath(rootPath).ToSolutionPath()}*{sharedProject.ProjectGuid.ToSolutionString(uppercase: false).ToLowerInvariant()}*SharedItemsImports = 13");
+                    }
+                }
+
+                foreach (SlnProject project in sortedProjects.Where(i => !i.IsSharedProject))
+                {
+                    foreach (string sharedProjectItem in project.SharedProjectItems)
+                    {
+                        writer.WriteLine($"		{sharedProjectItem.ToRelativePath(rootPath).ToSolutionPath()}*{project.ProjectGuid.ToSolutionString(uppercase: false).ToLowerInvariant()}*SharedItemsImports = 4");
+                    }
+                }
+
+                writer.WriteLine("	EndGlobalSection");
+            }
 
             writer.WriteLine("EndGlobal");
         }

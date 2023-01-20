@@ -8,7 +8,7 @@ namespace Microsoft.VisualStudio.SlnGen
     /// Represents a class that contains Visual Studio project type GUIDs.
     /// </summary>
     public static class VisualStudioProjectTypeGuids
-    {
+{
         /// <summary>
         /// Azure SDK project (.ccproj).
         /// </summary>
@@ -68,6 +68,11 @@ namespace Microsoft.VisualStudio.SlnGen
         /// Scope SDK projects (.scopeproj).
         /// </summary>
         public const string ScopeProject = "202899A3-C531-4771-9089-0213D66978AE";
+
+        /// <summary>
+        /// Shared projects (.shproj)
+        /// </summary>
+        public const string SharedProject = "D954291E-2A0B-460D-934E-DC6B0785DB48";
 
         /// <summary>
         /// Visual Studio solution folder.
