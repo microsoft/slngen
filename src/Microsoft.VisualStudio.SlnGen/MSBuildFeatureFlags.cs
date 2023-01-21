@@ -27,16 +27,6 @@ namespace Microsoft.VisualStudio.SlnGen
         private const string MSBuildExePathEnvironmentVariableName = "MSBUILD_EXE_PATH";
 
         /// <summary>
-        /// Represents the name of the environment variable to set that specifies a list of wildcard regular expressions to skip the evaluation of.
-        /// </summary>
-        private const string SkipWildcardEvaluationRegularExpressionsEnvironmentVariableName = "MSBUILDSKIPEAGERWILDCARDEVALUATIONREGEXES";
-
-        /// <summary>
-        /// Represents a regular expression that matches any file spec that contains a wildcard * or ? and does not end in "proj".
-        /// </summary>
-        private const string SkipWildcardRegularExpression = @"[*?]+.*(?<!proj)$";
-
-        /// <summary>
         /// Represents the name of the environment variable to set that specifies to use the simple project root element cache.
         /// </summary>
         private const string UseSimpleProjectRootElementCacheConcurrencyEnvironmentVariableName = "MSBUILDUSESIMPLEPROJECTROOTELEMENTCACHECONCURRENCY";
@@ -100,18 +90,6 @@ namespace Microsoft.VisualStudio.SlnGen
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether MSBuild should skip expanding wildcards.
-        /// </summary>
-        /// <remarks>
-        /// More info here: https://github.com/microsoft/msbuild/blob/master/src/Build/Utilities/EngineFileUtilities.cs#L221.
-        /// </remarks>
-        public bool MSBuildSkipEagerWildCardEvaluationRegexes
-        {
-            get => !string.Equals(_environmentProvider.GetEnvironmentVariable(SkipWildcardEvaluationRegularExpressionsEnvironmentVariableName), null);
-            set => _environmentProvider.SetEnvironmentVariable(SkipWildcardEvaluationRegularExpressionsEnvironmentVariableName, value ? SkipWildcardRegularExpression : null);
-        }
-
-        /// <summary>
         /// Gets or sets a value indicating whether MSBuild should use simple project root element cache concurrency.
         /// </summary>
         /// <remarks>
@@ -129,7 +107,6 @@ namespace Microsoft.VisualStudio.SlnGen
             _environmentProvider.SetEnvironmentVariable(CacheFileEnumerationsEnvironmentVariableName, null);
             _environmentProvider.SetEnvironmentVariable(LoadAllFilesAsReadonlyEnvironmentVariableName, null);
             _environmentProvider.SetEnvironmentVariable(MSBuildExePathEnvironmentVariableName, null);
-            _environmentProvider.SetEnvironmentVariable(SkipWildcardEvaluationRegularExpressionsEnvironmentVariableName, null);
             _environmentProvider.SetEnvironmentVariable(UseSimpleProjectRootElementCacheConcurrencyEnvironmentVariableName, null);
         }
     }

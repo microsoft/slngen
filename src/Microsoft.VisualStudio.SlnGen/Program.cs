@@ -137,7 +137,6 @@ namespace Microsoft.VisualStudio.SlnGen
             {
                 CacheFileEnumerations = true,
                 LoadAllFilesAsReadOnly = true,
-                MSBuildSkipEagerWildCardEvaluationRegexes = true,
                 UseSimpleProjectRootElementCacheConcurrency = true,
 #if NETFRAMEWORK
                 MSBuildExePath = CurrentDevelopmentEnvironment.MSBuildExe.FullName,
