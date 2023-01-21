@@ -158,7 +158,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 solutionFileFullPath = Path.Combine(solutionDirectoryFullPath!, solutionFileName);
             }
 
-            logger.LogMessageHigh($"Generating Visual Studio solution \"{solutionFileFullPath}\" ...");
+            logger.LogMessageHigh($"Generating Visual Studio solution \"{Path.GetFullPath(solutionFileFullPath)}\" ...");
 
             if (customProjectTypeGuids.Count > 0)
             {
