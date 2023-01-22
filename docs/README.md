@@ -196,6 +196,7 @@ SlnGen knows about the following project types:
 * Node JS projects (.njsproj)
 * NuProj projects (.nuproj)
 * Scope SDK projects (.scopeproj)
+* Shared projects (.shproj)
 * SQL Server database projects (.sqlproj)
 * Visual Basic projects (.vbproj)
 * Visual C++ projects (.vcxproj)
