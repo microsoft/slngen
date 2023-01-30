@@ -96,7 +96,6 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 ProjectTypeGuid = Guid.NewGuid(),
             };
 
-
             SlnFile slnFile = new SlnFile()
             {
                 Configurations = new[] { "Debug" },
