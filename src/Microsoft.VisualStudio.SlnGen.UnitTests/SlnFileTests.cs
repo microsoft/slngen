@@ -74,13 +74,35 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 ProjectTypeGuid = Guid.NewGuid(),
             };
 
+            SlnProject projectF = new SlnProject
+            {
+                Configurations = new[] { "Debug" },
+                FullPath = GetTempFileName(),
+                IsMainProject = true,
+                Name = "ProjectF",
+                Platforms = new[] { "ARM" },
+                ProjectGuid = Guid.NewGuid(),
+                ProjectTypeGuid = Guid.NewGuid(),
+            };
+
+            SlnProject projectG = new SlnProject
+            {
+                Configurations = new[] { "Debug" },
+                FullPath = GetTempFileName(),
+                IsMainProject = true,
+                Name = "ProjectG",
+                Platforms = new[] { "ARM64" },
+                ProjectGuid = Guid.NewGuid(),
+                ProjectTypeGuid = Guid.NewGuid(),
+            };
+
             SlnFile slnFile = new SlnFile()
             {
                 Configurations = new[] { "Debug" },
                 Platforms = new[] { "Any CPU" },
             };
 
-            slnFile.AddProjects(new[] { projectA, projectB, projectC, projectD, projectE });
+            slnFile.AddProjects(new[] { projectA, projectB, projectC, projectD, projectE, projectF, projectG });
 
             string solutionFilePath = GetTempFileName();
 
@@ -97,6 +119,10 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             ValidateSolutionPlatformAndConfiguration(projectD, solutionFile, "Debug", "Razzle", expectedIncludeInBuild: false);
 
             ValidateSolutionPlatformAndConfiguration(projectE, solutionFile, "Release", "AnyCPU", expectedIncludeInBuild: true);
+
+            ValidateSolutionPlatformAndConfiguration(projectF, solutionFile, "Debug", "ARM");
+
+            ValidateSolutionPlatformAndConfiguration(projectG, solutionFile, "Debug", "ARM64");
         }
 
         [Fact]
