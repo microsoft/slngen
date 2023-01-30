@@ -590,6 +590,8 @@ namespace Microsoft.VisualStudio.SlnGen
                         "x86" => platform,
                         "amd64" => "x64",
                         "win32" => "x86",
+                        "arm" => platform,
+                        "arm64" => platform,
                         _ => null
                     };
                 })
@@ -627,6 +629,8 @@ namespace Microsoft.VisualStudio.SlnGen
             bool containsAmd64 = false;
             bool containsX86 = false;
             bool containsAnyCPU = false;
+            bool containsArm = false;
+            bool containsArm64 = false;
 
             foreach (string projectPlatform in project.Platforms)
             {
@@ -661,6 +665,14 @@ namespace Microsoft.VisualStudio.SlnGen
                     case "win32":
                         containsWin32 = true;
                         break;
+
+                    case "arm":
+                        containsArm = true;
+                        break;
+
+                    case "arm64":
+                        containsArm64 = true;
+                        break;
                 }
             }
 
@@ -690,6 +702,20 @@ namespace Microsoft.VisualStudio.SlnGen
                 if (containsWin32)
                 {
                     projectSolutionPlatform = projectBuildPlatform = "Win32";
+
+                    return true;
+                }
+
+                if (containsArm)
+                {
+                    projectSolutionPlatform = projectBuildPlatform = "ARM";
+
+                    return true;
+                }
+
+                if (containsArm64)
+                {
+                    projectSolutionPlatform = projectBuildPlatform = "ARM64";
 
                     return true;
                 }
