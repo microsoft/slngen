@@ -64,7 +64,7 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
                             _ = CreateProject(projectPath.FullName, globalProperties, projectCollection);
                         }
                     }
-                    else if (importPath.EndsWith(ProjectFileExtensions.VcxItems))
+                    else if (importPath.EndsWith(ProjectFileExtensions.VcxItems) && !LoadedProjects.ContainsKey(importPath))
                     {
                         _ = CreateProject(importPath, globalProperties, projectCollection);
                     }
