@@ -102,9 +102,9 @@ Example: -bl:output.binlog;ProjectImports=ZipFile")]
     ForceNoAlign--Does not align the text to the size of the console buffer
     DisableConsoleColor--Use the default console colors for all logging messages.
     ForceConsoleColor--Use ANSI console colors even if console does not support it
-    Verbosity--overrides the -verbosity setting for this logger.
+    Verbosity--overrides the -verbosity setting for this logger (see Microsoft.Build.Framework.LoggerVerbosity enum).
  Example:
-    --consoleloggerparameters:PerformanceSummary;NoSummary;Verbosity=Minimal")]
+    --consolelogger:PerformanceSummary;NoSummary;Verbosity=Minimal")]
         public (bool HasValue, string Arguments) ConsoleLoggerParameters { get; set; }
 
         /// <summary>
@@ -147,8 +147,9 @@ Some additional available parameters are:
     Append--determines if the build log will be appended to or overwrite the log file.Setting the switch appends the build log to the log file;
         Not setting the switch overwrites the contents of an existing log file. The default is not to append to the log file.
     Encoding--specifies the encoding for the file, for example, UTF-8, Unicode, or ASCII
+    Verbosity--overrides the -verbosity setting for this logger (see Microsoft.Build.Framework.LoggerVerbosity enum).
  Examples:
-    -fileLoggerParameters:LogFile=MyLog.log;Append;Verbosity=Diagnostic;Encoding=UTF-8")]
+    --filelogger:LogFile=MyLog.log;Append;Verbosity=Diagnostic;Encoding=UTF-8")]
         public (bool HasValue, string Arguments) FileLoggerParameters { get; set; }
 
         /// <summary>

@@ -56,9 +56,9 @@ Options:
                                           ForceNoAlign--Does not align the text to the size of the console buffer
                                           DisableConsoleColor--Use the default console colors for all logging messages.
                                           ForceConsoleColor--Use ANSI console colors even if console does not support it
-                                          Verbosity--overrides the -verbosity setting for this logger.
+                                          Verbosity--overrides the -verbosity setting for this logger (see Microsoft.Build.Framework.LoggerVerbosity enum).
                                        Example:
-                                          --consoleloggerparameters:PerformanceSummary;NoSummary;Verbosity=Minimal
+                                          --consolelogger:PerformanceSummary;NoSummary;Verbosity=Minimal
   -vs|--devenvfullpath                Specifies a full path to Visual Studio's devenv.exe to use when opening the solution file. By default, SlnGen will launch the program associated with the .sln file extension.
   -e|--excludepath <values>           Specifies one or more paths to exclude when searching for project files.
   -fl|--filelogger[:<parameters>]     Provides any extra parameters for file loggers. The same parameters listed for the console logger are available.
@@ -67,8 +67,9 @@ Options:
                                           Append--determines if the build log will be appended to or overwrite the log file.Setting the switch appends the build log to the log file;
                                               Not setting the switch overwrites the contents of an existing log file. The default is not to append to the log file.
                                           Encoding--specifies the encoding for the file, for example, UTF-8, Unicode, or ASCII
+                                          Verbosity--overrides the -verbosity setting for this logger (see Microsoft.Build.Framework.LoggerVerbosity enum).
                                        Examples:
-                                          -fileLoggerParameters:LogFile=MyLog.log;Append;Verbosity=Diagnostic;Encoding=UTF-8
+                                          --filelogger:LogFile=MyLog.log;Append;Verbosity=Diagnostic;Encoding=UTF-8
   --folders <true>                    Enables the creation of hierarchical solution folders. Default: false
   --ignoreMainProject                 None of the projects receive special treatment.
   --launch <true|false>               Launch Visual Studio after generating the Solution file. Default: true on Windows
