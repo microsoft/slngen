@@ -119,14 +119,14 @@ namespace Microsoft.VisualStudio.SlnGen
             Console.ForegroundColor = ConsoleColor.Red;
             Console.BackgroundColor = ConsoleColor.Black;
 
-            ResolveSdk(environmentProvider, dotnetFileInfo.FullName);
+            ResolveSdk(environmentProvider, dotnetFileInfo.Directory);
 
             Console.ResetColor();
 
             return false;
         }
 
-        private static (string sdkDirectory, string globalJsonPath) ResolveSdk(IEnvironmentProvider environmentProvider, string dotnetExeDirectory)
+        private static (string sdkDirectory, string globalJsonPath) ResolveSdk(IEnvironmentProvider environmentProvider, DirectoryInfo dotnetExeDirectory)
         {
             string sdkDirectory = null;
             string globalJsonPath = null;
@@ -147,11 +147,11 @@ namespace Microsoft.VisualStudio.SlnGen
 
             if (Utility.RunningOnWindows)
             {
-                Windows.ResolveSdk(dotnetExeDirectory, environmentProvider.CurrentDirectory, 0 /* None */, HandleResolveSdkResult);
+                Windows.ResolveSdk(dotnetExeDirectory.FullName, environmentProvider.CurrentDirectory, 0 /* None */, HandleResolveSdkResult);
             }
             else
             {
-                Unix.ResolveSdk(dotnetExeDirectory, environmentProvider.CurrentDirectory, 0 /* None */, HandleResolveSdkResult);
+                Unix.ResolveSdk(dotnetExeDirectory.FullName, environmentProvider.CurrentDirectory, 0 /* None */, HandleResolveSdkResult);
             }
 
             return (sdkDirectory, globalJsonPath);
