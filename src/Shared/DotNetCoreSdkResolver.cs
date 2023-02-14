@@ -116,20 +116,23 @@ namespace Microsoft.VisualStudio.SlnGen
                 return true;
             }
 
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.BackgroundColor = ConsoleColor.Black;
+            (string sdkDirectory, string globalJsonPath, string requestedVersionNumber) = ResolveSdk(environmentProvider, dotnetFileInfo.Directory);
 
-            ResolveSdk(environmentProvider, dotnetFileInfo.Directory);
+            if (!string.IsNullOrWhiteSpace(sdkDirectory))
+            {
+                basePath = new DirectoryInfo(sdkDirectory);
 
-            Console.ResetColor();
+                return true;
+            }
 
             return false;
         }
 
-        private static (string sdkDirectory, string globalJsonPath) ResolveSdk(IEnvironmentProvider environmentProvider, DirectoryInfo dotnetExeDirectory)
+        private static (string sdkDirectory, string globalJsonPath, string requestedVersion) ResolveSdk(IEnvironmentProvider environmentProvider, DirectoryInfo dotnetExeDirectory)
         {
             string sdkDirectory = null;
             string globalJsonPath = null;
+            string requestedVersionNumber = null;
 
             void HandleResolveSdkResult(int key, string value)
             {
@@ -141,6 +144,10 @@ namespace Microsoft.VisualStudio.SlnGen
 
                     case 1: // GlobalJsonPath
                         globalJsonPath = value;
+                        break;
+
+                    case 2: // RequestedVersion
+                        requestedVersionNumber = value;
                         break;
                 }
             }
@@ -154,7 +161,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 Unix.ResolveSdk(dotnetExeDirectory.FullName, environmentProvider.CurrentDirectory, 0 /* None */, HandleResolveSdkResult);
             }
 
-            return (sdkDirectory, globalJsonPath);
+            return (sdkDirectory, globalJsonPath, requestedVersionNumber);
         }
 
         private static class Unix
@@ -164,6 +171,7 @@ namespace Microsoft.VisualStudio.SlnGen
             [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = UTF8)]
             public delegate void HandleResolveSdkResult(int key, string value);
 
+            //// https://github.com/dotnet/dotnet/blob/83d91d61d4a5f16ceaef2e6f3e5f18970e5d2d27/src/runtime/src/native/corehost/fxr/hostfxr.cpp#L237
             [DllImport(HostFxr, EntryPoint = "hostfxr_resolve_sdk2", CharSet = UTF8, ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
             internal static extern int ResolveSdk(string dotnetExeDirectory, string workingDirectory, int flags, HandleResolveSdkResult handleSdkResult);
         }
@@ -175,6 +183,7 @@ namespace Microsoft.VisualStudio.SlnGen
             [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = UTF16)]
             public delegate void HandleResolveSdkResult(int key, string value);
 
+            //// https://github.com/dotnet/dotnet/blob/83d91d61d4a5f16ceaef2e6f3e5f18970e5d2d27/src/runtime/src/native/corehost/fxr/hostfxr.cpp#L237
             [DllImport(HostFxr, EntryPoint = "hostfxr_resolve_sdk2", CharSet = UTF16, ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
             internal static extern int ResolveSdk(string dotnetExeDirectory, string workingDirectory, int flags, HandleResolveSdkResult handleSdkResult);
         }
