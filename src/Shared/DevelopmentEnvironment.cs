@@ -127,7 +127,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
             if (!DotNetCoreSdkResolver.TryResolveDotNetCoreSdk(environmentProvider, dotnetFileInfo, out DirectoryInfo dotnetCoreSdkDirectoryInfo))
             {
-                return new DevelopmentEnvironment(string.Empty);
+                return new DevelopmentEnvironment("Could not resolve dotnet sdk path.");
             }
 
             DevelopmentEnvironment developmentEnvironment = new DevelopmentEnvironment
