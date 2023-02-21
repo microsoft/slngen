@@ -25,16 +25,14 @@ namespace Microsoft.VisualStudio.SlnGen
         /// </summary>
         /// <param name="environmentProvider">An <see cref="IEnvironmentProvider" /> to use when accessing the environment.</param>
         /// <param name="dotnetFileInfo">A <see cref="FileInfo" /> representing the path to dotnet.exe.</param>
-        /// <param name="basePath">Receives the root path of the .NET Core SDK if one is found.</param>
+        /// <param name="developmentEnvironment">Receives a <see cref="DevelopmentEnvironment" /> instance containing details of the .NET Core SDK if one is found.</param>
         /// <returns><code>true</code> if a .NET Core SDK could be located, otherwise <code>false</code>.</returns>
-        public static bool TryResolveDotNetCoreSdk(IEnvironmentProvider environmentProvider, FileInfo dotnetFileInfo, out DirectoryInfo basePath)
+        public static bool TryResolveDotNetCoreSdk(IEnvironmentProvider environmentProvider, FileInfo dotnetFileInfo, out DevelopmentEnvironment developmentEnvironment)
         {
             if (environmentProvider is null)
             {
                 throw new ArgumentNullException(nameof(environmentProvider));
             }
-
-            basePath = null;
 
             string parsedBasePath = null;
 
@@ -78,11 +76,15 @@ namespace Microsoft.VisualStudio.SlnGen
             {
                 if (!process.Start())
                 {
+                    developmentEnvironment = new DevelopmentEnvironment("Failed to resolve the .NET SDK.  Verify the 'dotnet' command is available on the PATH.");
+
                     return false;
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                developmentEnvironment = new DevelopmentEnvironment("Failed to resolve the .NET SDK.  An exception occurred running the 'dotnet --info' command: ", e.ToString());
+
                 return false;
             }
 
@@ -109,23 +111,34 @@ namespace Microsoft.VisualStudio.SlnGen
                 }
             }
 
+            DirectoryInfo basePath;
+
             if (!string.IsNullOrWhiteSpace(parsedBasePath))
             {
                 basePath = new DirectoryInfo(parsedBasePath);
-
-                return true;
             }
-
-            (string sdkDirectory, string globalJsonPath, string requestedVersionNumber) = ResolveSdk(environmentProvider, dotnetFileInfo.Directory);
-
-            if (!string.IsNullOrWhiteSpace(sdkDirectory))
+            else
             {
-                basePath = new DirectoryInfo(sdkDirectory);
+                (string sdkDirectory, string globalJsonPath, string requestedVersionNumber) = ResolveSdk(environmentProvider, dotnetFileInfo.Directory);
 
-                return true;
+                if (string.IsNullOrWhiteSpace(sdkDirectory))
+                {
+                    developmentEnvironment = new DevelopmentEnvironment($"Failed to resolve the .NET SDK.  The 'dotnet --info' command returned the path '{parsedBasePath}' and the .NET SDK resolver returned the path '{sdkDirectory}', a global.json path of '{globalJsonPath}', and a requested version of '{requestedVersionNumber}'.");
+
+                    return false;
+                }
+
+                basePath = new DirectoryInfo(sdkDirectory);
             }
 
-            return false;
+            developmentEnvironment = new DevelopmentEnvironment
+            {
+                DotNetSdkVersion = basePath.Name,
+                DotNetSdkMajorVersion = basePath.Name.Substring(0, basePath.Name.IndexOf(".", StringComparison.OrdinalIgnoreCase)),
+                MSBuildDll = new FileInfo(Path.Combine(basePath.FullName, "MSBuild.dll")),
+            };
+
+            return true;
         }
 
         private static (string sdkDirectory, string globalJsonPath, string requestedVersion) ResolveSdk(IEnvironmentProvider environmentProvider, DirectoryInfo dotnetExeDirectory)
@@ -133,6 +146,28 @@ namespace Microsoft.VisualStudio.SlnGen
             string sdkDirectory = null;
             string globalJsonPath = null;
             string requestedVersionNumber = null;
+
+            // Set the console color to red in case the .NET SDK resolver logs any errors to the console
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.BackgroundColor = ConsoleColor.Black;
+
+            try
+            {
+                if (Utility.RunningOnWindows)
+                {
+                    Windows.ResolveSdk(dotnetExeDirectory.FullName, environmentProvider.CurrentDirectory, 0 /* None */, HandleResolveSdkResult);
+                }
+                else
+                {
+                    Unix.ResolveSdk(dotnetExeDirectory.FullName, environmentProvider.CurrentDirectory, 0 /* None */, HandleResolveSdkResult);
+                }
+
+                return (sdkDirectory, globalJsonPath, requestedVersionNumber);
+            }
+            finally
+            {
+                Console.ResetColor();
+            }
 
             void HandleResolveSdkResult(int key, string value)
             {
@@ -151,17 +186,6 @@ namespace Microsoft.VisualStudio.SlnGen
                         break;
                 }
             }
-
-            if (Utility.RunningOnWindows)
-            {
-                Windows.ResolveSdk(dotnetExeDirectory.FullName, environmentProvider.CurrentDirectory, 0 /* None */, HandleResolveSdkResult);
-            }
-            else
-            {
-                Unix.ResolveSdk(dotnetExeDirectory.FullName, environmentProvider.CurrentDirectory, 0 /* None */, HandleResolveSdkResult);
-            }
-
-            return (sdkDirectory, globalJsonPath, requestedVersionNumber);
         }
 
         private static class Unix

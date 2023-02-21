@@ -17,7 +17,11 @@ namespace Microsoft.VisualStudio.SlnGen
     /// </summary>
     public sealed class DevelopmentEnvironment
     {
-        private DevelopmentEnvironment(params string[] errors)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DevelopmentEnvironment" /> class with the specified errors.
+        /// </summary>
+        /// <param name="errors">The list of errors to associate with the current development environment.</param>
+        public DevelopmentEnvironment(params string[] errors)
             : this()
         {
             Errors = errors.ToList();
@@ -29,14 +33,14 @@ namespace Microsoft.VisualStudio.SlnGen
         }
 
         /// <summary>
-        /// Gets the current .NET SDK major version.
+        /// Gets or sets the current .NET SDK major version.
         /// </summary>
-        public string DotNetSdkMajorVersion { get; private set; }
+        public string DotNetSdkMajorVersion { get; set; }
 
         /// <summary>
-        /// Gets the current .NET SDK version.
+        /// Gets or sets the current .NET SDK version.
         /// </summary>
-        public string DotNetSdkVersion { get; private set; }
+        public string DotNetSdkVersion { get; set; }
 
         /// <summary>
         /// Gets any errors encountered while determining the development environment.
@@ -49,9 +53,9 @@ namespace Microsoft.VisualStudio.SlnGen
         public bool IsCorext { get; private set; }
 
         /// <summary>
-        /// Gets a <see cref="FileInfo" /> object for the MSBuild.dll that was found.
+        /// Gets or sets a <see cref="FileInfo" /> object for the MSBuild.dll that was found.
         /// </summary>
-        public FileInfo MSBuildDll { get; private set; }
+        public FileInfo MSBuildDll { get; set; }
 
         /// <summary>
         /// Gets a <see cref="FileInfo" /> object for the MSBuild.exe that was found.
@@ -125,19 +129,9 @@ namespace Microsoft.VisualStudio.SlnGen
                 return new DevelopmentEnvironment("SlnGen must be run from a command-line window where dotnet.exe is on the PATH.");
             }
 
-            if (!DotNetCoreSdkResolver.TryResolveDotNetCoreSdk(environmentProvider, dotnetFileInfo, out DirectoryInfo dotnetCoreSdkDirectoryInfo))
-            {
-                return new DevelopmentEnvironment("Could not resolve dotnet sdk path.");
-            }
-
-            DevelopmentEnvironment developmentEnvironment = new DevelopmentEnvironment
-            {
-                DotNetSdkVersion = dotnetCoreSdkDirectoryInfo.Name,
-                DotNetSdkMajorVersion = dotnetCoreSdkDirectoryInfo.Name.Substring(0, dotnetCoreSdkDirectoryInfo.Name.IndexOf(".", StringComparison.OrdinalIgnoreCase)),
-                MSBuildDll = new FileInfo(Path.Combine(dotnetCoreSdkDirectoryInfo.FullName, "MSBuild.dll")),
-            };
-
-            if (Utility.RunningOnWindows && Utility.TryFindOnPath(environmentProvider, "MSBuild.exe", IsMSBuildExeCompatible, out FileInfo msbuildExeFileInfo))
+            if (DotNetCoreSdkResolver.TryResolveDotNetCoreSdk(environmentProvider, dotnetFileInfo, out DevelopmentEnvironment developmentEnvironment)
+                && Utility.RunningOnWindows
+                && Utility.TryFindOnPath(environmentProvider, "MSBuild.exe", IsMSBuildExeCompatible, out FileInfo msbuildExeFileInfo))
             {
                 developmentEnvironment.MSBuildExe = GetPathToMSBuildExe(msbuildExeFileInfo);
                 developmentEnvironment.VisualStudio = VisualStudioConfiguration.GetInstanceForPath(msbuildExeFileInfo.FullName);
@@ -145,20 +139,6 @@ namespace Microsoft.VisualStudio.SlnGen
 
             return developmentEnvironment;
 #endif
-        }
-
-        private static bool IsMSBuildExeCompatible(FileInfo fileInfo)
-        {
-            try
-            {
-                FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(fileInfo.FullName);
-
-                return fileVersionInfo.FileMajorPart >= 15;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
         }
 
         /// <summary>
@@ -184,6 +164,20 @@ namespace Microsoft.VisualStudio.SlnGen
 #endif
 
             return msbuildExeFileInfo;
+        }
+
+        private static bool IsMSBuildExeCompatible(FileInfo fileInfo)
+        {
+            try
+            {
+                FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(fileInfo.FullName);
+
+                return fileVersionInfo.FileMajorPart >= 15;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
     }
 }
