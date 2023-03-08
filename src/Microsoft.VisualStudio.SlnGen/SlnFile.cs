@@ -209,15 +209,6 @@ namespace Microsoft.VisualStudio.SlnGen
 
             solution.AddSolutionItems(solutionItems);
 
-            if (!arguments.EnableFolders())
-            {
-                foreach (SlnProject project in solution._projects.Distinct(new EqualityComparer<SlnProject>((x, y) => string.Equals(x.SolutionFolder, y.SolutionFolder)))
-                    .Where(i => !string.IsNullOrWhiteSpace(i.SolutionFolder) && i.SolutionFolder.Contains(Path.DirectorySeparatorChar)))
-                {
-                    logger.LogError($"The value of SlnGenSolutionFolder \"{project.SolutionFolder}\" cannot contain directory separators.");
-                }
-            }
-
             if (!logger.HasLoggedErrors)
             {
                 solution.Save(solutionFileFullPath, arguments.EnableFolders(), arguments.EnableCollapseFolders(), arguments.EnableAlwaysBuild());
@@ -439,7 +430,7 @@ namespace Microsoft.VisualStudio.SlnGen
             {
                 foreach (SlnFolder folder in hierarchy.Folders)
                 {
-                    string projectSolutionPath = (useFolders ? folder.FullPath.ToRelativePath(rootPath) : folder.Name).ToSolutionPath();
+                    string projectSolutionPath = (useFolders ? folder.FullPath.ToRelativePath(rootPath) : folder.FullPath).ToSolutionPath();
 
                     // Try to preserve the folder GUID if a matching relative folder path was parsed from an existing solution
                     if (ExistingProjectGuids != null && ExistingProjectGuids.TryGetValue(projectSolutionPath, out Guid projectGuid))
@@ -531,7 +522,8 @@ namespace Microsoft.VisualStudio.SlnGen
                         writer.WriteLine($@"		{project.ProjectGuid.ToSolutionString()} = {folder.FolderGuid.ToSolutionString()}");
                     }
 
-                    if (useFolders)
+                    // guard against synthetic root name
+                    if (folder.Parent.Name != string.Empty)
                     {
                         writer.WriteLine($@"		{folder.FolderGuid.ToSolutionString()} = {folder.Parent.FolderGuid.ToSolutionString()}");
                     }

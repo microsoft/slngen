@@ -218,6 +218,40 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 StringCompareShould.IgnoreLineEndings);
         }
 
+        [Fact]
+        public void SlnGenSolutionFolderNestedHierarchy()
+        {
+            SlnProject[] projects =
+            {
+                new SlnProject
+                {
+                    FullPath = "baz.csproj",
+                    Name = "baz",
+                    ProjectGuid = Guid.NewGuid(),
+                    ProjectTypeGuid = SlnProject.DefaultLegacyProjectTypeGuid,
+                    SolutionFolder = Path.Combine("zoo", "foo", "bar", "baz")
+                },
+                new SlnProject
+                {
+                    FullPath = "baz1.csproj",
+                    Name = "baz1",
+                    ProjectGuid = Guid.NewGuid(),
+                    ProjectTypeGuid = SlnProject.DefaultLegacyProjectTypeGuid,
+                    SolutionFolder = Path.Combine("zoo", "foo", "bar", "baz1")
+                }
+            };
+
+            SlnHierarchy hierarchy = SlnHierarchy.CreateFromProjectSolutionFolder(projects);
+
+            GetFolderStructureAsString(hierarchy.Folders).ShouldBe(
+                $@"zoo - zoo
+zoo{Path.DirectorySeparatorChar}foo - foo
+zoo{Path.DirectorySeparatorChar}foo{Path.DirectorySeparatorChar}bar - bar
+zoo{Path.DirectorySeparatorChar}foo{Path.DirectorySeparatorChar}bar{Path.DirectorySeparatorChar}baz - baz
+zoo{Path.DirectorySeparatorChar}foo{Path.DirectorySeparatorChar}bar{Path.DirectorySeparatorChar}baz1 - baz1",
+                StringCompareShould.IgnoreLineEndings);
+        }
+        
         private static string GetFolderStructureAsString(IEnumerable<SlnFolder> folders)
         {
             return string.Join(

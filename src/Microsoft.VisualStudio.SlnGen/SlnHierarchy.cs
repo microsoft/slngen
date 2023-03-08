@@ -80,19 +80,41 @@ namespace Microsoft.VisualStudio.SlnGen
 
             foreach (SlnProject project in projects.Where(i => !string.IsNullOrWhiteSpace(i.SolutionFolder)))
             {
-                if (!hierarchy._pathToSlnFolderMap.TryGetValue(project.SolutionFolder, out SlnFolder folder))
+                string[] nestedFolders = project.SolutionFolder.Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+
+                for (int i = 0; i < nestedFolders.Length; i++)
                 {
-                    folder = new SlnFolder(project.SolutionFolder)
+                    string folderPath = string.Join(Path.DirectorySeparatorChar.ToString(), nestedFolders, 0, i + 1);
+
+                    if (!hierarchy._pathToSlnFolderMap.TryGetValue(folderPath, out SlnFolder nested))
                     {
-                        Parent = hierarchy._rootFolder,
-                    };
+                        SlnFolder parent;
 
-                    hierarchy._pathToSlnFolderMap.Add(project.SolutionFolder, folder);
+                        if (i == 0)
+                        {
+                            parent = hierarchy._rootFolder;
+                        }
+                        else
+                        {
+                            string parentString = Path.GetDirectoryName(folderPath);
+                            parent = hierarchy._pathToSlnFolderMap[parentString];
+                        }
 
-                    hierarchy._rootFolder.Folders.Add(folder);
+                        nested = new SlnFolder(folderPath)
+                        {
+                            Parent = parent,
+                        };
+
+                        hierarchy._pathToSlnFolderMap.Add(folderPath, nested);
+
+                        parent.Folders.Add(nested);
+                    }
+
+                    if (i == nestedFolders.Length - 1)
+                    {
+                        nested.Projects.Add(project);
+                    }
                 }
-
-                folder.Projects.Add(project);
             }
 
             return hierarchy;
