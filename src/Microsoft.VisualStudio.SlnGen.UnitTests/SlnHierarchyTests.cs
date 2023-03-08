@@ -229,7 +229,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                     Name = "baz",
                     ProjectGuid = Guid.NewGuid(),
                     ProjectTypeGuid = SlnProject.DefaultLegacyProjectTypeGuid,
-                    SolutionFolder = Path.Combine("zoo", "foo", "bar", "baz")
+                    SolutionFolder = Path.Combine("zoo", "foo", "bar", "baz"),
                 },
                 new SlnProject
                 {
@@ -237,8 +237,8 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                     Name = "baz1",
                     ProjectGuid = Guid.NewGuid(),
                     ProjectTypeGuid = SlnProject.DefaultLegacyProjectTypeGuid,
-                    SolutionFolder = Path.Combine("zoo", "foo", "bar", "baz1")
-                }
+                    SolutionFolder = Path.Combine("zoo", "foo", "bar", "baz1"),
+                },
             };
 
             SlnHierarchy hierarchy = SlnHierarchy.CreateFromProjectSolutionFolder(projects);
@@ -251,7 +251,7 @@ zoo{Path.DirectorySeparatorChar}foo{Path.DirectorySeparatorChar}bar{Path.Directo
 zoo{Path.DirectorySeparatorChar}foo{Path.DirectorySeparatorChar}bar{Path.DirectorySeparatorChar}baz1 - baz1",
                 StringCompareShould.IgnoreLineEndings);
         }
-        
+
         private static string GetFolderStructureAsString(IEnumerable<SlnFolder> folders)
         {
             return string.Join(
