@@ -10,6 +10,8 @@ variables:
   DotNet6Version: '6.x'
   DotNet7Version: '7.x'
   DotNet8Version: '8.x'
+  # Not using "--channel 8.0 --quality daily", see https://github.com/microsoft/slngen/issues/456
+  DotNet8InstallArgs: '-version 8.0.100-alpha.1.23061.8'
   MSBuildArgs: '"/Property:Platform=$(BuildPlatform);Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   SignType: 'Test'
 
@@ -58,7 +60,7 @@ stages:
         includePreviewVersions: true
 
     - script: |
-        powershell -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -UseBasicParsing 'https://dot.net/v1/dotnet-install.ps1'))) -Channel 8.0 -Quality daily -InstallDir D:\a\_work\_tool\dotnet"
+        powershell -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -UseBasicParsing 'https://dot.net/v1/dotnet-install.ps1'))) $(DotNet8InstallArgs) -InstallDir D:\a\_work\_tool\dotnet"
         dotnet --info
       displayName: 'Install .NET $(DotNet8Version)'
 
