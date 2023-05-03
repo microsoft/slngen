@@ -26,7 +26,6 @@ namespace Microsoft.VisualStudio.SlnGen
         private static readonly Assembly CurrentAssembly;
         private static readonly FileInfo CurrentAssemblyFileInfo;
         private static readonly IEnvironmentProvider EnvironmentProvider = SystemEnvironmentProvider.Instance;
-        private static readonly TelemetryClient TelemetryClient;
 
         static Program()
         {
@@ -34,8 +33,6 @@ namespace Microsoft.VisualStudio.SlnGen
             {
                 Debugger.Launch();
             }
-
-            TelemetryClient = new TelemetryClient();
 
             CurrentAssembly = Assembly.GetExecutingAssembly();
 
@@ -208,8 +205,6 @@ namespace Microsoft.VisualStudio.SlnGen
                     {
                         return 1;
                     }
-
-                    Program.LogTelemetry(arguments, evaluationTime, evaluationCount, customProjectTypeGuidCount, solutionItemCount, solutionGuid);
                 }
                 catch (InvalidProjectFileException e)
                 {
@@ -295,15 +290,9 @@ namespace Microsoft.VisualStudio.SlnGen
             }
             catch (Exception e)
             {
-                TelemetryClient.PostException(e);
-
                 WriteError(console, e.ToString());
 
                 return 2;
-            }
-            finally
-            {
-                TelemetryClient.Dispose();
             }
         }
 
@@ -350,44 +339,6 @@ namespace Microsoft.VisualStudio.SlnGen
                 onlyLogCriticalEvents: false,
                 loadProjectsReadOnly: true);
 #endif
-        }
-
-        private static void LogTelemetry(ProgramArguments arguments, TimeSpan evaluationTime, int evaluationCount, int customProjectTypeGuidCount, int solutionItemCount, Guid solutionGuid)
-        {
-            try
-            {
-                TelemetryClient.PostEvent(
-                        "execute",
-                        new Dictionary<string, object>
-                        {
-                            ["AlwaysBuild"] = arguments.EnableAlwaysBuild().ToString(),
-                            ["AssemblyInformationalVersion"] = ThisAssembly.AssemblyInformationalVersion,
-                            ["DevEnvFullPathSpecified"] = (!arguments.DevEnvFullPath?.LastOrDefault().IsNullOrWhiteSpace()).ToString(),
-                            ["EntryProjectCount"] = arguments.Projects?.Length.ToString(),
-                            ["Folders"] = arguments.EnableFolders().ToString(),
-                            ["CollapseFolders"] = arguments.EnableCollapseFolders().ToString(),
-                            ["IsCoreXT"] = CurrentDevelopmentEnvironment.IsCorext.ToString(),
-                            ["IsNetCore"] = IsNetCore.ToString(),
-                            ["LaunchVisualStudio"] = arguments.ShouldLaunchVisualStudio().ToString(),
-                            ["SolutionFileFullPathSpecified"] = (!arguments.SolutionFileFullPath?.LastOrDefault().IsNullOrWhiteSpace()).ToString(),
-#if NETFRAMEWORK
-                            ["Runtime"] = $".NET Framework {EnvironmentProvider.Version}",
-#elif NETCOREAPP
-                            ["Runtime"] = $".NET Core {EnvironmentProvider.Version}",
-#endif
-                            ["UseBinaryLogger"] = arguments.BinaryLogger.HasValue.ToString(),
-                            ["UseFileLogger"] = arguments.FileLoggerParameters.HasValue.ToString(),
-                            ["CustomProjectTypeGuidCount"] = customProjectTypeGuidCount,
-                            ["ProjectCount"] = evaluationCount,
-                            ["ProjectEvaluationMilliseconds"] = evaluationTime.TotalMilliseconds,
-                            ["SolutionItemCount"] = solutionItemCount,
-                            ["VS.Platform.Solution.Project.SccProvider.SolutionId"] = solutionGuid == Guid.Empty ? string.Empty : solutionGuid.ToString("B"),
-                        });
-            }
-            catch (Exception)
-            {
-                // Ignored
-            }
         }
 
         private static Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
