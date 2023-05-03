@@ -10,8 +10,6 @@ variables:
   DotNet6Version: '6.x'
   DotNet7Version: '7.x'
   DotNet8Version: '8.x'
-  # Not using "--channel 8.0 --quality daily", see https://github.com/microsoft/slngen/issues/456
-  DotNet8InstallArgs: '-version 8.0.100-alpha.1.23061.8'
   MSBuildArgs: '"/Property:Platform=$(BuildPlatform);Configuration=$(BuildConfiguration)"'
   SignType: 'Test'
 
@@ -69,25 +67,12 @@ jobs:
     displayName: 'Install .NET $(DotNet7Version)'
     inputs:
       version: '$(DotNet7Version)'
+
+  - task: UseDotNet@2
+    displayName: 'Install .NET $(DotNet8Version)'
+    inputs:
+      version: '$(DotNet8Version)'
       includePreviewVersions: true
-
-  - script: |
-      powershell -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -UseBasicParsing 'https://dot.net/v1/dotnet-install.ps1'))) $(DotNet8InstallArgs) -InstallDir C:\hostedtoolcache\windows\dotnet"
-      dotnet --info
-    displayName: 'Install .NET $(DotNet8Version) (Windows)'
-    condition: eq(variables.osName, 'Windows')
-
-  - script: |
-      curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin $(DotNet8InstallArgs) --install-dir /opt/hostedtoolcache/dotnet
-      dotnet --info
-    displayName: 'Install .NET $(DotNet8Version) (Linux)'
-    condition: eq(variables.osName, 'Linux')
-
-  - script: |
-      curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin $(DotNet8InstallArgs) --install-dir /Users/runner/hostedtoolcache/dotnet
-      dotnet --info
-    displayName: 'Install .NET $(DotNet8Version) (MacOS)'
-    condition: eq(variables.osName, 'MacOS')
 
   - task: VSBuild@1
     displayName: 'Build (Visual Studio)'
