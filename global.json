@@ -3,5 +3,8 @@
     "version": "7.0.0",
     "rollForward": "latestMajor",
     "allowPrerelease": true
+  },
+  "msbuild-sdks": {
+    "Microsoft.Build.Traversal": "4.0.0"
   }
 }
