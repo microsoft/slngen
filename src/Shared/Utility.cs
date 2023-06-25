@@ -20,6 +20,11 @@ namespace Microsoft.VisualStudio.SlnGen
         public static readonly bool RunningOnWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
         /// <summary>
+        /// Gets a value indicating whether or not the current operating system is macOS.
+        /// </summary>
+        public static readonly bool RunningOnMacOS = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+
+        /// <summary>
         /// Attempts to find the specified executable on the PATH.
         /// </summary>
         /// <param name="environmentProvider">An <see cref="IEnvironmentProvider" /> to use when accessing the environment.</param>

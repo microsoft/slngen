@@ -343,9 +343,13 @@ Examples:
         {
             string devEnvFullPath = DevEnvFullPath?.LastOrDefault();
 
-            if (devEnvFullPath.IsNullOrWhiteSpace() && visualStudioInstance != null)
+            if (Utility.RunningOnWindows && devEnvFullPath.IsNullOrWhiteSpace() && visualStudioInstance != null)
             {
                 devEnvFullPath = Path.Combine(visualStudioInstance.InstallationPath, "Common7", "IDE", "devenv.exe");
+            }
+            else if (Utility.RunningOnMacOS && devEnvFullPath.IsNullOrWhiteSpace())
+            {
+                devEnvFullPath = Path.Combine("/Applications", "Visual Studio.app");
             }
 
             return devEnvFullPath;
@@ -396,7 +400,7 @@ Examples:
         /// Gets a value indicating whether or not Visual Studio should be launched.
         /// </summary>
         /// <returns>True if Visual Studio should be launched, otherwise false.</returns>
-        public bool ShouldLaunchVisualStudio() => GetBoolean(LaunchVisualStudio, defaultValue: Utility.RunningOnWindows);
+        public bool ShouldLaunchVisualStudio() => GetBoolean(LaunchVisualStudio, defaultValue: Utility.RunningOnWindows || Utility.RunningOnMacOS);
 
         /// <summary>
         /// Gets a value indicating whether or not projects should be loaded in Visual Studio.
