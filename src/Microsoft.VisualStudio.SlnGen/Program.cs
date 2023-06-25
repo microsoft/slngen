@@ -203,7 +203,7 @@ namespace Microsoft.VisualStudio.SlnGen
                     featureFlags.Dispose();
 
                     IVisualStudioLauncher launcher = VisualStudioLauncherFactory.FetchLauncher(forwardingLogger, EnvironmentProvider);
-                    if (launcher == null || !launcher.TryLaunch(arguments, CurrentDevelopmentEnvironment.VisualStudio, solutionFileFullPath))
+                    if (launcher?.TryLaunch(arguments, CurrentDevelopmentEnvironment.VisualStudio, solutionFileFullPath) == false)
                     {
                         return 1;
                     }
