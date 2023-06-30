@@ -7,6 +7,7 @@ using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
+using Microsoft.VisualStudio.SlnGen.Launcher;
 using Microsoft.VisualStudio.SlnGen.ProjectLoading;
 using System;
 using System.Collections.Generic;
@@ -201,7 +202,8 @@ namespace Microsoft.VisualStudio.SlnGen
 
                     featureFlags.Dispose();
 
-                    if (!VisualStudioLauncher.TryLaunch(arguments, CurrentDevelopmentEnvironment.VisualStudio, solutionFileFullPath, forwardingLogger, EnvironmentProvider))
+                    IVisualStudioLauncher launcher = VisualStudioLauncherFactory.FetchLauncher(forwardingLogger, EnvironmentProvider);
+                    if (launcher?.TryLaunch(arguments, CurrentDevelopmentEnvironment.VisualStudio, solutionFileFullPath) == false)
                     {
                         return 1;
                     }

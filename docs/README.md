@@ -72,7 +72,7 @@ Options:
                                           --filelogger:LogFile=MyLog.log;Append;Verbosity=Diagnostic;Encoding=UTF-8
   --folders <true>                    Enables the creation of hierarchical solution folders. Default: false
   --ignoreMainProject                 None of the projects receive special treatment.
-  --launch <true|false>               Launch Visual Studio after generating the Solution file. Default: true on Windows
+  --launch <true|false>               Launch Visual Studio after generating the Solution file. Default: true on Windows and macOS
   --loadprojects <false>              When launching Visual Studio, opens the specified solution without loading any projects. Default: true
   --logger                            Use this logger to log events from SlnGen. To specify multiple loggers, specify each logger separately.
                                       The <logger> syntax is:
