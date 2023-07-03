@@ -65,6 +65,11 @@ namespace Microsoft.VisualStudio.SlnGen
         public List<SlnProject> Projects { get; } = new ();
 
         /// <summary>
+        /// Gets a <see cref="List{String}" /> of solution items in the folder.
+        /// </summary>
+        public List<string> SolutionItems { get; } = new ();
+
+        /// <summary>
         /// Gets the project type GUID of the folder.
         /// </summary>
         public string ProjectTypeGuidString => FolderProjectTypeGuidString;
