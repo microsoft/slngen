@@ -387,6 +387,36 @@ namespace Microsoft.VisualStudio.SlnGen
         }
 
         /// <summary>
+        /// Gets the union of solution items' full paths across all projects.
+        /// </summary>
+        /// <param name="projects">The <see cref="Project" />(s) containing the solution items.</param>
+        /// <param name="logger">A <see cref="ISlnGenLogger" /> to use for logging.</param>
+        /// <param name="fileExists">A <see cref="Func{String, Boolean}"/> to use when determining if a file exists.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="projects" /> is null
+        /// -or-
+        /// <paramref name="logger" /> is null
+        /// -or-
+        /// <paramref name="fileExists" /> is null.</exception>
+        /// <returns>An <see cref="IEnumerable{String}"/> of full paths to include as solution items.</returns>
+        internal static IEnumerable<string> GetSolutionItems(
+            IEnumerable<Project> projects,
+            ISlnGenLogger logger,
+            Func<string, bool> fileExists = null)
+        {
+            if (projects == null)
+            {
+                throw new ArgumentNullException(nameof(projects));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            return projects.Select(i => GetSolutionItems(i, logger, fileExists)).SelectMany(i => i).Distinct();
+        }
+
+        /// <summary>
         /// Checks whether a project should be included in the solution or not.
         /// </summary>
         /// <param name="project">The project.</param>

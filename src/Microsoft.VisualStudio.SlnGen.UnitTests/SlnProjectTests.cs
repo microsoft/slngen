@@ -270,6 +270,34 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             logger.LowImportanceMessages.ShouldBeEmpty();
         }
 
+        [Fact]
+        public void SolutionItemsMultipleProjects()
+        {
+            TestLogger logger = new TestLogger();
+
+            string[] items =
+            {
+                Path.Combine(TestRootPath, "foo"),
+                Path.Combine(TestRootPath, "bar"),
+                Path.Combine(TestRootPath, "foo2", "baz"),
+            };
+
+            Project project1 = ProjectCreator.Create(
+                    path: Path.Combine(TestRootPath, "foo1.proj"))
+                .ItemInclude(MSBuildItemNames.SlnGenSolutionItem, "foo")
+                .ItemInclude(MSBuildItemNames.SlnGenSolutionItem, "bar");
+
+            Project project2 = ProjectCreator.Create(
+                    path: Path.Combine(TestRootPath, "foo2", "foo2.proj"))
+                .ItemInclude(MSBuildItemNames.SlnGenSolutionItem, "..\\**\\foo")
+                .ItemInclude(MSBuildItemNames.SlnGenSolutionItem, "..\\bar")
+                .ItemInclude(MSBuildItemNames.SlnGenSolutionItem, "baz");
+
+            SlnProject.GetSolutionItems(new[] { project1, project2 }, logger, path => true).ShouldBe(items);
+
+            logger.LowImportanceMessages.ShouldBeEmpty();
+        }
+
         [Theory]
         [InlineData(null)]
         [InlineData("SomeProject")]

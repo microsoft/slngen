@@ -140,7 +140,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
             IReadOnlyDictionary<string, Guid> customProjectTypeGuids = SlnProject.GetCustomProjectTypeGuids(firstProject);
 
-            IReadOnlyCollection<string> solutionItems = SlnProject.GetSolutionItems(firstProject, logger).ToList();
+            IReadOnlyCollection<string> solutionItems = SlnProject.GetSolutionItems(projectList, logger).ToList();
 
             string solutionFileFullPath = arguments.SolutionFileFullPath?.LastOrDefault();
 

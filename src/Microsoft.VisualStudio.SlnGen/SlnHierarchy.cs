@@ -279,8 +279,9 @@ namespace Microsoft.VisualStudio.SlnGen
             // TODO: Unit tests, optimize
             string commonPath = string.Empty;
 
+            int pathsMaxLength = paths.Max(str => str.Length);
             List<string> separatedPath = paths
-                .First(str => str.Length == paths.Max(st2 => st2.Length))
+                .First(str => str.Length == pathsMaxLength)
                 .Split(new[] { Path.DirectorySeparatorChar })
                 .ToList();
 
