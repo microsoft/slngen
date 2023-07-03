@@ -387,19 +387,6 @@ namespace Microsoft.VisualStudio.SlnGen
                 writer.WriteLine($"MinimumVisualStudioVersion = {MinumumVisualStudioVersion}");
             }
 
-            if (SolutionItems.Count > 0)
-            {
-                writer.WriteLine($@"Project(""{SlnFolder.FolderProjectTypeGuidString}"") = ""Solution Items"", ""Solution Items"", ""{{B283EBC2-E01F-412D-9339-FD56EF114549}}"" ");
-                writer.WriteLine("	ProjectSection(SolutionItems) = preProject");
-                foreach (string solutionItem in SolutionItems.Select(i => i.ToRelativePath(rootPath).ToSolutionPath()).Where(i => !string.IsNullOrWhiteSpace(i)))
-                {
-                    writer.WriteLine($"		{solutionItem} = {solutionItem}");
-                }
-
-                writer.WriteLine("	EndProjectSection");
-                writer.WriteLine("EndProject");
-            }
-
             List<SlnProject> sortedProjects = _projects.OrderBy(i => i.IsMainProject ? 0 : 1).ThenBy(i => i.FullPath).ToList();
 
             foreach (SlnProject project in sortedProjects)
@@ -419,11 +406,27 @@ namespace Microsoft.VisualStudio.SlnGen
 
             if (useFolders && sortedProjects.Any(i => !i.IsMainProject))
             {
-                hierarchy = SlnHierarchy.CreateFromProjectDirectories(sortedProjects, collapseFolders);
+                hierarchy = SlnHierarchy.CreateFromProjectDirectories(sortedProjects, SolutionItems, collapseFolders);
             }
             else if (sortedProjects.Any(i => !string.IsNullOrWhiteSpace(i.SolutionFolder)))
             {
-                hierarchy = SlnHierarchy.CreateFromProjectSolutionFolder(sortedProjects);
+                hierarchy = SlnHierarchy.CreateFromProjectSolutionFolder(sortedProjects, SolutionItems);
+            }
+            else
+            {
+                // Just handle the solution items
+                if (SolutionItems.Count > 0)
+                {
+                    writer.WriteLine($@"Project(""{SlnFolder.FolderProjectTypeGuidString}"") = ""Solution Items"", ""Solution Items"", ""{{B283EBC2-E01F-412D-9339-FD56EF114549}}"" ");
+                    writer.WriteLine("	ProjectSection(SolutionItems) = preProject");
+                    foreach (string solutionItem in SolutionItems.Select(i => i.ToRelativePath(rootPath).ToSolutionPath()).Where(i => !string.IsNullOrWhiteSpace(i)))
+                    {
+                        writer.WriteLine($"		{solutionItem} = {solutionItem}");
+                    }
+
+                    writer.WriteLine("	EndProjectSection");
+                    writer.WriteLine("EndProject");
+                }
             }
 
             if (hierarchy != null)
@@ -438,8 +441,24 @@ namespace Microsoft.VisualStudio.SlnGen
                         folder.FolderGuid = projectGuid;
                     }
 
-                    writer.WriteLine($@"Project(""{folder.ProjectTypeGuidString}"") = ""{folder.Name}"", ""{projectSolutionPath}"", ""{folder.FolderGuid.ToSolutionString()}""");
-                    writer.WriteLine("EndProject");
+                    // guard against root folder
+                    if (folder != hierarchy.RootFolder)
+                    {
+                        writer.WriteLine($@"Project(""{folder.ProjectTypeGuidString}"") = ""{folder.Name}"", ""{projectSolutionPath}"", ""{folder.FolderGuid.ToSolutionString()}""");
+                        if (folder.SolutionItems.Count > 0)
+                        {
+                            WriteSolutionItemsProjectSection(rootPath, writer, folder.SolutionItems);
+                        }
+
+                        writer.WriteLine("EndProject");
+                    }
+                    else if (folder.SolutionItems.Count > 0)
+                    {
+                        // Special case for solution items in root folder
+                        writer.WriteLine($@"Project(""{SlnFolder.FolderProjectTypeGuidString}"") = ""Solution Items"", ""Solution Items"", ""{{B283EBC2-E01F-412D-9339-FD56EF114549}}"" ");
+                        WriteSolutionItemsProjectSection(rootPath, writer, folder.SolutionItems);
+                        writer.WriteLine("EndProject");
+                    }
                 }
             }
 
@@ -513,23 +532,27 @@ namespace Microsoft.VisualStudio.SlnGen
 
             if (hierarchy != null)
             {
-                writer.WriteLine(@"	GlobalSection(NestedProjects) = preSolution");
-
-                foreach (SlnFolder folder in hierarchy.Folders.Where(i => i.Parent != null))
+                var foldersWithParents = hierarchy.Folders.Where(i => i.Parent != null).ToArray();
+                if (foldersWithParents.Length > 0)
                 {
-                    foreach (SlnProject project in folder.Projects)
+                    writer.WriteLine(@"	GlobalSection(NestedProjects) = preSolution");
+
+                    foreach (SlnFolder folder in foldersWithParents)
                     {
-                        writer.WriteLine($@"		{project.ProjectGuid.ToSolutionString()} = {folder.FolderGuid.ToSolutionString()}");
+                        foreach (SlnProject project in folder.Projects)
+                        {
+                            writer.WriteLine($@"		{project.ProjectGuid.ToSolutionString()} = {folder.FolderGuid.ToSolutionString()}");
+                        }
+
+                        // guard against root folder
+                        if (folder.Parent != hierarchy.RootFolder)
+                        {
+                            writer.WriteLine($@"		{folder.FolderGuid.ToSolutionString()} = {folder.Parent.FolderGuid.ToSolutionString()}");
+                        }
                     }
 
-                    // guard against synthetic root name
-                    if (folder.Parent.Name != string.Empty)
-                    {
-                        writer.WriteLine($@"		{folder.FolderGuid.ToSolutionString()} = {folder.Parent.FolderGuid.ToSolutionString()}");
-                    }
+                    writer.WriteLine("	EndGlobalSection");
                 }
-
-                writer.WriteLine("	EndGlobalSection");
             }
 
             writer.WriteLine("	GlobalSection(ExtensibilityGlobals) = postSolution");
@@ -552,6 +575,22 @@ namespace Microsoft.VisualStudio.SlnGen
             }
 
             writer.WriteLine("EndGlobal");
+        }
+
+        private static void WriteSolutionItemsProjectSection(
+            string rootPath,
+            TextWriter writer,
+            IEnumerable<string> solutionItems)
+        {
+            writer.WriteLine("	ProjectSection(SolutionItems) = preProject");
+            foreach (string solutionItem in solutionItems
+                         .Select(i => i.ToRelativePath(rootPath).ToSolutionPath())
+                         .Where(i => !string.IsNullOrWhiteSpace(i)))
+            {
+                writer.WriteLine($"		{solutionItem} = {solutionItem}");
+            }
+
+            writer.WriteLine("	EndProjectSection");
         }
 
         private string GetSharedProjectOptions(SlnProject project)

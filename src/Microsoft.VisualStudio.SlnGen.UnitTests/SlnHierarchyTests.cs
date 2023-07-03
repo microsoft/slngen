@@ -36,7 +36,13 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 },
             };
 
-            SlnHierarchy hierarchy = SlnHierarchy.CreateFromProjectDirectories(projects);
+            IReadOnlyCollection<string> solutionItems = new[]
+            {
+                Path.Combine(_driveRoot, "Code", "A.txt"),
+                Path.Combine(_driveRoot, "code", "A.txt"),
+            };
+
+            SlnHierarchy hierarchy = SlnHierarchy.CreateFromProjectDirectories(projects, solutionItems);
 
             GetFolderStructureAsString(hierarchy.Folders).ShouldBe(
                 $@"{_driveRoot}Code - Code
@@ -80,10 +86,17 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 },
             };
 
-            SlnHierarchy hierarchy = SlnHierarchy.CreateFromProjectDirectories(projects);
+            IReadOnlyCollection<string> solutionItems = new[]
+            {
+                Path.Combine(_driveRoot, "zoo", "A.txt"),
+                Path.Combine(_driveRoot, "zoo", "foo", "bar", "B.txt"),
+            };
+
+            SlnHierarchy hierarchy = SlnHierarchy.CreateFromProjectDirectories(projects, solutionItems);
 
             GetFolderStructureAsString(hierarchy.Folders).ShouldBe(
-                $@"{_driveRoot}zoo{Path.DirectorySeparatorChar}foo - foo
+                $@"{_driveRoot}zoo - zoo
+{_driveRoot}zoo{Path.DirectorySeparatorChar}foo - foo
 {_driveRoot}zoo{Path.DirectorySeparatorChar}foo{Path.DirectorySeparatorChar}bar - bar
 {_driveRoot}zoo{Path.DirectorySeparatorChar}foo{Path.DirectorySeparatorChar}bar{Path.DirectorySeparatorChar}baz - baz
 {_driveRoot}zoo{Path.DirectorySeparatorChar}foo{Path.DirectorySeparatorChar}bar{Path.DirectorySeparatorChar}baz1 - baz1
@@ -127,7 +140,12 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 },
             };
 
-            SlnHierarchy hierarchy = SlnHierarchy.CreateFromProjectDirectories(projects, collapseFolders: true);
+            IReadOnlyCollection<string> solutionItems = new[]
+            {
+                Path.Combine(_driveRoot, "foo", "project3", "B.txt"),
+            };
+
+            SlnHierarchy hierarchy = SlnHierarchy.CreateFromProjectDirectories(projects, solutionItems, collapseFolders: true);
 
             GetFolderStructureAsString(hierarchy.Folders).ShouldBe(
                 $@"{_driveRoot}foo - foo
@@ -164,7 +182,14 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 },
             };
 
-            SlnHierarchy hierarchy = SlnHierarchy.CreateFromProjectDirectories(projects, collapseFolders: true);
+            IReadOnlyCollection<string> solutionItems = new[]
+            {
+                Path.Combine(_driveRoot, "foo", "src", "subfolder", "src", "A.txt"),
+                Path.Combine(_driveRoot, "foo", "project2", "B.txt"),
+                Path.Combine(_driveRoot, "foo", "C.txt"),
+            };
+
+            SlnHierarchy hierarchy = SlnHierarchy.CreateFromProjectDirectories(projects, solutionItems, collapseFolders: true);
 
             GetFolderStructureAsString(hierarchy.Folders).ShouldBe(
                 $@"{_driveRoot}foo - foo
@@ -209,12 +234,20 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 },
             };
 
-            SlnHierarchy hierarchy = SlnHierarchy.CreateFromProjectDirectories(projects, collapseFolders: true);
+            IReadOnlyList<string> solutionItems = new[]
+            {
+                Path.Combine(_driveRoot, "zoo", "foo", "bar", "qux", "A.txt"),
+                Path.Combine(_driveRoot, "zoo", "foo", "foo1", "B.txt"),
+                Path.Combine(_driveRoot, "zoo", "foo", "foo1", "foo2", "baz3", "C.txt"),
+            };
+
+            SlnHierarchy hierarchy = SlnHierarchy.CreateFromProjectDirectories(projects, solutionItems, collapseFolders: true);
 
             GetFolderStructureAsString(hierarchy.Folders).ShouldBe(
                 $@"{_driveRoot}zoo{Path.DirectorySeparatorChar}foo - foo
 {_driveRoot}zoo{Path.DirectorySeparatorChar}foo{Path.DirectorySeparatorChar}bar - bar {SlnHierarchy.Separator} qux
-{_driveRoot}zoo{Path.DirectorySeparatorChar}foo{Path.DirectorySeparatorChar}foo1 - foo1 {SlnHierarchy.Separator} foo2",
+{_driveRoot}zoo{Path.DirectorySeparatorChar}foo{Path.DirectorySeparatorChar}foo1 - foo1
+{_driveRoot}zoo{Path.DirectorySeparatorChar}foo{Path.DirectorySeparatorChar}foo1{Path.DirectorySeparatorChar}foo2 - foo2",
                 StringCompareShould.IgnoreLineEndings);
         }
 
@@ -241,15 +274,25 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 },
             };
 
-            SlnHierarchy hierarchy = SlnHierarchy.CreateFromProjectSolutionFolder(projects);
+            IReadOnlyList<string> solutionItems = new[]
+            {
+                Path.Combine(_driveRoot, "zoo", "foo2", "A.txt"),
+                Path.Combine(_driveRoot, "zoo", "B.txt"),
+            };
+
+            SlnHierarchy hierarchy = SlnHierarchy.CreateFromProjectSolutionFolder(projects, solutionItems);
 
             GetFolderStructureAsString(hierarchy.Folders).ShouldBe(
-                $@"zoo - zoo
+                $@" - 
+zoo - zoo
 zoo{Path.DirectorySeparatorChar}foo - foo
 zoo{Path.DirectorySeparatorChar}foo{Path.DirectorySeparatorChar}bar - bar
 zoo{Path.DirectorySeparatorChar}foo{Path.DirectorySeparatorChar}bar{Path.DirectorySeparatorChar}baz - baz
 zoo{Path.DirectorySeparatorChar}foo{Path.DirectorySeparatorChar}bar{Path.DirectorySeparatorChar}baz1 - baz1",
                 StringCompareShould.IgnoreLineEndings);
+
+            hierarchy.RootFolder.SolutionItems[0].ShouldBe(solutionItems[0]);
+            hierarchy.RootFolder.SolutionItems[1].ShouldBe(solutionItems[1]);
         }
 
         private static string GetFolderStructureAsString(IEnumerable<SlnFolder> folders)
