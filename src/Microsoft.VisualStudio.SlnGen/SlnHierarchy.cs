@@ -60,7 +60,28 @@ namespace Microsoft.VisualStudio.SlnGen
             IReadOnlyCollection<string> solutionItems,
             bool collapseFolders = false)
         {
-            SlnFolder rootFolder = GetRootFolder(projects, solutionItems);
+            return CreateFromProjectDirectories(
+                projects,
+                new Dictionary<string, IReadOnlyCollection<string>>
+                {
+                    { "Solution Items", solutionItems },
+                },
+                collapseFolders);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="SlnHierarchy" /> based on the directory structure of the specified projects.
+        /// </summary>
+        /// <param name="projects">The set of projects that should be placed in the hierarchy.</param>
+        /// <param name="solutionItems">The set of solution items that should be placed in the hierarchy.</param>
+        /// <param name="collapseFolders">An optional value indicating whether or not folders containing a single item should be collapsed into their parent folder.</param>
+        /// <returns>A <see cref="SlnHierarchy" /> based on the directory structure of the specified projects.</returns>
+        public static SlnHierarchy CreateFromProjectDirectories(
+            IReadOnlyList<SlnProject> projects,
+            IReadOnlyDictionary<string, IReadOnlyCollection<string>> solutionItems,
+            bool collapseFolders = false)
+        {
+            SlnFolder rootFolder = GetRootFolder(projects, solutionItems.Values.SelectMany(x => x));
 
             SlnHierarchy hierarchy = new SlnHierarchy(rootFolder)
             {
@@ -98,6 +119,24 @@ namespace Microsoft.VisualStudio.SlnGen
         public static SlnHierarchy CreateFromProjectSolutionFolder(
             IReadOnlyList<SlnProject> projects,
             IReadOnlyCollection<string> solutionItems)
+        {
+            return CreateFromProjectSolutionFolder(
+                projects,
+                new Dictionary<string, IReadOnlyCollection<string>>
+                {
+                    { "Solution Items", solutionItems },
+                });
+        }
+
+        /// <summary>
+        /// Creates a hierarchy based on solution folders declared by projects.
+        /// </summary>
+        /// <param name="projects">A <see cref="IReadOnlyList{T}" /> of projects.</param>
+        /// <param name="solutionItems">The set of solution items that should be placed in the hierarchy.</param>
+        /// <returns>A <see cref="SlnHierarchy" /> object containing solution folders and projects.</returns>
+        public static SlnHierarchy CreateFromProjectSolutionFolder(
+            IReadOnlyList<SlnProject> projects,
+            IReadOnlyDictionary<string, IReadOnlyCollection<string>> solutionItems)
         {
             SlnHierarchy hierarchy = new SlnHierarchy(new SlnFolder(string.Empty));
 
@@ -140,9 +179,67 @@ namespace Microsoft.VisualStudio.SlnGen
                 }
             }
 
-            // Just add to root folder
-            // TODO: in the future maybe solution items should have solution folder too, and ones that don't go in root
-            hierarchy.RootFolder.SolutionItems.AddRange(solutionItems);
+            foreach (var solutionItem in solutionItems)
+            {
+                string folderPath = solutionItem.Key;
+                IReadOnlyCollection<string> items = solutionItem.Value;
+
+                // try to get the existing folder in the solution
+                if (hierarchy._pathToSlnFolderMap.TryGetValue(folderPath, out SlnFolder targetFolder))
+                {
+                    // the solution folder already exists
+                    // add the solution items to the folder
+                    targetFolder.SolutionItems.AddRange(items);
+                }
+                else
+                {
+                    // the solution folder doesn't already exist
+                    // create the solution folder by creating the parent folder if it don't already exist
+                    SlnFolder parent = null;
+
+                    // get the folder name segments of the folder path
+                    string[] folderSegments = folderPath.Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+
+                    // iterate through each folder segment
+                    for (int i = 0; i < folderSegments.Length; i++)
+                    {
+                        string nestedFolderPath = string.Join(Path.DirectorySeparatorChar.ToString(), folderSegments, 0, i + 1);
+
+                        // try to get the existing folder in the solution
+                        if (!hierarchy._pathToSlnFolderMap.TryGetValue(nestedFolderPath, out SlnFolder nested))
+                        {
+                            // the solution folder doesn't already exist
+                            // in order to create the folder, we need to get the parent
+                            if (i == 0)
+                            {
+                                // the parent is root folder
+                                parent = hierarchy._rootFolder;
+                            }
+                            else
+                            {
+                                string parentString = Path.GetDirectoryName(nestedFolderPath);
+                                parent = hierarchy._pathToSlnFolderMap[parentString];
+                            }
+
+                            // create the folder
+                            nested = new SlnFolder(nestedFolderPath)
+                            {
+                                Parent = parent,
+                            };
+
+                            // add the folder to the folder map
+                            hierarchy._pathToSlnFolderMap.Add(nestedFolderPath, nested);
+                        }
+                        else
+                        {
+                            parent = nested;
+                        }
+                    }
+
+                    // add the solution items to the folder
+                    parent.SolutionItems.AddRange(items);
+                }
+            }
 
             return hierarchy;
         }
@@ -220,52 +317,55 @@ namespace Microsoft.VisualStudio.SlnGen
             }
         }
 
-        private static void CreateHierarchy(SlnHierarchy hierarchy, string solutionItem)
+        private static void CreateHierarchy(SlnHierarchy hierarchy, KeyValuePair<string, IReadOnlyCollection<string>> solutionItems)
         {
-            FileInfo fileInfo = new FileInfo(solutionItem);
-            DirectoryInfo directoryInfo = fileInfo.Directory;
-            if (hierarchy._pathToSlnFolderMap.TryGetValue(directoryInfo!.FullName, out SlnFolder childFolder))
+            foreach (string solutionItem in solutionItems.Value)
             {
-                childFolder.SolutionItems.Add(solutionItem);
-                return;
-            }
-
-            childFolder = new SlnFolder(directoryInfo.FullName);
-            childFolder.SolutionItems.Add(solutionItem);
-            hierarchy._pathToSlnFolderMap.Add(directoryInfo.FullName, childFolder);
-
-            directoryInfo = directoryInfo.Parent;
-            if (directoryInfo != null)
-            {
-                while (directoryInfo != null && !string.Equals(directoryInfo.FullName, hierarchy._rootFolder.FullPath, StringComparison.OrdinalIgnoreCase))
+                FileInfo fileInfo = new FileInfo(solutionItem);
+                DirectoryInfo directoryInfo = fileInfo.Directory;
+                if (hierarchy._pathToSlnFolderMap.TryGetValue(directoryInfo!.FullName, out SlnFolder childFolder))
                 {
-                    if (!hierarchy._pathToSlnFolderMap.TryGetValue(directoryInfo.FullName, out SlnFolder folder1))
-                    {
-                        folder1 = new SlnFolder(directoryInfo.FullName);
-                        hierarchy._pathToSlnFolderMap.Add(directoryInfo.FullName, folder1);
-                    }
-
-                    if (!folder1.Folders.Contains(childFolder))
-                    {
-                        folder1.Folders.Add(childFolder);
-                        childFolder.Parent = folder1;
-                    }
-
-                    directoryInfo = directoryInfo.Parent;
-                    childFolder = folder1;
+                    childFolder.SolutionItems.Add(solutionItem);
+                    return;
                 }
 
-                if (!hierarchy._rootFolder.Folders.Contains(childFolder))
+                childFolder = new SlnFolder(directoryInfo.FullName);
+                childFolder.SolutionItems.Add(solutionItem);
+                hierarchy._pathToSlnFolderMap.Add(directoryInfo.FullName, childFolder);
+
+                directoryInfo = directoryInfo.Parent;
+                if (directoryInfo != null)
                 {
-                    hierarchy._rootFolder.Folders.Add(childFolder);
-                    childFolder.Parent = hierarchy._rootFolder;
+                    while (directoryInfo != null && !string.Equals(directoryInfo.FullName, hierarchy._rootFolder.FullPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (!hierarchy._pathToSlnFolderMap.TryGetValue(directoryInfo.FullName, out SlnFolder folder1))
+                        {
+                            folder1 = new SlnFolder(directoryInfo.FullName);
+                            hierarchy._pathToSlnFolderMap.Add(directoryInfo.FullName, folder1);
+                        }
+
+                        if (!folder1.Folders.Contains(childFolder))
+                        {
+                            folder1.Folders.Add(childFolder);
+                            childFolder.Parent = folder1;
+                        }
+
+                        directoryInfo = directoryInfo.Parent;
+                        childFolder = folder1;
+                    }
+
+                    if (!hierarchy._rootFolder.Folders.Contains(childFolder))
+                    {
+                        hierarchy._rootFolder.Folders.Add(childFolder);
+                        childFolder.Parent = hierarchy._rootFolder;
+                    }
                 }
             }
         }
 
         private static SlnFolder GetRootFolder(
             IEnumerable<SlnProject> projects,
-            IReadOnlyCollection<string> solutionItems)
+            IEnumerable<string> solutionItems)
         {
             List<string> paths = projects.Where(i => !i.IsMainProject)
                 .Select(i => Directory.GetParent(i.FullPath)?.FullName ?? string.Empty)

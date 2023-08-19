@@ -1095,14 +1095,55 @@ EndGlobal
                 StringCompareShould.IgnoreLineEndings);
         }
 
-        private void ValidateProjectInSolution(Action<SlnProject, ProjectInSolution> customValidator, SlnProject[] projects, bool folders)
+        [Fact]
+        public void Save_WithSolutionItemsAddedToSpecificFolder_SolutionItemsExistInSpecificFolder()
+        {
+            // Arrange
+            using var tempDirectory = new TempDirectory();
+            string solutionFilePath = tempDirectory.GetTempFileName();
+
+            var slnFile = new SlnFile()
+            {
+                SolutionGuid = new Guid("{6370DE27-36B7-44AE-B47A-1ECF4A6D740A}"),
+            };
+
+            slnFile.AddSolutionItems("docs", new[] { Path.Combine(tempDirectory.DirectoryPath, "README.md") });
+
+            // Act
+            slnFile.Save(solutionFilePath, useFolders: false);
+
+            // Assert
+            File.ReadAllText(solutionFilePath).ShouldBe(
+                @"Microsoft Visual Studio Solution File, Format Version 12.00
+Project(""{2150E333-8FDC-42A3-9474-1A3956D46DE8}"") = ""docs"", ""docs"", ""{B283EBC2-E01F-412D-9339-FD56EF114549}"" 
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6370DE27-36B7-44AE-B47A-1ECF4A6D740A}
+	EndGlobalSection
+EndGlobal
+",
+                StringCompareShould.IgnoreLineEndings);
+        }
+
+        private void ValidateProjectInSolution(Action<SlnProject, ProjectInSolution> customValidator, SlnProject[] projects, bool useFolders)
         {
             string solutionFilePath = GetTempFileName();
 
             SlnFile slnFile = new SlnFile();
 
             slnFile.AddProjects(projects);
-            slnFile.Save(solutionFilePath, folders);
+            slnFile.Save(solutionFilePath, useFolders);
 
             SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
 
