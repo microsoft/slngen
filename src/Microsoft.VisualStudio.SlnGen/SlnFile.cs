@@ -101,9 +101,9 @@ namespace Microsoft.VisualStudio.SlnGen
         public IReadOnlyDictionary<string, Guid> ExistingProjectGuids { get; set; }
 
         /// <summary>
-        /// Gets or sets an optional minumal Visual Studio version for the solution file.
+        /// Gets or sets an optional minimum Visual Studio version for the solution file.
         /// </summary>
-        public string MinumumVisualStudioVersion { get; set; } = "10.0.40219.1";
+        public string MinimumVisualStudioVersion { get; set; } = "10.0.40219.1";
 
         /// <summary>
         /// Gets or sets a <see cref="IReadOnlyCollection{String}" /> of Platform values to use.
@@ -384,7 +384,7 @@ namespace Microsoft.VisualStudio.SlnGen
             {
                 writer.WriteLine($"# Visual Studio Version {VisualStudioVersion.Major}");
                 writer.WriteLine($"VisualStudioVersion = {VisualStudioVersion}");
-                writer.WriteLine($"MinimumVisualStudioVersion = {MinumumVisualStudioVersion}");
+                writer.WriteLine($"MinimumVisualStudioVersion = {MinimumVisualStudioVersion}");
             }
 
             List<SlnProject> sortedProjects = _projects.OrderBy(i => i.IsMainProject ? 0 : 1).ThenBy(i => i.FullPath).ToList();
