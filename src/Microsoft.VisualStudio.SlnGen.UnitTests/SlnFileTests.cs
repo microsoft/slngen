@@ -1099,15 +1099,14 @@ EndGlobal
         public void Save_WithSolutionItemsAddedToSpecificFolder_SolutionItemsExistInSpecificFolder()
         {
             // Arrange
-            using var tempDirectory = new TempDirectory();
-            string solutionFilePath = tempDirectory.GetTempFileName();
+            string solutionFilePath = GetTempFileName();
 
             var slnFile = new SlnFile()
             {
                 SolutionGuid = new Guid("{6370DE27-36B7-44AE-B47A-1ECF4A6D740A}"),
             };
 
-            slnFile.AddSolutionItems("docs", new[] { Path.Combine(tempDirectory.DirectoryPath, "README.md") });
+            slnFile.AddSolutionItems("docs", new[] { Path.Combine(this.TestRootPath, "README.md") });
 
             // Act
             slnFile.Save(solutionFilePath, useFolders: false);
