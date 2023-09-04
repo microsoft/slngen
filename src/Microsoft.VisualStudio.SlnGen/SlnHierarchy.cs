@@ -16,9 +16,10 @@ namespace Microsoft.VisualStudio.SlnGen
     public sealed class SlnHierarchy
     {
         /// <summary>
-        /// Character used for separating collapsed folders
+        /// Character used for separating collapsed folders. Visual Studio does not support
+        /// any of the following characters : / ? : \ * "" &lt; &gt; |
         /// </summary>
-        public const char Separator = '/';
+        public const char Separator = '\u0338';
 
         /// <summary>
         /// Stores a mapping of full paths to <see cref="SlnFolder" /> objects.
