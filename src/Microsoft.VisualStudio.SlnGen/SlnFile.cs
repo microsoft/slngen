@@ -71,7 +71,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <summary>
         /// A list of absolute paths to include as Solution Items.
         /// </summary>
-        private readonly List<string> _solutionItems = new ();
+        private readonly Dictionary<string, List<string>> _solutionItems = new ();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SlnFile" /> class.
@@ -118,7 +118,9 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <summary>
         /// Gets a list of solution items.
         /// </summary>
-        public IReadOnlyCollection<string> SolutionItems => _solutionItems;
+        public IReadOnlyDictionary<string, IReadOnlyCollection<string>> SolutionItems => _solutionItems.ToDictionary(
+            k => k.Key,
+            v => (IReadOnlyCollection<string>)v.Value.AsReadOnly());
 
         /// <summary>
         /// Gets or sets an optional Visual Studio version for the solution file.
@@ -342,7 +344,17 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <param name="items">An <see cref="IEnumerable{String}"/> containing items to add to the solution.</param>
         public void AddSolutionItems(IEnumerable<string> items)
         {
-            _solutionItems.AddRange(items);
+            _solutionItems.Add("Solution Items", items.ToList());
+        }
+
+        /// <summary>
+        /// Adds the specified solution items under the specified path.
+        /// </summary>
+        /// <param name="folderPath">The path the solution items will be added in.</param>
+        /// <param name="items">An <see cref="IEnumerable{String}"/> containing items to add to the solution.</param>
+        public void AddSolutionItems(string folderPath, IEnumerable<string> items)
+        {
+            _solutionItems.Add(folderPath, items.ToList());
         }
 
         /// <summary>
@@ -415,11 +427,15 @@ namespace Microsoft.VisualStudio.SlnGen
             else
             {
                 // Just handle the solution items
-                if (SolutionItems.Count > 0)
+                foreach (var solutionItems in SolutionItems)
                 {
-                    writer.WriteLine($@"Project(""{SlnFolder.FolderProjectTypeGuidString}"") = ""Solution Items"", ""Solution Items"", ""{{B283EBC2-E01F-412D-9339-FD56EF114549}}"" ");
-                    WriteSolutionItemsProjectSection(rootPath, writer, SolutionItems);
-                    writer.WriteLine("EndProject");
+                    if (solutionItems.Value.Any())
+                    {
+                        // TODO: Create a unique Guid for multiple Solution Items
+                        writer.WriteLine($@"Project(""{SlnFolder.FolderProjectTypeGuidString}"") = ""{solutionItems.Key}"", ""{solutionItems.Key}"", ""{{B283EBC2-E01F-412D-9339-FD56EF114549}}"" ");
+                        WriteSolutionItemsProjectSection(rootPath, writer, solutionItems.Value);
+                        writer.WriteLine("EndProject");
+                    }
                 }
             }
 
