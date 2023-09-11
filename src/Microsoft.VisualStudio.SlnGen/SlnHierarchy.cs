@@ -16,9 +16,17 @@ namespace Microsoft.VisualStudio.SlnGen
     public sealed class SlnHierarchy
     {
         /// <summary>
-        /// Character used for separating collapsed folders
+        /// Character used for separating collapsed folders.
         /// </summary>
-        public const char Separator = '/';
+        /// <remarks>
+        /// A special character is used because Solution Folder names cannot:
+        ///  • contain any of the following characters: / ? : \ * "" < > |
+        ///  • contain Unicode control characters
+        ///  • contain surrogate characters
+        ///  • be system reserved names, including 'CON', 'AUX', 'PRN', 'COM1' or 'LPT2'
+        ///  • be '.' or '..'
+        /// </remarks>
+        public const char Separator = '\u0338';
 
         /// <summary>
         /// Stores a mapping of full paths to <see cref="SlnFolder" /> objects.
