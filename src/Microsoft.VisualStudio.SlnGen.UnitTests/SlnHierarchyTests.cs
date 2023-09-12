@@ -246,7 +246,8 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             GetFolderStructureAsString(hierarchy.Folders).ShouldBe(
                 $@"{_driveRoot}zoo{Path.DirectorySeparatorChar}foo - foo
 {_driveRoot}zoo{Path.DirectorySeparatorChar}foo{Path.DirectorySeparatorChar}bar - bar {SlnHierarchy.Separator} qux
-{_driveRoot}zoo{Path.DirectorySeparatorChar}foo{Path.DirectorySeparatorChar}foo1 - foo1 {SlnHierarchy.Separator} foo2",
+{_driveRoot}zoo{Path.DirectorySeparatorChar}foo{Path.DirectorySeparatorChar}foo1 - foo1
+{_driveRoot}zoo{Path.DirectorySeparatorChar}foo{Path.DirectorySeparatorChar}foo1{Path.DirectorySeparatorChar}foo2 - foo2",
                 StringCompareShould.IgnoreLineEndings);
         }
 
