@@ -334,7 +334,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 if (hierarchy._pathToSlnFolderMap.TryGetValue(directoryInfo!.FullName, out SlnFolder childFolder))
                 {
                     childFolder.SolutionItems.Add(solutionItem);
-                    return;
+                    continue;
                 }
 
                 childFolder = new SlnFolder(directoryInfo.FullName);
