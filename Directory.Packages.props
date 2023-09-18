@@ -35,7 +35,7 @@
     <PackageVersion Include="Shouldly" Version="4.2.1" />
     <PackageVersion Include="System.Configuration.ConfigurationManager" Version="$(SystemConfigurationConfigurationManagerPackageVersion)" />
     <PackageVersion Include="xunit" Version="2.5.0" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.5" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.1" />
   </ItemGroup>
   <ItemGroup>
     <GlobalPackageReference Include="Microsoft.Build.Artifacts" Version="4.2.0" />
