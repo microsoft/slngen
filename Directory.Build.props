@@ -13,12 +13,4 @@
     <TargetDotNet8 Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TargetDotNet8>
     <TargetDotNet9 Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TargetDotNet9>
   </PropertyGroup>
-
-  <PropertyGroup>
-    <!--
-      Define this here because the SDK resets it
-      unconditionally in Microsoft.NETCoreSdk.BundledVersions.props.
-    -->
-    <NETCoreAppMaximumVersion>9.0</NETCoreAppMaximumVersion>
-  </PropertyGroup>
 </Project>

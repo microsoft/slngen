@@ -7,6 +7,14 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <!--
+      Define this here because the SDK resets it
+      unconditionally in Microsoft.NETCoreSdk.BundledVersions.props.
+    -->
+    <NETCoreAppMaximumVersion>9.0</NETCoreAppMaximumVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <Authors>Microsoft</Authors>
     <Company>Microsoft</Company>
     <Copyright>(c) Microsoft Corporation. All rights reserved.</Copyright>
