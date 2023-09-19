@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <PropertyGroup>
     <BaseArtifactsPath>$(MSBuildThisFileDirectory)artifacts</BaseArtifactsPath>
     <DefaultItemExcludes>*log</DefaultItemExcludes>
@@ -9,7 +9,8 @@
     <NoWarn>$(NoWarn);SA0001;SA1515;SA1005;SA1629;NETSDK1192</NoWarn>
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
     <ContinuousIntegrationBuild Condition="'$(TF_BUILD)' == 'true'">true</ContinuousIntegrationBuild>
-    <TargetDotNet8 Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TargetDotNet8>
     <NoWarn>$(NoWarn);NETSDK1213</NoWarn>
+    <TargetDotNet8 Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TargetDotNet8>
+    <TargetDotNet9 Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TargetDotNet9>
   </PropertyGroup>
 </Project>

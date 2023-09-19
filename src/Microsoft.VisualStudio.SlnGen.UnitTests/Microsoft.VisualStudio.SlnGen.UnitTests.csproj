@@ -1,8 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetDotNet8 Condition="'$(TargetDotNet8)' == '' And $([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '8.0'))">true</TargetDotNet8>
+    <TargetDotNet9 Condition="'$(TargetDotNet9)' == '' And $([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '9.0'))">true</TargetDotNet9>
     <TargetFrameworks>net472;net6.0;net7.0</TargetFrameworks>
     <TargetFrameworks Condition="'$(TargetDotNet8)' == 'true'">$(TargetFrameworks);net8.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(TargetDotNet9)' == 'true'">$(TargetFrameworks);net9.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <NoWarn>$(NoWarn);SA1600</NoWarn>
   </PropertyGroup>
