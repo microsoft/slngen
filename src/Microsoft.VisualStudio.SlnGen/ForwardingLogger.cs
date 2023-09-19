@@ -225,7 +225,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 logger.Initialize(this);
             }
 
-            Dispatch(new BuildStartedEventArgs("Build Started", null, environmentOfBuild: _environmentProvider.GetEnvironmentVariables().Cast<DictionaryEntry>().OrderBy(i => (string)i.Key).ToDictionary(i => (string)i.Key, i => (string)i.Value)));
+            Dispatch(new BuildStartedEventArgs("Build Started", null, environmentOfBuild: _environmentProvider.GetEnvironmentVariables().OrderBy(i => i.Key).ToDictionary(i => i.Key, i => i.Value)));
         }
 
         /// <inheritdoc />

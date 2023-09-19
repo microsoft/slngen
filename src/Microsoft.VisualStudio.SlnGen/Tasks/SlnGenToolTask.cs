@@ -128,7 +128,7 @@ namespace Microsoft.VisualStudio.SlnGen.Tasks
         /// <inheritdoc />
         public override bool Execute()
         {
-            Dictionary<string, string> environmentVariables = _environmentProvider.GetEnvironmentVariables(EnvironmentVariableTarget.Process).Cast<DictionaryEntry>().OrderBy(i => (string)i.Key).ToDictionary(i => (string)i.Key, i => (string)i.Value, StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, string> environmentVariables = _environmentProvider.GetEnvironmentVariables(EnvironmentVariableTarget.Process).ToDictionary(i => i.Key, i => i.Value, StringComparer.OrdinalIgnoreCase);
 
             environmentVariables.TryGetValue("PATH", out string path);
 
