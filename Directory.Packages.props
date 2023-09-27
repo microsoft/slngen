@@ -17,7 +17,7 @@
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion Condition="'$(TargetFramework)' != 'net7.0' And '$(TargetFramework)' != 'net8.0'">6.0.0</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="EnvironmentAbstractions" Version="2.0.6" />
+    <PackageVersion Include="EnvironmentAbstractions" Version="2.1.0" />
     <PackageVersion Include="EnvironmentAbstractions.BannedApiAnalyzer" Version="2.0.6" />
     <PackageVersion Include="EnvironmentAbstractions.TestHelpers" Version="2.0.6" />
     <PackageVersion Include="McMaster.Extensions.CommandLineUtils" Version="4.1.0" />
