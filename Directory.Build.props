@@ -8,8 +8,8 @@
     <MSBuildTreatWarningsAsErrors>true</MSBuildTreatWarningsAsErrors>
     <NoWarn>$(NoWarn);SA0001;SA1515;SA1005;SA1629;NETSDK1192</NoWarn>
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
-    <CheckEolTargetFramework>false</CheckEolTargetFramework>
     <ContinuousIntegrationBuild Condition="'$(TF_BUILD)' == 'true'">true</ContinuousIntegrationBuild>
     <TargetDotNet8 Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TargetDotNet8>
+    <NoWarn>$(NoWarn);NETSDK1213</NoWarn>
   </PropertyGroup>
 </Project>
