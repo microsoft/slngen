@@ -54,15 +54,16 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <summary>
         /// Writes the specified error to the console.
         /// </summary>
+        /// <param name="writer">The <see cref="TextWriter" /> to write the error to.</param>
         /// <param name="message">The message to write to <see cref="Console.Error" />.</param>
         /// <param name="args">An array of objects to write using <see cref="message" />.</param>
-        public static void WriteError(string message, params object[] args)
+        public static void WriteError(TextWriter writer, string message, params object[] args)
         {
             Console.BackgroundColor = ConsoleColor.Black;
 
             Console.ForegroundColor = ConsoleColor.Red;
 
-            Console.Error.WriteLine(message, args);
+            writer.WriteLine(message, args);
 
             Console.ResetColor();
         }

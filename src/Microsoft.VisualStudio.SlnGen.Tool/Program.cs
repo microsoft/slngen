@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace Microsoft.VisualStudio.SlnGen
 {
@@ -25,6 +24,26 @@ namespace Microsoft.VisualStudio.SlnGen
                 Debugger.Launch();
             }
         }
+
+        private enum ExitCode
+        {
+            Success = 0,
+            DevelopmentEnvironmentNotFound = 1,
+            UnsupportedNETSdk = 2,
+            UnknownNETSdk = 3,
+            SlnGenNotFound = 4,
+            UnhandledException = -1,
+        }
+
+        /// <summary>
+        /// Gets or sets a <see cref="TextWriter" /> to write errors to.
+        /// </summary>
+        internal static TextWriter Error { get; set; } = Console.Error;
+
+        /// <summary>
+        /// Gets or sets a <see cref="TextWriter" /> to write output to.
+        /// </summary>
+        internal static TextWriter Out { get; set; } = Console.Out;
 
         /// <summary>
         /// Executes the program.
@@ -44,11 +63,11 @@ namespace Microsoft.VisualStudio.SlnGen
                 {
                     foreach (string error in developmentEnvironment.Errors)
                     {
-                        Utility.WriteError(error);
+                        Utility.WriteError(Error, error);
                     }
 
                     // If the development environment couldn't be determined, then we can't proceed since we have no idea what framework to use or MSBuild/dotnet are not available.
-                    return 1;
+                    return (int)ExitCode.DevelopmentEnvironmentNotFound;
                 }
 
                 bool useDotnet = developmentEnvironment.MSBuildExe == null;
@@ -61,12 +80,10 @@ namespace Microsoft.VisualStudio.SlnGen
                     switch (developmentEnvironment.DotNetSdkMajorVersion)
                     {
                         case "3":
-                            framework = "netcoreapp3.1";
-                            break;
-
                         case "5":
-                            framework = "net5.0";
-                            break;
+                            Utility.WriteError(Error, "The currently configured .NET SDK {0} is not supported, SlnGen requires .NET SDK 5 or greater.", developmentEnvironment.DotNetSdkVersion);
+
+                            return (int)ExitCode.UnsupportedNETSdk;
 
                         case "6":
                             framework = "net6.0";
@@ -83,9 +100,9 @@ namespace Microsoft.VisualStudio.SlnGen
                             break;
 
                         default:
-                            Console.WriteLine($"SlnGen does not currently support the .NET SDK {developmentEnvironment.DotNetSdkVersion} defined by in global.json.  Please update to the latest version and if you still get this error message, file an issue at https://github.com/microsoft/slngen/issues/new so it can be added.");
+                            Utility.WriteError(Error, "SlnGen does not currently support the .NET SDK {0} defined by in global.json.  Please update to the latest version and if you still get this error message, file an issue at https://github.com/microsoft/slngen/issues/new so it can be added.", developmentEnvironment.DotNetSdkVersion);
 
-                            return -1;
+                            return (int)ExitCode.UnknownNETSdk;
                     }
                 }
                 else
@@ -108,9 +125,9 @@ namespace Microsoft.VisualStudio.SlnGen
 
                 if (!slnGenFileInfo.Exists)
                 {
-                    Console.WriteLine($"SlnGen not found: {slnGenFileInfo.FullName}");
+                    Utility.WriteError(Error, $"SlnGen not found: {slnGenFileInfo.FullName}");
 
-                    return -1;
+                    return (int)ExitCode.SlnGenNotFound;
                 }
 
                 Process process = new Process
@@ -139,9 +156,9 @@ namespace Microsoft.VisualStudio.SlnGen
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Unhandled exception: {e}");
+                Utility.WriteError(Error, $"Unhandled exception: {e}");
 
-                return 1;
+                return (int)ExitCode.UnhandledException;
             }
         }
     }

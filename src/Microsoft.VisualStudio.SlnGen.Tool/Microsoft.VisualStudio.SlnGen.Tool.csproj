@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>slngen</ToolCommandName>
     <RollForward>LatestMajor</RollForward>
@@ -31,22 +31,6 @@
                       ReferenceOutputAssembly="false"
                       SkipGetTargetFrameworkProperties="true"
                       TargetFramework="net472" />
-    <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj"
-                      SetTargetFramework="TargetFramework=netcoreapp3.1"
-                      IncludeAssets="None"
-                      OutputItemType="SlnGenBuildOutput"
-                      PrivateAssets="All"
-                      ReferenceOutputAssembly="false"
-                      SkipGetTargetFrameworkProperties="true"
-                      TargetFramework="netcoreapp3.1" />
-    <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj"
-                      SetTargetFramework="TargetFramework=net5.0"
-                      IncludeAssets="None"
-                      OutputItemType="SlnGenBuildOutput"
-                      PrivateAssets="All"
-                      ReferenceOutputAssembly="false"
-                      SkipGetTargetFrameworkProperties="true"
-                      TargetFramework="net5.0" />
     <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj"
                       SetTargetFramework="TargetFramework=net6.0"
                       IncludeAssets="None"
