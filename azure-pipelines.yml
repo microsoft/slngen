@@ -5,8 +5,6 @@ variables:
   ArtifactsDirectoryName: 'artifacts'
   BuildConfiguration: 'Debug'
   BuildPlatform: 'Any CPU'
-  DotNetCore3Version: '3.x'
-  DotNet5Version: '5.x'
   DotNet6Version: '6.x'
   DotNet7Version: '7.x'
   DotNet8Version: '8.x'
@@ -50,16 +48,6 @@ jobs:
   pool:
     vmImage: $(vmImage)
   steps:
-  - task: UseDotNet@2
-    displayName: 'Install .NET Core $(DotNetCore3Version)'
-    inputs:
-      version: '$(DotNetCore3Version)'
-
-  - task: UseDotNet@2
-    displayName: 'Install .NET $(DotNet5Version)'
-    inputs:
-      version: '$(DotNet5Version)'
-
   - task: UseDotNet@2
     displayName: 'Install .NET $(DotNet6Version)'
     inputs:
@@ -109,22 +97,6 @@ jobs:
       arguments: '--no-restore --no-build --framework net472 /noautorsp $(MSBuildArgs) "/BinaryLogger:$(ArtifactsDirectoryName)/test-net472.binlog"'
       testRunTitle: '$(osName) .NET Framework v4.7.2'
     condition: and(succeededOrFailed(), eq(variables.osName, 'Windows'))
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Run Unit Tests (.NET Core 3.1)'
-    inputs:
-      command: 'test'
-      arguments: '--no-restore --no-build --framework netcoreapp3.1 /noautorsp $(MSBuildArgs) "/BinaryLogger:$(ArtifactsDirectoryName)/test-netcoreapp3.1.binlog"'
-      testRunTitle: '$(osName) .NET Core 3.1'
-    condition: succeededOrFailed()
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Run Unit Tests (.NET 5)'
-    inputs:
-      command: 'test'
-      arguments: '--no-restore --no-build --framework net5.0 /noautorsp $(MSBuildArgs) "/BinaryLogger:$(ArtifactsDirectoryName)/test-net5.0.binlog"'
-      testRunTitle: '$(osName) .NET 5.0'
-    condition: succeededOrFailed()
 
   - task: DotNetCoreCLI@2
     displayName: 'Run Unit Tests (.NET 6)'

@@ -25,7 +25,9 @@ namespace Microsoft.VisualStudio.SlnGen
     public static partial class Program
     {
         private static readonly Assembly CurrentAssembly;
+
         private static readonly FileInfo CurrentAssemblyFileInfo;
+
         private static readonly IEnvironmentProvider EnvironmentProvider = SystemEnvironmentProvider.Instance;
 
         static Program()
@@ -61,6 +63,16 @@ namespace Microsoft.VisualStudio.SlnGen
         public static bool NoLogo { get; private set; }
 
         /// <summary>
+        /// Gets or sets a <see cref="TextWriter" /> to write errors to.
+        /// </summary>
+        internal static TextWriter Error { get; set; } = Console.Error;
+
+        /// <summary>
+        /// Gets or sets a <see cref="TextWriter" /> to write output to.
+        /// </summary>
+        internal static TextWriter Out { get; set; } = Console.Out;
+
+        /// <summary>
         /// Executes the program with the specified command-line arguments.
         /// </summary>
         /// <param name="args">An array of <see cref="string" /> containing the command-line arguments.</param>
@@ -73,7 +85,7 @@ namespace Microsoft.VisualStudio.SlnGen
             {
                 foreach (string error in CurrentDevelopmentEnvironment.Errors)
                 {
-                    Utility.WriteError(error);
+                    Utility.WriteError(Error, error);
                 }
 
                 return -1;

@@ -6,13 +6,11 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <MicrosoftBuildPackageVersion>17.5.0</MicrosoftBuildPackageVersion>
+    <MicrosoftBuildPackageVersion>17.7.2</MicrosoftBuildPackageVersion>
     <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'net461'">15.9.20</MicrosoftBuildPackageVersion>
-    <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'netcoreapp3.1'">16.9.0</MicrosoftBuildPackageVersion>
-    <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'net5.0'">16.11.0</MicrosoftBuildPackageVersion>
     <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'net6.0'">17.3.2</MicrosoftBuildPackageVersion>
     <SystemConfigurationConfigurationManagerPackageVersion>7.0.0</SystemConfigurationConfigurationManagerPackageVersion>
-    <SystemConfigurationConfigurationManagerPackageVersion Condition="'$(TargetFramework)' != 'net7.0' And '$(TargetFramework)' != 'net8.0'">6.0.0</SystemConfigurationConfigurationManagerPackageVersion>
+    <SystemConfigurationConfigurationManagerPackageVersion Condition="'$(TargetFramework)' == 'net461'">6.0.0</SystemConfigurationConfigurationManagerPackageVersion>
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion>7.0.0</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion Condition="'$(TargetFramework)' != 'net7.0' And '$(TargetFramework)' != 'net8.0'">6.0.0</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
   </PropertyGroup>
@@ -34,8 +32,8 @@
     <PackageVersion Include="MSBuild.ProjectCreation" Version="10.0.0" />
     <PackageVersion Include="Shouldly" Version="4.2.1" />
     <PackageVersion Include="System.Configuration.ConfigurationManager" Version="$(SystemConfigurationConfigurationManagerPackageVersion)" />
-    <PackageVersion Include="xunit" Version="2.5.1" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.5" />
+    <PackageVersion Include="xunit" Version="2.5.2" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.3" />
   </ItemGroup>
   <ItemGroup>
     <GlobalPackageReference Include="Microsoft.Build.Artifacts" Version="6.0.0" />
