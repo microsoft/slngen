@@ -1135,6 +1135,42 @@ EndGlobal
                 StringCompareShould.IgnoreLineEndings);
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void SlnProject_IsBuildable_ReflectedAsProjectConfigurationInSolutionIncludeInBuild(bool isBuildable)
+        {
+            string solutionFilePath = GetTempFileName();
+
+            SlnFile slnFile = new SlnFile();
+            SlnProject slnProject = new SlnProject
+            {
+                FullPath = GetTempFileName(),
+                Name = "Project",
+                ProjectGuid = Guid.NewGuid(),
+                ProjectTypeGuid = Guid.NewGuid(),
+                Configurations = new[] { "Debug", "Release" },
+                Platforms = new[] { "AnyCPU", "x64", "x86" },
+                IsBuildable = isBuildable,
+            };
+
+            slnFile.AddProjects(new[] { slnProject });
+            slnFile.Save(solutionFilePath, useFolders: false);
+
+            ValidateProjectInSolution(
+                (slnProject, projectInSolution) =>
+                {
+                    projectInSolution.ProjectConfigurations.Count.ShouldBeGreaterThan(0);
+
+                    foreach (var projectConfiguration in projectInSolution.ProjectConfigurations)
+                    {
+                        projectConfiguration.Value.IncludeInBuild.ShouldBe(isBuildable);
+                    }
+                },
+                new[] { slnProject },
+                false);
+        }
+
         private void ValidateProjectInSolution(Action<SlnProject, ProjectInSolution> customValidator, SlnProject[] projects, bool useFolders)
         {
             string solutionFilePath = GetTempFileName();

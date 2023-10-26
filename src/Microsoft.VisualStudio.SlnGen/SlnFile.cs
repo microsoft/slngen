@@ -521,7 +521,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
                         writer.WriteLine($@"		{projectGuid}.{configuration}|{platform}.ActiveCfg = {projectSolutionConfiguration}|{projectSolutionPlatform}");
 
-                        if (foundPlatform && foundConfiguration)
+                        if (foundPlatform && foundConfiguration && project.IsBuildable)
                         {
                             writer.WriteLine($@"		{projectGuid}.{configuration}|{platform}.Build.0 = {projectSolutionConfiguration}|{projectBuildPlatform}");
                         }
