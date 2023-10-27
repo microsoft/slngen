@@ -82,7 +82,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <summary>
         /// Gets or sets a value indicating whether the project is buildable in Visual Studio.
         /// </summary>
-        public bool IsBuildable { get; set; }
+        public bool IsBuildable { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether the project is deployable in Visual Studio.
