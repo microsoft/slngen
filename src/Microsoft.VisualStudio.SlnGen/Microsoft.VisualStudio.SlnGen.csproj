@@ -42,7 +42,7 @@
   <!--
     By default, this application will use the same runtime as whatever version it was built against.  In reality, this application
     should run against any version of the runtime with the same major version.  This logic gets the major, minor, and build version
-    and sets RuntimeFramework.Version to the major.minor.build-any so at runtime it will work against any version of the runtime with
+    and sets RuntimeFramework.Version to the major.minor.build-alpha so at runtime it will work against any version of the runtime with
     the same major version.
   -->
   <Target Name="SetRuntimeFramework" BeforeTargets="GenerateBuildRuntimeConfigurationFiles">
@@ -51,7 +51,7 @@
       <_PreviousRuntimeFramework>%(RuntimeFramework.Version)</_PreviousRuntimeFramework>
     </PropertyGroup>
     <ItemGroup>
-      <RuntimeFramework Update="@(RuntimeFramework)" Version="$(_MajorMinorBuildRuntimeFramework)-any" />
+      <RuntimeFramework Update="@(RuntimeFramework)" Version="$(_MajorMinorBuildRuntimeFramework)-alpha" />
     </ItemGroup>
   </Target>
   <Target Name="RestoreRuntimeFramework" AfterTargets="GenerateBuildRuntimeConfigurationFiles">
