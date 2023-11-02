@@ -17,6 +17,8 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 "7.0.0";
 #elif NET8_0
                 "8.0.0";
+#elif NET9_0
+                "9.0.0";
 #else
                 Unknown target framework
 #endif

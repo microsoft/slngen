@@ -94,9 +94,11 @@ namespace Microsoft.VisualStudio.SlnGen
                             break;
 
                         case "8":
-                        // TEMP: hack until .NET 8 is shipped and/or .NET 9 SDK is coherent
-                        case "9":
                             framework = "net8.0";
+                            break;
+
+                        case "9":
+                            framework = "net9.0";
                             break;
 
                         default:

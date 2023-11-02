@@ -1,9 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetDotNet8 Condition="'$(TargetDotNet8)' == '' And $([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '8.0'))">true</TargetDotNet8>
+    <TargetDotNet9 Condition="'$(TargetDotNet9)' == '' And $([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '9.0'))">true</TargetDotNet9>
     <OutputType>Exe</OutputType>
     <TargetFrameworks>net461;net472;net6.0;net7.0</TargetFrameworks>
     <TargetFrameworks Condition="'$(TargetDotNet8)' == 'true'">$(TargetFrameworks);net8.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(TargetDotNet9)' == 'true'">$(TargetFrameworks);net9.0</TargetFrameworks>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.config</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <IncludeReferenceCopyLocalPathsInBuildOutputInPackage>true</IncludeReferenceCopyLocalPathsInBuildOutputInPackage>
     <IsTool>true</IsTool>
@@ -31,7 +33,7 @@
     <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net46\MSBuild.exe" Private="false" Condition="'$(TargetFramework)' == 'net461'" />
     <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net472\MSBuild.exe" Private="false" Condition="'$(TargetFramework)' == 'net472'" />
     <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net6.0\MSBuild.dll" Private="false" Condition="'$(TargetFramework)' == 'net6.0'" />
-    <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net7.0\MSBuild.dll" Private="false" Condition="'$(TargetFramework)' == 'net7.0' Or '$(TargetFramework)' == 'net8.0'" />
+    <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net7.0\MSBuild.dll" Private="false" Condition="'$(TargetFramework)' == 'net7.0' Or '$(TargetFramework)' == 'net8.0' Or '$(TargetFramework)' == 'net9.0'" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" Condition="'$(TargetFramework)' == 'net461' Or '$(TargetFramework)' == 'net472'" />
@@ -40,7 +42,7 @@
   <!--
     By default, this application will use the same runtime as whatever version it was built against.  In reality, this application
     should run against any version of the runtime with the same major version.  This logic gets the major, minor, and build version
-    and sets RuntimeFramework.Version to the major.minor.build-any so at runtime it will work against any version of the runtime with
+    and sets RuntimeFramework.Version to the major.minor.build-alpha so at runtime it will work against any version of the runtime with
     the same major version.
   -->
   <Target Name="SetRuntimeFramework" BeforeTargets="GenerateBuildRuntimeConfigurationFiles">
@@ -49,7 +51,7 @@
       <_PreviousRuntimeFramework>%(RuntimeFramework.Version)</_PreviousRuntimeFramework>
     </PropertyGroup>
     <ItemGroup>
-      <RuntimeFramework Update="@(RuntimeFramework)" Version="$(_MajorMinorBuildRuntimeFramework)-any" />
+      <RuntimeFramework Update="@(RuntimeFramework)" Version="$(_MajorMinorBuildRuntimeFramework)-alpha" />
     </ItemGroup>
   </Target>
   <Target Name="RestoreRuntimeFramework" AfterTargets="GenerateBuildRuntimeConfigurationFiles">
