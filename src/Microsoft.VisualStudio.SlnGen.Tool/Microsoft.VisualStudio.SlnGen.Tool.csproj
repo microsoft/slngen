@@ -6,7 +6,6 @@
     <ToolCommandName>slngen</ToolCommandName>
     <RollForward>LatestMajor</RollForward>
     <_GetChildProjectCopyToPublishDirectoryItems>false</_GetChildProjectCopyToPublishDirectoryItems>
-    <TargetDotNet8 Condition="'$(TargetDotNet8)' == '' And $([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '8.0'))">true</TargetDotNet8>
     <TargetDotNet9 Condition="'$(TargetDotNet9)' == '' And $([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '9.0'))">true</TargetDotNet9>
   </PropertyGroup>
   <Import Project="..\Shared\Shared.props" />
@@ -55,8 +54,7 @@
                       PrivateAssets="All"
                       ReferenceOutputAssembly="false"
                       SkipGetTargetFrameworkProperties="true"
-                      TargetFramework="net8.0"
-                      Condition="'$(TargetDotNet8)' == 'true'" />
+                      TargetFramework="net8.0" />
     <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj"
                       SetTargetFramework="TargetFramework=net9.0"
                       IncludeAssets="None"
