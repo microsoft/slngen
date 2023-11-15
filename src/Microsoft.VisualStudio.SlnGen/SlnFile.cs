@@ -155,7 +155,8 @@ namespace Microsoft.VisualStudio.SlnGen
                     solutionDirectoryFullPath = firstProject.DirectoryPath;
                 }
 
-                string solutionFileName = Path.ChangeExtension(Path.GetFileName(firstProject.FullPath), "sln");
+                var firstProjectName = firstProject.GetPropertyValueOrDefault(MSBuildPropertyNames.SlnGenProjectName, Path.GetFileName(firstProject.FullPath));
+                string solutionFileName = Path.ChangeExtension(firstProjectName, "sln");
 
                 solutionFileFullPath = Path.Combine(solutionDirectoryFullPath!, solutionFileName);
             }
@@ -197,7 +198,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 }
             }
 
-            if (SlnFile.TryParseExistingSolution(solutionFileFullPath, out Guid solutionGuid, out IReadOnlyDictionary<string, Guid> projectGuidsByPath))
+            if (TryParseExistingSolution(solutionFileFullPath, out Guid solutionGuid, out IReadOnlyDictionary<string, Guid> projectGuidsByPath))
             {
                 logger.LogMessageNormal("Updating existing solution file and reusing Visual Studio cache");
 
@@ -211,9 +212,12 @@ namespace Microsoft.VisualStudio.SlnGen
 
             solution.AddSolutionItems(solutionItems);
 
+            string slnGenFoldersPropertyValue = firstProject.GetPropertyValueOrDefault(MSBuildPropertyNames.SlnGenFolders, "false");
+            var enableFolders = arguments.EnableFolders(slnGenFoldersPropertyValue);
+
             if (!logger.HasLoggedErrors)
             {
-                solution.Save(solutionFileFullPath, arguments.EnableFolders(), arguments.EnableCollapseFolders(), arguments.EnableAlwaysBuild());
+                solution.Save(solutionFileFullPath, enableFolders, arguments.EnableCollapseFolders(), arguments.EnableAlwaysBuild());
             }
 
             return (solutionFileFullPath, customProjectTypeGuids.Count, solutionItems.Count, solution.SolutionGuid);
