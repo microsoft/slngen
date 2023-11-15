@@ -16,7 +16,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="EnvironmentAbstractions" Version="3.0.2" />
-    <PackageVersion Include="EnvironmentAbstractions.BannedApiAnalyzer" Version="2.1.0" />
+    <PackageVersion Include="EnvironmentAbstractions.BannedApiAnalyzer" Version="3.0.2" />
     <PackageVersion Include="EnvironmentAbstractions.TestHelpers" Version="2.1.0" />
     <PackageVersion Include="McMaster.Extensions.CommandLineUtils" Version="4.1.0" />
     <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" />
