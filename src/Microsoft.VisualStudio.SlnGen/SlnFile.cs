@@ -402,7 +402,6 @@ namespace Microsoft.VisualStudio.SlnGen
             }
 
             List<SlnProject> sortedProjects = _projects.OrderBy(i => i.IsMainProject ? 0 : 1).ThenBy(i => i.FullPath).ToList();
-
             foreach (SlnProject project in sortedProjects)
             {
                 string solutionPath = project.FullPath.ToRelativePath(rootPath).ToSolutionPath();
@@ -443,21 +442,27 @@ namespace Microsoft.VisualStudio.SlnGen
 
             if (hierarchy != null)
             {
-                HashSet<string> drives = new ();
+                bool logDriveWarning = false;
+                string rootPathDrive = Path.GetPathRoot(rootPath);
                 foreach (SlnFolder folder in hierarchy.Folders)
                 {
-                    bool hasPathRoot = false;
-                    if (!string.IsNullOrEmpty(folder.FullPath))
+                    bool useSeparateDrive = false;
+                    bool hasFullPath = !string.IsNullOrEmpty(folder.FullPath);
+                    if (hasFullPath)
                     {
-                        string pathRoot = Path.GetPathRoot(folder.FullPath);
-                        hasPathRoot = !string.IsNullOrEmpty(pathRoot);
-                        if (hasPathRoot)
+                        string folderPathDrive = Path.GetPathRoot(folder.FullPath);
+                        if (!string.Equals(rootPathDrive, folderPathDrive, StringComparison.OrdinalIgnoreCase))
                         {
-                            drives.Add(pathRoot);
+                            useSeparateDrive = true;
+                            if (!logDriveWarning)
+                            {
+                                logger.LogWarning($"Detected folder on a different drive from the root solution path {rootPath}. This folder should not be committed to source control since it does not contain a simple, relative path and is not guaranteed to work across machines.");
+                                logDriveWarning = true;
+                            }
                         }
                     }
 
-                    string projectSolutionPath = (useFolders && hasPathRoot ? folder.FullPath.ToRelativePath(rootPath) : folder.FullPath).ToSolutionPath();
+                    string projectSolutionPath = (useFolders && !useSeparateDrive && hasFullPath ? folder.FullPath.ToRelativePath(rootPath) : folder.FullPath).ToSolutionPath();
 
                     // Try to preserve the folder GUID if a matching relative folder path was parsed from an existing solution
                     if (ExistingProjectGuids != null && ExistingProjectGuids.TryGetValue(projectSolutionPath, out Guid projectGuid))
@@ -483,11 +488,6 @@ namespace Microsoft.VisualStudio.SlnGen
                         WriteSolutionItemsProjectSection(rootPath, writer, folder.SolutionItems);
                         writer.WriteLine("EndProject");
                     }
-                }
-
-                if (drives.Count > 1)
-                {
-                    logger.LogWarning($"Detected two or more projects on multiple drives: {string.Join(", ", drives)}. These projects should not be committed to source control since they do not contain simple, relative paths and are not guaranteed to work across machines.");
                 }
             }
 

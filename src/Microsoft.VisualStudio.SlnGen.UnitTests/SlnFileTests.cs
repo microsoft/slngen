@@ -1159,23 +1159,15 @@ EndGlobal
             TestLogger logger = new ();
             SlnFile slnFile = new ();
             SlnProject[] projects = new[] { projectA, projectB };
-            string solutionFilePath = GetTempFileName();
+            string solutionFilePath = @$"X:\{Path.GetRandomFileName()}";
             StringBuilderTextWriter writer = new (new StringBuilder(), new List<string>());
 
             slnFile.AddProjects(projects);
             slnFile.Save(solutionFilePath, writer, useFolders: true, logger);
 
             logger.Errors.Count.ShouldBe(0);
-
-            if (isWindowsPlatform)
-            {
-                logger.Warnings.Count.ShouldBe(1);
-                logger.Warnings.FirstOrDefault().Message.ShouldContain("Detected two or more projects on multiple drives");
-            }
-            else
-            {
-                logger.Warnings.Count.ShouldBe(0);
-            }
+            logger.Warnings.Count.ShouldBe(1);
+            logger.Warnings.FirstOrDefault().Message.ShouldContain("Detected folder on a different drive from the root solution path");
         }
 
         [Theory]
