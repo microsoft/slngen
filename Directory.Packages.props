@@ -26,7 +26,7 @@
     <PackageVersion Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsFileSystemGlobbingPackageVersion)" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageVersion Include="Microsoft.VisualStudio.ProjectSystem.SDK" Version="15.8.243" />
-    <PackageVersion Include="Microsoft.VisualStudio.SDK" Version="17.7.37357" />
+    <PackageVersion Include="Microsoft.VisualStudio.SDK" Version="17.8.37222" />
     <PackageVersion Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="3.7.2175" />
     <PackageVersion Include="Microsoft.VSSDK.BuildTools" Version="17.7.2196" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
