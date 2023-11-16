@@ -30,7 +30,7 @@
     <PackageVersion Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="3.7.2175" />
     <PackageVersion Include="Microsoft.VSSDK.BuildTools" Version="17.7.2196" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageVersion Include="MSBuild.ProjectCreation" Version="10.0.0" />
+    <PackageVersion Include="MSBuild.ProjectCreation" Version="11.0.0" />
     <PackageVersion Include="Shouldly" Version="4.2.1" />
     <PackageVersion Include="System.Configuration.ConfigurationManager" Version="$(SystemConfigurationConfigurationManagerPackageVersion)" />
     <PackageVersion Include="xunit" Version="2.6.1" />
