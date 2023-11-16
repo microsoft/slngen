@@ -150,9 +150,7 @@ namespace Microsoft.VisualStudio.SlnGen
         private static FileInfo GetPathToMSBuildExe(FileInfo msbuildExeFileInfo)
         {
             if (msbuildExeFileInfo == null)
-            {
                 throw new ArgumentNullException(nameof(msbuildExeFileInfo));
-            }
 
 #if NETFRAMEWORK
             AssemblyName assemblyName = AssemblyName.GetAssemblyName(msbuildExeFileInfo.FullName);

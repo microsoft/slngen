@@ -54,9 +54,7 @@ namespace Microsoft.VisualStudio.SlnGen
         public static IEnumerable<string> GetConditionedPropertyValuesOrDefault(this Project project, string name, string defaultValue)
         {
             if (!project.ConditionedProperties.ContainsKey(name))
-            {
                 return defaultValue.Split(',');
-            }
 
             return project.ConditionedProperties[name];
         }
@@ -83,9 +81,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
                 // add the actual properties first
                 if (!string.IsNullOrEmpty(propertyValue))
-                {
                     values.Add(propertyValue);
-                }
             }
 
             return values.Any() ? values : (defaultValue?.Split(',') ?? Enumerable.Empty<string>());
@@ -125,9 +121,7 @@ namespace Microsoft.VisualStudio.SlnGen
         public static IEnumerable<KeyValuePair<string, string>> SplitProperties(this string value)
         {
             if (value.IsNullOrWhiteSpace())
-            {
                 return Enumerable.Empty<KeyValuePair<string, string>>();
-            }
 
             return SplitSemicolonDelimitedList(value)
                 .Select(i => i.Split(EqualsSign, 2, StringSplitOptions.RemoveEmptyEntries)) // Split by '='
@@ -143,9 +137,7 @@ namespace Microsoft.VisualStudio.SlnGen
         public static IEnumerable<string> SplitSemicolonDelimitedList(this string value)
         {
             if (value.IsNullOrWhiteSpace())
-            {
                 return Enumerable.Empty<string>();
-            }
 
             return value.Split(Semicolon, StringSplitOptions.RemoveEmptyEntries)
                 .Where(i => !string.IsNullOrWhiteSpace(i))
@@ -171,9 +163,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 foreach (string value in item.Split(ArgumentSplitChars, StringSplitOptions.RemoveEmptyEntries)
                     .Where(i => !string.IsNullOrWhiteSpace(i))
                     .Select(i => i.Trim()))
-                {
                     values.Add(value.Trim());
-                }
             }
 
             return values;

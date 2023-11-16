@@ -71,9 +71,7 @@ namespace Microsoft.VisualStudio.SlnGen
             }
 
             if (loggers == null)
-            {
                 throw new ArgumentNullException(nameof(loggers));
-            }
 
             _environmentProvider = environmentProvider;
             _noWarn = noWarn;

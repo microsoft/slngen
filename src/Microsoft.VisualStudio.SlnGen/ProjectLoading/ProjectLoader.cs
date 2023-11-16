@@ -38,9 +38,7 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
         public static (TimeSpan projectEvaluation, int projectCount) LoadProjects(FileInfo msbuildExeFileInfo, ProjectCollection projectCollection, IEnumerable<string> entryProjects, IDictionary<string, string> globalProperties, ISlnGenLogger logger)
         {
             if (logger.HasLoggedErrors)
-            {
                 return (TimeSpan.Zero, 0);
-            }
 
             logger.LogMessageHigh("Loading project references...");
 
@@ -77,9 +75,7 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
         internal static void LogProjectStartedEvent(ISlnGenLogger logger, ProjectInstance projectInstance)
         {
             if (!logger.IsDiagnostic)
-            {
                 return;
-            }
 
             int projectId = logger.NextProjectId;
 

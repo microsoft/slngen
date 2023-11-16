@@ -31,9 +31,7 @@ namespace Microsoft.VisualStudio.SlnGen
             string fullPath = Path.GetFullPath(path);
 
             if (!File.Exists(fullPath))
-            {
                 return path;
-            }
 
             if (Utility.RunningOnWindows)
             {
@@ -46,9 +44,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 // The path must begin with \\?\X:in order to be made into a path that Visual Studio can use.
                 // Mapped network drives return a value like "// \\?\UNC\MachineName\C$" which won't work so the original path must be used
                 if (stringBuilder.Length > 7 && stringBuilder[0] == '\\' && stringBuilder[1] == '\\' && stringBuilder[2] == '?' && stringBuilder[3] == '\\' && stringBuilder[5] == ':' && stringBuilder[6] == '\\')
-                {
                     return stringBuilder.ToString(4, stringBuilder.Capacity - 5);
-                }
             }
 
             return path;

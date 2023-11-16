@@ -75,25 +75,17 @@ namespace Microsoft.VisualStudio.SlnGen
         private new void Dispatch(BuildEventArgs e)
         {
             if (_hasLoggedErrors == 0 && e is BuildErrorEventArgs)
-            {
                 Interlocked.Exchange(ref _hasLoggedErrors, 1);
-            }
 
             if (e is ProjectStartedEventArgs || e is ProjectFinishedEventArgs)
-            {
                 // Don't send these events to the ConsoleLogger because its not useful when running SlnGen like they are when running MSBuild
                 return;
-            }
 
             if (NoWarn && e is BuildWarningEventArgs)
-            {
                 return;
-            }
 
             if (e.BuildEventContext == null)
-            {
                 e.BuildEventContext = BuildEventContext.Invalid;
-            }
 
             base.Dispatch(e);
         }

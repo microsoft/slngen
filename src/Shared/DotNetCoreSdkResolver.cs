@@ -30,9 +30,7 @@ namespace Microsoft.VisualStudio.SlnGen
         public static bool TryResolveDotNetCoreSdk(IEnvironmentProvider environmentProvider, FileInfo dotnetFileInfo, out DevelopmentEnvironment developmentEnvironment)
         {
             if (environmentProvider is null)
-            {
                 throw new ArgumentNullException(nameof(environmentProvider));
-            }
 
             string parsedBasePath = null;
 
@@ -100,7 +98,6 @@ namespace Microsoft.VisualStudio.SlnGen
             }
 
             if (!process.HasExited)
-            {
                 try
                 {
                     process.Kill();
@@ -109,14 +106,11 @@ namespace Microsoft.VisualStudio.SlnGen
                 {
                     // Ignored
                 }
-            }
 
             DirectoryInfo basePath;
 
             if (!string.IsNullOrWhiteSpace(parsedBasePath))
-            {
                 basePath = new DirectoryInfo(parsedBasePath);
-            }
             else
             {
                 (string sdkDirectory, string globalJsonPath, string requestedVersionNumber) = ResolveSdk(environmentProvider, dotnetFileInfo.Directory);
@@ -154,13 +148,9 @@ namespace Microsoft.VisualStudio.SlnGen
             try
             {
                 if (Utility.RunningOnWindows)
-                {
                     Windows.ResolveSdk(dotnetExeDirectory.FullName, environmentProvider.CurrentDirectory, 0 /* None */, HandleResolveSdkResult);
-                }
                 else
-                {
                     Unix.ResolveSdk(dotnetExeDirectory.FullName, environmentProvider.CurrentDirectory, 0 /* None */, HandleResolveSdkResult);
-                }
 
                 return (sdkDirectory, globalJsonPath, requestedVersionNumber);
             }

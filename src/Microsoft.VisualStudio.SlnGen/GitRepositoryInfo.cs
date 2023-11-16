@@ -65,9 +65,7 @@ namespace Microsoft.VisualStudio.SlnGen
         private static bool TryGetRemoteUri(IEnvironmentProvider environmentProvider, out Uri remoteUri, string name = "origin")
         {
             if (environmentProvider is null)
-            {
                 throw new ArgumentNullException(nameof(environmentProvider));
-            }
 
             remoteUri = null;
 
