@@ -6,18 +6,19 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <MicrosoftBuildPackageVersion>17.7.2</MicrosoftBuildPackageVersion>
+    <MicrosoftBuildPackageVersion>17.8.3</MicrosoftBuildPackageVersion>
     <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'net461'">15.9.20</MicrosoftBuildPackageVersion>
     <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'net6.0'">17.3.2</MicrosoftBuildPackageVersion>
-    <SystemConfigurationConfigurationManagerPackageVersion>7.0.0</SystemConfigurationConfigurationManagerPackageVersion>
+    <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'net7.0'">17.7.2</MicrosoftBuildPackageVersion>
+    <SystemConfigurationConfigurationManagerPackageVersion>8.0.0</SystemConfigurationConfigurationManagerPackageVersion>
     <SystemConfigurationConfigurationManagerPackageVersion Condition="'$(TargetFramework)' == 'net461'">6.0.0</SystemConfigurationConfigurationManagerPackageVersion>
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion>7.0.0</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion Condition="'$(TargetFramework)' != 'net7.0' And '$(TargetFramework)' != 'net8.0'">6.0.0</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="EnvironmentAbstractions" Version="2.1.0" />
-    <PackageVersion Include="EnvironmentAbstractions.BannedApiAnalyzer" Version="2.1.0" />
-    <PackageVersion Include="EnvironmentAbstractions.TestHelpers" Version="2.1.0" />
+    <PackageVersion Include="EnvironmentAbstractions" Version="3.0.2" />
+    <PackageVersion Include="EnvironmentAbstractions.BannedApiAnalyzer" Version="3.0.2" />
+    <PackageVersion Include="EnvironmentAbstractions.TestHelpers" Version="3.0.2" />
     <PackageVersion Include="McMaster.Extensions.CommandLineUtils" Version="4.1.0" />
     <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" />
     <PackageVersion Include="Microsoft.Build.Runtime" Version="$(MicrosoftBuildPackageVersion)" />

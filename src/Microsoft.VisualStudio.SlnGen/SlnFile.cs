@@ -217,7 +217,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
             if (!logger.HasLoggedErrors)
             {
-                solution.Save(solutionFileFullPath, enableFolders, arguments.EnableCollapseFolders(), arguments.EnableAlwaysBuild());
+                solution.Save(solutionFileFullPath, enableFolders, logger, arguments.EnableCollapseFolders(), arguments.EnableAlwaysBuild());
             }
 
             return (solutionFileFullPath, customProjectTypeGuids.Count, solutionItems.Count, solution.SolutionGuid);
@@ -366,9 +366,10 @@ namespace Microsoft.VisualStudio.SlnGen
         /// </summary>
         /// <param name="path">The full path to the file to write to.</param>
         /// <param name="useFolders">Specifies if folders should be created.</param>
+        /// <param name="logger">A <see cref="ISlnGenLogger" /> to use for logging.</param>
         /// <param name="collapseFolders">An optional value indicating whether or not folders containing a single item should be collapsed into their parent folder.</param>
         /// <param name="alwaysBuild">An optional value indicating whether or not to always include the project in the build even if it has no matching configuration.</param>
-        public void Save(string path, bool useFolders, bool collapseFolders = false, bool alwaysBuild = true)
+        public void Save(string path, bool useFolders, ISlnGenLogger logger, bool collapseFolders = false, bool alwaysBuild = true)
         {
             string directoryName = Path.GetDirectoryName(path);
 
@@ -381,7 +382,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
             using StreamWriter writer = new StreamWriter(fileStream, Encoding.UTF8);
 
-            Save(path, writer, useFolders, collapseFolders, alwaysBuild);
+            Save(path, writer, useFolders, logger, collapseFolders, alwaysBuild);
         }
 
         /// <summary>
@@ -390,9 +391,10 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <param name="rootPath">A root path for the solution to make other paths relative to.</param>
         /// <param name="writer">The <see cref="TextWriter" /> to save the solution file to.</param>
         /// <param name="useFolders">Specifies if folders should be created.</param>
+        /// <param name="logger">A <see cref="ISlnGenLogger" /> to use for logging.</param>
         /// <param name="collapseFolders">An optional value indicating whether or not folders containing a single item should be collapsed into their parent folder.</param>
         /// <param name="alwaysBuild">An optional value indicating whether or not to always include the project in the build even if it has no matching configuration.</param>
-        internal void Save(string rootPath, TextWriter writer, bool useFolders, bool collapseFolders = false, bool alwaysBuild = true)
+        internal void Save(string rootPath, TextWriter writer, bool useFolders, ISlnGenLogger logger, bool collapseFolders = false, bool alwaysBuild = true)
         {
             writer.WriteLine(Header, _fileFormatVersion);
 
@@ -404,7 +406,6 @@ namespace Microsoft.VisualStudio.SlnGen
             }
 
             List<SlnProject> sortedProjects = _projects.OrderBy(i => i.IsMainProject ? 0 : 1).ThenBy(i => i.FullPath).ToList();
-
             foreach (SlnProject project in sortedProjects)
             {
                 string solutionPath = project.FullPath.ToRelativePath(rootPath).ToSolutionPath();
@@ -445,9 +446,27 @@ namespace Microsoft.VisualStudio.SlnGen
 
             if (hierarchy != null)
             {
+                bool logDriveWarning = false;
+                string rootPathDrive = Path.GetPathRoot(rootPath);
                 foreach (SlnFolder folder in hierarchy.Folders)
                 {
-                    string projectSolutionPath = (useFolders ? folder.FullPath.ToRelativePath(rootPath) : folder.FullPath).ToSolutionPath();
+                    bool useSeparateDrive = false;
+                    bool hasFullPath = !string.IsNullOrEmpty(folder.FullPath);
+                    if (hasFullPath)
+                    {
+                        string folderPathDrive = Path.GetPathRoot(folder.FullPath);
+                        if (!string.Equals(rootPathDrive, folderPathDrive, StringComparison.OrdinalIgnoreCase))
+                        {
+                            useSeparateDrive = true;
+                            if (!logDriveWarning)
+                            {
+                                logger.LogWarning($"Detected folder on a different drive from the root solution path {rootPath}. This folder should not be committed to source control since it does not contain a simple, relative path and is not guaranteed to work across machines.");
+                                logDriveWarning = true;
+                            }
+                        }
+                    }
+
+                    string projectSolutionPath = (useFolders && !useSeparateDrive && hasFullPath ? folder.FullPath.ToRelativePath(rootPath) : folder.FullPath).ToSolutionPath();
 
                     // Try to preserve the folder GUID if a matching relative folder path was parsed from an existing solution
                     if (ExistingProjectGuids != null && ExistingProjectGuids.TryGetValue(projectSolutionPath, out Guid projectGuid))

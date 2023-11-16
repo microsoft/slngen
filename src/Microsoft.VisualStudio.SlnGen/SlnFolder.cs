@@ -35,7 +35,7 @@ namespace Microsoft.VisualStudio.SlnGen
         }
 
         /// <summary>
-        /// Gets the <see cref="Guid" /> of the folder.
+        /// Gets or sets the <see cref="Guid" /> of the folder.
         /// </summary>
         public Guid FolderGuid { get; set; }
 

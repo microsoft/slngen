@@ -10,7 +10,6 @@
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
     <ContinuousIntegrationBuild Condition="'$(TF_BUILD)' == 'true'">true</ContinuousIntegrationBuild>
     <NoWarn>$(NoWarn);NETSDK1213</NoWarn>
-    <TargetDotNet8 Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TargetDotNet8>
     <TargetDotNet9 Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TargetDotNet9>
   </PropertyGroup>
 </Project>

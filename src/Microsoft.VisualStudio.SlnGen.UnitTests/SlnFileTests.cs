@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Xunit;
 
 namespace Microsoft.VisualStudio.SlnGen.UnitTests
@@ -106,7 +107,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             string solutionFilePath = GetTempFileName();
 
-            slnFile.Save(solutionFilePath, useFolders: false);
+            slnFile.Save(solutionFilePath, useFolders: false, new TestLogger());
 
             SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
 
@@ -193,7 +194,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             string solutionFilePath = GetTempFileName();
 
-            slnFile.Save(solutionFilePath, useFolders: false, alwaysBuild: false);
+            slnFile.Save(solutionFilePath, useFolders: false, new TestLogger(), alwaysBuild: false);
 
             SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
 
@@ -232,7 +233,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             string solutionFilePath = GetTempFileName();
 
-            slnFile.Save(solutionFilePath, useFolders: false);
+            slnFile.Save(solutionFilePath, useFolders: false, new TestLogger());
 
             SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
 
@@ -314,7 +315,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             string solutionFilePath = GetTempFileName();
 
-            slnFile.Save(solutionFilePath, useFolders: false);
+            slnFile.Save(solutionFilePath, useFolders: false, new TestLogger());
 
             SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
 
@@ -354,7 +355,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             slnFile.AddProjects(new[] { project });
 
-            slnFile.Save(path, useFolders: false);
+            slnFile.Save(path, useFolders: false, new TestLogger());
 
             SlnFile.TryParseExistingSolution(path, out Guid solutionGuid, out _).ShouldBeTrue();
 
@@ -635,7 +636,7 @@ EndGlobal
 
             string path = Path.GetTempFileName();
 
-            slnFile.Save(path, useFolders: false);
+            slnFile.Save(path, useFolders: false, new TestLogger());
 
             string directoryName = new DirectoryInfo(TestRootPath).Name;
 
@@ -717,7 +718,7 @@ EndGlobal
 
             slnFile.AddProjects(projects, new Dictionary<string, Guid>(), projects[1].FullPath);
             slnFile.AddSolutionItems(solutionItems);
-            slnFile.Save(solutionFilePath, useFolders: false);
+            slnFile.Save(solutionFilePath, useFolders: false, new TestLogger());
 
             SolutionFile s = SolutionFile.Parse(solutionFilePath);
 
@@ -753,7 +754,7 @@ EndGlobal
 
             SlnFile slnFile = new SlnFile();
 
-            slnFile.Save(fullPath, useFolders: false);
+            slnFile.Save(fullPath, useFolders: false, new TestLogger());
 
             File.Exists(fullPath).ShouldBeTrue();
         }
@@ -972,7 +973,7 @@ EndGlobal
 
             slnFile.AddProjects(projects, new Dictionary<string, Guid>(), projects[1].FullPath);
             slnFile.AddSolutionItems(solutionItems);
-            slnFile.Save(solutionFilePath, true);
+            slnFile.Save(solutionFilePath, true, new TestLogger());
 
             SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
 
@@ -1030,7 +1031,7 @@ EndGlobal
 
             slnFile.AddProjects(projects, new Dictionary<string, Guid>());
             slnFile.AddSolutionItems(solutionItems);
-            slnFile.Save(solutionFilePath, true);
+            slnFile.Save(solutionFilePath, true, new TestLogger());
 
             SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
 
@@ -1097,7 +1098,7 @@ EndGlobal
 
             slnFile.AddProjects(projects, new Dictionary<string, Guid>(), ignoreMainProject ? null : projects[1].FullPath);
             slnFile.AddSolutionItems(solutionItems);
-            slnFile.Save(solutionFilePath, useFolders: true, collapseFolders: collapseFolders);
+            slnFile.Save(solutionFilePath, useFolders: true, new TestLogger(), collapseFolders: collapseFolders);
 
             SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
 
@@ -1153,7 +1154,7 @@ EndGlobal
                 SolutionGuid = new Guid("{6370DE27-36B7-44AE-B47A-1ECF4A6D740A}"),
             };
 
-            slnFile.Save(solutionFilePath, useFolders: false);
+            slnFile.Save(solutionFilePath, useFolders: false, new TestLogger());
 
             File.ReadAllText(solutionFilePath).ShouldBe(
                 @"Microsoft Visual Studio Solution File, Format Version 12.00
@@ -1190,7 +1191,7 @@ EndGlobal
             slnFile.AddSolutionItems("docs", new[] { Path.Combine(this.TestRootPath, "README.md") });
 
             // Act
-            slnFile.Save(solutionFilePath, useFolders: false);
+            slnFile.Save(solutionFilePath, useFolders: false, new TestLogger());
 
             // Assert
             File.ReadAllText(solutionFilePath).ShouldBe(
@@ -1216,6 +1217,40 @@ EndGlobal
                 StringCompareShould.IgnoreLineEndings);
         }
 
+        [Fact]
+        public void EmitWarningForProjectsOnMultipleDrives()
+        {
+            bool isWindowsPlatform = Utility.RunningOnWindows;
+            SlnProject projectA = new ()
+            {
+                Name = "ProjectA",
+                FullPath = isWindowsPlatform ? @"A:\ProjectA\ProjectA.vcxitems" : "/dev/ProjectA/ProjectA.vcxitems",
+                ProjectGuid = new Guid("C95D800E-F016-4167-8E1B-1D3FF94CE2E2"),
+                ProjectTypeGuid = new Guid("88152E7E-47E3-45C8-B5D3-DDB15B2F0435"),
+            };
+
+            SlnProject projectB = new ()
+            {
+                Name = "ProjectB",
+                FullPath = isWindowsPlatform ? @"B:\ProjectB\ProjectB.vcxitems" : "/mnt/ProjectB/ProjectB.vcxitems",
+                ProjectGuid = new Guid("EAD108BE-AC70-41E6-A8C3-450C545FDC0E"),
+                ProjectTypeGuid = new Guid("F38341C3-343F-421A-AE68-94CD9ADCD32F"),
+            };
+
+            TestLogger logger = new ();
+            SlnFile slnFile = new ();
+            SlnProject[] projects = new[] { projectA, projectB };
+            string solutionFilePath = @$"X:\{Path.GetRandomFileName()}";
+            StringBuilderTextWriter writer = new (new StringBuilder(), new List<string>());
+
+            slnFile.AddProjects(projects);
+            slnFile.Save(solutionFilePath, writer, useFolders: true, logger);
+
+            logger.Errors.Count.ShouldBe(0);
+            logger.Warnings.Count.ShouldBe(1);
+            logger.Warnings.FirstOrDefault().Message.ShouldContain("Detected folder on a different drive from the root solution path");
+        }
+
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
@@ -1236,7 +1271,7 @@ EndGlobal
             };
 
             slnFile.AddProjects(new[] { slnProject });
-            slnFile.Save(solutionFilePath, useFolders: false);
+            slnFile.Save(solutionFilePath, useFolders: false, new TestLogger());
 
             ValidateProjectInSolution(
                 (slnProject, projectInSolution) =>
@@ -1273,7 +1308,7 @@ EndGlobal
             SlnFile slnFile = new SlnFile();
 
             slnFile.AddProjects(projects);
-            slnFile.Save(solutionFilePath, useFolders);
+            slnFile.Save(solutionFilePath, useFolders, new TestLogger());
 
             SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
 
