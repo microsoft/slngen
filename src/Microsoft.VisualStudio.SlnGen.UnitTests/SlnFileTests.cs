@@ -107,7 +107,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             string solutionFilePath = GetTempFileName();
 
-            slnFile.Save(solutionFilePath, useFolders: false, new TestLogger());
+            slnFile.Save(solutionFilePath, useFolders: false);
 
             SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
 
@@ -194,7 +194,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             string solutionFilePath = GetTempFileName();
 
-            slnFile.Save(solutionFilePath, useFolders: false, new TestLogger(), alwaysBuild: false);
+            slnFile.Save(solutionFilePath, useFolders: false, alwaysBuild: false);
 
             SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
 
@@ -233,7 +233,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             string solutionFilePath = GetTempFileName();
 
-            slnFile.Save(solutionFilePath, useFolders: false, new TestLogger());
+            slnFile.Save(solutionFilePath, useFolders: false);
 
             SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
 
@@ -315,7 +315,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             string solutionFilePath = GetTempFileName();
 
-            slnFile.Save(solutionFilePath, useFolders: false, new TestLogger());
+            slnFile.Save(solutionFilePath, useFolders: false);
 
             SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
 
@@ -355,7 +355,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             slnFile.AddProjects(new[] { project });
 
-            slnFile.Save(path, useFolders: false, new TestLogger());
+            slnFile.Save(path, useFolders: false);
 
             SlnFile.TryParseExistingSolution(path, out Guid solutionGuid, out _).ShouldBeTrue();
 
@@ -555,7 +555,7 @@ EndGlobal
 
             string path = Path.GetTempFileName();
 
-            slnFile.Save(path, useFolders: false, new TestLogger());
+            slnFile.Save(path, useFolders: false);
 
             string directoryName = new DirectoryInfo(TestRootPath).Name;
 
@@ -637,7 +637,7 @@ EndGlobal
 
             slnFile.AddProjects(projects, new Dictionary<string, Guid>(), projects[1].FullPath);
             slnFile.AddSolutionItems(solutionItems);
-            slnFile.Save(solutionFilePath, useFolders: false, new TestLogger());
+            slnFile.Save(solutionFilePath, useFolders: false);
 
             SolutionFile s = SolutionFile.Parse(solutionFilePath);
 
@@ -673,7 +673,7 @@ EndGlobal
 
             SlnFile slnFile = new SlnFile();
 
-            slnFile.Save(fullPath, useFolders: false, new TestLogger());
+            slnFile.Save(fullPath, useFolders: false);
 
             File.Exists(fullPath).ShouldBeTrue();
         }
@@ -892,7 +892,7 @@ EndGlobal
 
             slnFile.AddProjects(projects, new Dictionary<string, Guid>(), projects[1].FullPath);
             slnFile.AddSolutionItems(solutionItems);
-            slnFile.Save(solutionFilePath, true, new TestLogger());
+            slnFile.Save(solutionFilePath, true);
 
             SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
 
@@ -950,7 +950,7 @@ EndGlobal
 
             slnFile.AddProjects(projects, new Dictionary<string, Guid>());
             slnFile.AddSolutionItems(solutionItems);
-            slnFile.Save(solutionFilePath, true, new TestLogger());
+            slnFile.Save(solutionFilePath, true);
 
             SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
 
@@ -1017,7 +1017,7 @@ EndGlobal
 
             slnFile.AddProjects(projects, new Dictionary<string, Guid>(), ignoreMainProject ? null : projects[1].FullPath);
             slnFile.AddSolutionItems(solutionItems);
-            slnFile.Save(solutionFilePath, useFolders: true, new TestLogger(), collapseFolders: collapseFolders);
+            slnFile.Save(solutionFilePath, useFolders: true, collapseFolders: collapseFolders);
 
             SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
 
@@ -1073,7 +1073,7 @@ EndGlobal
                 SolutionGuid = new Guid("{6370DE27-36B7-44AE-B47A-1ECF4A6D740A}"),
             };
 
-            slnFile.Save(solutionFilePath, useFolders: false, new TestLogger());
+            slnFile.Save(solutionFilePath, useFolders: false);
 
             File.ReadAllText(solutionFilePath).ShouldBe(
                 @"Microsoft Visual Studio Solution File, Format Version 12.00
@@ -1110,7 +1110,7 @@ EndGlobal
             slnFile.AddSolutionItems("docs", new[] { Path.Combine(this.TestRootPath, "README.md") });
 
             // Act
-            slnFile.Save(solutionFilePath, useFolders: false, new TestLogger());
+            slnFile.Save(solutionFilePath, useFolders: false);
 
             // Assert
             File.ReadAllText(solutionFilePath).ShouldBe(
@@ -1170,6 +1170,80 @@ EndGlobal
             logger.Warnings.FirstOrDefault().Message.ShouldContain("Detected folder on a different drive from the root solution path");
         }
 
+        [Fact]
+        public void Save_WithSolutionItemsAddedWithParentFolder_SolutionItemsNestedInParentFolder()
+        {
+            // Arrange
+            string solutionFilePath = GetTempFileName();
+
+            var slnFile = new SlnFile()
+            {
+                SolutionGuid = new Guid("{6370DE27-36B7-44AE-B47A-1ECF4A6D740A}"),
+            };
+
+            Guid docsFolderGuid = new Guid("{24073434-9641-4234-A3E8-352E5E549B65}");
+            slnFile.AddSolutionItems("docs", docsFolderGuid, new[] { Path.Combine(this.TestRootPath, "README.md") });
+            slnFile.AddSolutionItems(
+                parentFolderGuid: docsFolderGuid,
+                folderPath: "license",
+                folderGuid: new Guid("{9124D1F8-9153-40CC-BC94-3B2A3AA51E91}"),
+                items: new[] { Path.Combine(this.TestRootPath, "LICENSE.txt") });
+
+            SlnProject project = new SlnProject
+            {
+                Configurations = new[] { "Debug", "Release" },
+                FullPath = Path.Combine(TestRootPath, "ProjectA.csproj"),
+                Name = "ProjectA",
+                Platforms = new[] { "AnyCPU" },
+                ProjectGuid = new Guid("{2ACFA184-2D17-4F80-A132-EC462B48A065}"),
+                ProjectTypeGuid = new Guid("{65815BD7-8B14-4E69-8328-D5C4ED3245BE}"),
+            };
+
+            slnFile.AddProjects(new[] { project });
+
+            // Act
+            slnFile.Save(solutionFilePath, useFolders: false);
+
+            // Assert
+            File.ReadAllText(solutionFilePath).ShouldBe(
+                @"Microsoft Visual Studio Solution File, Format Version 12.00
+Project(""{65815BD7-8B14-4E69-8328-D5C4ED3245BE}"") = ""ProjectA"", ""ProjectA.csproj"", ""{2ACFA184-2D17-4F80-A132-EC462B48A065}""
+EndProject
+Project(""{2150E333-8FDC-42A3-9474-1A3956D46DE8}"") = ""docs"", ""docs"", ""{24073434-9641-4234-A3E8-352E5E549B65}"" 
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project(""{2150E333-8FDC-42A3-9474-1A3956D46DE8}"") = ""license"", ""license"", ""{9124D1F8-9153-40CC-BC94-3B2A3AA51E91}"" 
+	ProjectSection(SolutionItems) = preProject
+		LICENSE.txt = LICENSE.txt
+	EndProjectSection
+EndProject
+	GlobalSection(NestedProjects) = preSolution
+		{9124D1F8-9153-40CC-BC94-3B2A3AA51E91} = {24073434-9641-4234-A3E8-352E5E549B65}
+	EndGlobalSection
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2ACFA184-2D17-4F80-A132-EC462B48A065}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2ACFA184-2D17-4F80-A132-EC462B48A065}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2ACFA184-2D17-4F80-A132-EC462B48A065}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2ACFA184-2D17-4F80-A132-EC462B48A065}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6370DE27-36B7-44AE-B47A-1ECF4A6D740A}
+	EndGlobalSection
+EndGlobal
+",
+                StringCompareShould.IgnoreLineEndings);
+        }
+
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
@@ -1190,7 +1264,7 @@ EndGlobal
             };
 
             slnFile.AddProjects(new[] { slnProject });
-            slnFile.Save(solutionFilePath, useFolders: false, new TestLogger());
+            slnFile.Save(solutionFilePath, useFolders: false);
 
             ValidateProjectInSolution(
                 (slnProject, projectInSolution) =>
@@ -1213,7 +1287,7 @@ EndGlobal
             SlnFile slnFile = new SlnFile();
 
             slnFile.AddProjects(projects);
-            slnFile.Save(solutionFilePath, useFolders, new TestLogger());
+            slnFile.Save(solutionFilePath, useFolders);
 
             SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
 
