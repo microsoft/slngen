@@ -491,6 +491,87 @@ EndGlobal
         }
 
         [Fact]
+        public void TestSlnGenProjectNamePropertyForSolutionName()
+        {
+            Project[] projects =
+            {
+                ProjectCreator.Templates.SdkCsproj(path: GetTempProjectFile("ProjectA"))
+                    .Property("SlnGenProjectName", "RandomComponent")
+                    .Save(),
+            };
+
+            string solutionFilePath = GetSolutionFilePath(projects);
+            solutionFilePath.ShouldContain("RandomComponent.sln");
+        }
+
+        [Fact]
+        public void TestDefaultSolutionName()
+        {
+            Project[] projects =
+            {
+                ProjectCreator.Templates.SdkCsproj(path: GetTempProjectFile("ProjectA")).Save(),
+            };
+
+            string solutionFilePath = GetSolutionFilePath(projects);
+            solutionFilePath.ShouldContain("ProjectA.sln");
+        }
+
+        [Fact]
+        public void TestSlnGenFoldersPropertyToEnableFolderCreation()
+        {
+            Project projectA = ProjectCreator.Templates.SdkCsproj(path: GetTempProjectFile("ProjectA"))
+                .Property("SlnGenFolders", "true")
+                .Save();
+
+            Project projectB = ProjectCreator.Templates.SdkCsproj(path: GetTempProjectFile("ProjectB", directoryPath: "testB"))
+                .Property("SlnGenFolders", "true")
+                .Save();
+
+            Project projectC = ProjectCreator.Templates.SdkCsproj(path: GetTempProjectFile("ProjectC", directoryPath: "testC"))
+                .Property("SlnGenFolders", "true")
+                .Save();
+
+            string solutionFilePath = GetSolutionFilePath(new Project[] { projectA, projectB, projectC });
+            string contents = File.ReadAllText(solutionFilePath);
+            contents.ShouldContain("\"..\\testB\",");
+            contents.ShouldContain("\"..\\testC\",");
+        }
+
+        [Fact]
+        public void TestSlnGenFoldersPropertyToDisableFolderCreation()
+        {
+            Project projectA = ProjectCreator.Templates.SdkCsproj(path: GetTempProjectFile("ProjectA"))
+                .Property("SlnGenFolders", "false")
+                .Save();
+
+            Project projectB = ProjectCreator.Templates.SdkCsproj(path: GetTempProjectFile("ProjectB", directoryPath: "testB"))
+                .Property("SlnGenFolders", "false")
+                .Save();
+
+            Project projectC = ProjectCreator.Templates.SdkCsproj(path: GetTempProjectFile("ProjectC", directoryPath: "testC"))
+                .Property("SlnGenFolders", "false")
+                .Save();
+
+            string solutionFilePath = GetSolutionFilePath(new Project[] { projectA, projectB, projectC });
+            string contents = File.ReadAllText(solutionFilePath);
+            contents.ShouldNotContain("\"..\\testB\",");
+            contents.ShouldNotContain("\"..\\testC\",");
+        }
+
+        [Fact]
+        public void TestNoFolderCreation()
+        {
+            Project projectA = ProjectCreator.Templates.SdkCsproj(path: GetTempProjectFile("ProjectA")).Save();
+            Project projectB = ProjectCreator.Templates.SdkCsproj(path: GetTempProjectFile("ProjectB", directoryPath: "testB")).Save();
+            Project projectC = ProjectCreator.Templates.SdkCsproj(path: GetTempProjectFile("ProjectC", directoryPath: "testC")).Save();
+
+            string solutionFilePath = GetSolutionFilePath(new Project[] { projectA, projectB, projectC });
+            string contents = File.ReadAllText(solutionFilePath);
+            contents.ShouldNotContain("\"..\\testB\",");
+            contents.ShouldNotContain("\"..\\testC\",");
+        }
+
+        [Fact]
         public void ProjectConfigurationPlatformOrderingSameAsProjects()
         {
             const string projectTypeGuid = "{7E0F1516-6200-48BD-83FC-3EFA3AB4A574}";
@@ -1204,6 +1285,20 @@ EndGlobal
                 },
                 new[] { slnProject },
                 false);
+        }
+
+        private string GetSolutionFilePath(Project[] projects)
+        {
+            ProgramArguments programArguments = new ()
+            {
+                LaunchVisualStudio = new[] { bool.FalseString },
+            };
+
+            TestLogger testLogger = new ();
+
+            (string solutionFileFullPath, _, _, _) = SlnFile.GenerateSolutionFile(programArguments, projects, testLogger);
+
+            return solutionFileFullPath;
         }
 
         private void ValidateProjectInSolution(Action<SlnProject, ProjectInSolution> customValidator, SlnProject[] projects, bool useFolders)

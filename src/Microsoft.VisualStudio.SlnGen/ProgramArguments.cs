@@ -325,8 +325,23 @@ Examples:
         /// <summary>
         /// Gets a value indicating whether or not folders should be created in the solution.
         /// </summary>
+        /// <param name="slnGenFoldersPropertyValue">The SlnGenFolders property value if it exists />.</param>
         /// <returns>true if folders should be used, otherwise false.</returns>
-        public bool EnableFolders() => GetBoolean(Folders);
+        public bool EnableFolders(string slnGenFoldersPropertyValue)
+        {
+            bool? enableFolders = TryGetBoolean(Folders);
+            if (enableFolders != null)
+            {
+                return enableFolders.Value; // Use the value when available
+            }
+
+            if (bool.TryParse(slnGenFoldersPropertyValue, out bool result))
+            {
+                return result; // Fall back to the SlnGenFolders property value
+            }
+
+            return false;
+        }
 
         /// <summary>
         /// Gets the Configuration values based on what was specified as command-line arguments.
@@ -516,6 +531,21 @@ Examples:
             }
 
             return defaultValue;
+        }
+
+        private bool? TryGetBoolean(string[] values)
+        {
+            if (values == null || values.Length == 0)
+            {
+                return null;
+            }
+
+            if (bool.TryParse(values.Last(), out bool result))
+            {
+                return result;
+            }
+
+            return null;
         }
     }
 }
