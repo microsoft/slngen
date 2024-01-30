@@ -71,7 +71,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <summary>
         /// A list of absolute paths to include as Solution Items.
         /// </summary>
-        private readonly Dictionary<string, List<string>> _solutionItems = new ();
+        private readonly Dictionary<string, SlnItem> _solutionItems = new ();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SlnFile" /> class.
@@ -120,7 +120,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// </summary>
         public IReadOnlyDictionary<string, IReadOnlyCollection<string>> SolutionItems => _solutionItems.ToDictionary(
             k => k.Key,
-            v => (IReadOnlyCollection<string>)v.Value.AsReadOnly());
+            v => (IReadOnlyCollection<string>)v.Value.SolutionItems.AsReadOnly());
 
         /// <summary>
         /// Gets or sets an optional Visual Studio version for the solution file.
@@ -348,7 +348,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <param name="items">An <see cref="IEnumerable{String}"/> containing items to add to the solution.</param>
         public void AddSolutionItems(IEnumerable<string> items)
         {
-            _solutionItems.Add("Solution Items", items.ToList());
+            AddSolutionItems("Solution Items", items);
         }
 
         /// <summary>
@@ -358,7 +358,30 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <param name="items">An <see cref="IEnumerable{String}"/> containing items to add to the solution.</param>
         public void AddSolutionItems(string folderPath, IEnumerable<string> items)
         {
-            _solutionItems.Add(folderPath, items.ToList());
+            AddSolutionItems(folderPath, new Guid("B283EBC2-E01F-412D-9339-FD56EF114549"), items);
+        }
+
+        /// <summary>
+        /// Adds the specified solution items under the specified path.
+        /// </summary>
+        /// <param name="folderPath">The path the solution items will be added in.</param>
+        /// <param name="folderGuid">The unique GUID for the folder.</param>
+        /// <param name="items">An <see cref="IEnumerable{String}"/> containing items to add to the solution.</param>
+        public void AddSolutionItems(string folderPath, Guid folderGuid, IEnumerable<string> items)
+        {
+            AddSolutionItems(null, folderPath, folderGuid, items);
+        }
+
+        /// <summary>
+        /// Adds the specified solution items under the specified path.
+        /// </summary>
+        /// <param name="parentFolderGuid">The unique GUID for the parent folder.</param>
+        /// <param name="folderPath">The path the solution items will be added in.</param>
+        /// <param name="folderGuid">The unique GUID for the folder.</param>
+        /// <param name="items">An <see cref="IEnumerable{String}"/> containing items to add to the solution.</param>
+        public void AddSolutionItems(Guid? parentFolderGuid, string folderPath, Guid folderGuid, IEnumerable<string> items)
+        {
+            _solutionItems.Add(folderPath, new SlnItem(parentFolderGuid, folderGuid, items));
         }
 
         /// <summary>
@@ -369,7 +392,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <param name="logger">A <see cref="ISlnGenLogger" /> to use for logging.</param>
         /// <param name="collapseFolders">An optional value indicating whether or not folders containing a single item should be collapsed into their parent folder.</param>
         /// <param name="alwaysBuild">An optional value indicating whether or not to always include the project in the build even if it has no matching configuration.</param>
-        public void Save(string path, bool useFolders, ISlnGenLogger logger, bool collapseFolders = false, bool alwaysBuild = true)
+        public void Save(string path, bool useFolders, ISlnGenLogger logger = null, bool collapseFolders = false, bool alwaysBuild = true)
         {
             string directoryName = Path.GetDirectoryName(path);
 
@@ -394,7 +417,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <param name="logger">A <see cref="ISlnGenLogger" /> to use for logging.</param>
         /// <param name="collapseFolders">An optional value indicating whether or not folders containing a single item should be collapsed into their parent folder.</param>
         /// <param name="alwaysBuild">An optional value indicating whether or not to always include the project in the build even if it has no matching configuration.</param>
-        internal void Save(string rootPath, TextWriter writer, bool useFolders, ISlnGenLogger logger, bool collapseFolders = false, bool alwaysBuild = true)
+        internal void Save(string rootPath, TextWriter writer, bool useFolders, ISlnGenLogger logger = null, bool collapseFolders = false, bool alwaysBuild = true)
         {
             writer.WriteLine(Header, _fileFormatVersion);
 
@@ -432,15 +455,28 @@ namespace Microsoft.VisualStudio.SlnGen
             else
             {
                 // Just handle the solution items
-                foreach (var solutionItems in SolutionItems)
+                foreach (var solutionItems in _solutionItems)
                 {
-                    if (solutionItems.Value.Any())
+                    if (solutionItems.Value.SolutionItems.Any())
                     {
-                        // TODO: Create a unique Guid for multiple Solution Items
-                        writer.WriteLine($@"Project(""{SlnFolder.FolderProjectTypeGuidString}"") = ""{solutionItems.Key}"", ""{solutionItems.Key}"", ""{{B283EBC2-E01F-412D-9339-FD56EF114549}}"" ");
-                        WriteSolutionItemsProjectSection(rootPath, writer, solutionItems.Value);
+                        writer.WriteLine($@"Project(""{SlnFolder.FolderProjectTypeGuidString}"") = ""{solutionItems.Key}"", ""{solutionItems.Key}"", ""{solutionItems.Value.FolderGuid.ToSolutionString()}"" ");
+                        WriteSolutionItemsProjectSection(rootPath, writer, solutionItems.Value.SolutionItems);
                         writer.WriteLine("EndProject");
                     }
+                }
+
+                // Nest solution folders within their parent folders
+                var solutionItemsWithParents = _solutionItems.Where(x => x.Value.ParentFolderGuid.HasValue).ToArray();
+                if (solutionItemsWithParents.Length > 0)
+                {
+                    writer.WriteLine(@"	GlobalSection(NestedProjects) = preSolution");
+
+                    foreach (KeyValuePair<string, SlnItem> solutionItem in solutionItemsWithParents)
+                    {
+                        writer.WriteLine($@"		{solutionItem.Value.FolderGuid.ToSolutionString()} = {solutionItem.Value.ParentFolderGuid.Value.ToSolutionString()}");
+                    }
+
+                    writer.WriteLine("	EndGlobalSection");
                 }
             }
 
@@ -460,7 +496,7 @@ namespace Microsoft.VisualStudio.SlnGen
                             useSeparateDrive = true;
                             if (!logDriveWarning)
                             {
-                                logger.LogWarning($"Detected folder on a different drive from the root solution path {rootPath}. This folder should not be committed to source control since it does not contain a simple, relative path and is not guaranteed to work across machines.");
+                                logger?.LogWarning($"Detected folder on a different drive from the root solution path {rootPath}. This folder should not be committed to source control since it does not contain a simple, relative path and is not guaranteed to work across machines.");
                                 logDriveWarning = true;
                             }
                         }
