@@ -491,7 +491,7 @@ namespace Microsoft.VisualStudio.SlnGen
                     if (hasFullPath)
                     {
                         string folderPathDrive = Path.GetPathRoot(folder.FullPath);
-                        if (!string.Equals(rootPathDrive, folderPathDrive, StringComparison.OrdinalIgnoreCase))
+                        if (!string.IsNullOrEmpty(rootPathDrive) && !string.Equals(rootPathDrive, folderPathDrive, StringComparison.OrdinalIgnoreCase))
                         {
                             useSeparateDrive = true;
                             if (!logDriveWarning)

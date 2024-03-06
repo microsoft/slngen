@@ -191,7 +191,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
             FileInfo relativeFullPath = new FileInfo(Path.GetFullPath(relativeTo));
 
-            if (fullPath.Directory == null || relativeFullPath.Directory == null || !string.Equals(fullPath.Directory.Root.FullName, relativeFullPath.Directory.Root.FullName))
+            if (fullPath.Directory == null || relativeFullPath.Directory == null || !string.Equals(fullPath.Directory.Root.FullName, relativeFullPath.Directory.Root.FullName, StringComparison.OrdinalIgnoreCase))
             {
                 return fullPath.FullName;
             }

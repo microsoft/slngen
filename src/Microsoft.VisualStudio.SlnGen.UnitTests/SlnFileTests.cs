@@ -1252,6 +1252,30 @@ EndGlobal
         }
 
         [Fact]
+        public void DoNotEmitWarningForEmptyRootPathDrive()
+        {
+            TestLogger logger = new ();
+            SlnFile slnFile = new ();
+            StringBuilderTextWriter writer = new (new StringBuilder(), new List<string>());
+
+            SlnProject project = new SlnProject
+            {
+                Configurations = new[] { "Debug", "Release" },
+                FullPath = Path.Combine(TestRootPath, "ProjectA.csproj"),
+                Name = "ProjectA",
+                Platforms = new[] { "AnyCPU" },
+                ProjectGuid = new Guid("{2ACFA184-2D17-4F80-A132-EC462B48A065}"),
+                ProjectTypeGuid = new Guid("{65815BD7-8B14-4E69-8328-D5C4ED3245BE}"),
+            };
+
+            slnFile.AddProjects([project]);
+            slnFile.Save("sample.sln", writer, useFolders: true, logger, collapseFolders: true);
+
+            logger.Errors.Count.ShouldBe(0);
+            logger.Warnings.Count.ShouldBe(0);
+        }
+
+        [Fact]
         public void Save_WithSolutionItemsAddedWithParentFolder_SolutionItemsNestedInParentFolder()
         {
             // Arrange
