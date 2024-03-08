@@ -1218,7 +1218,7 @@ EndGlobal
         }
 
         [Fact]
-        public void EmitWarningForProjectsOnMultipleDrives()
+        public void EmitWindowsWarningForProjectsOnMultipleDrives()
         {
             bool isWindowsPlatform = Utility.RunningOnWindows;
             SlnProject projectA = new ()
@@ -1240,15 +1240,48 @@ EndGlobal
             TestLogger logger = new ();
             SlnFile slnFile = new ();
             SlnProject[] projects = new[] { projectA, projectB };
-            string solutionFilePath = @$"X:\{Path.GetRandomFileName()}";
+            string solutionFilePath = isWindowsPlatform ? @$"X:\{Path.GetRandomFileName()}" : $"/mnt/{Path.GetRandomFileName()}";
             StringBuilderTextWriter writer = new (new StringBuilder(), new List<string>());
 
             slnFile.AddProjects(projects);
             slnFile.Save(solutionFilePath, writer, useFolders: true, logger);
 
             logger.Errors.Count.ShouldBe(0);
-            logger.Warnings.Count.ShouldBe(1);
-            logger.Warnings.FirstOrDefault().Message.ShouldContain("Detected folder on a different drive from the root solution path");
+
+            if (isWindowsPlatform)
+            {
+                logger.Warnings.Count.ShouldBe(1);
+                logger.Warnings.FirstOrDefault().Message.ShouldContain("Detected folder on a different drive from the root solution path");
+            }
+            else
+            {
+                logger.Warnings.Count.ShouldBe(0);
+            }
+        }
+
+        [Fact]
+        public void DoNotEmitWarningForRootPath()
+        {
+            TestLogger logger = new ();
+            SlnFile slnFile = new ();
+            StringBuilderTextWriter writer = new (new StringBuilder(), new List<string>());
+
+            SlnProject project = new SlnProject
+            {
+                Configurations = new[] { "Debug", "Release" },
+                FullPath = Path.Combine(TestRootPath, "ProjectA.csproj"),
+                Name = "ProjectA",
+                Platforms = new[] { "AnyCPU" },
+                ProjectGuid = new Guid("{2ACFA184-2D17-4F80-A132-EC462B48A065}"),
+                ProjectTypeGuid = new Guid("{65815BD7-8B14-4E69-8328-D5C4ED3245BE}"),
+            };
+
+            string solutionFilePath = Path.Combine(TestRootPath, "sample.sln");
+            slnFile.AddProjects([project]);
+            slnFile.Save(solutionFilePath, writer, useFolders: true, logger, collapseFolders: true);
+
+            logger.Errors.Count.ShouldBe(0);
+            logger.Warnings.Count.ShouldBe(0);
         }
 
         [Fact]

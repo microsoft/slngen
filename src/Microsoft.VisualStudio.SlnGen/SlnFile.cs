@@ -483,15 +483,18 @@ namespace Microsoft.VisualStudio.SlnGen
             if (hierarchy != null)
             {
                 bool logDriveWarning = false;
-                string rootPathDrive = Path.GetPathRoot(rootPath);
+                string rootPathDrive = Path.GetPathRoot(Path.GetFullPath(rootPath));
                 foreach (SlnFolder folder in hierarchy.Folders)
                 {
                     bool useSeparateDrive = false;
                     bool hasFullPath = !string.IsNullOrEmpty(folder.FullPath);
                     if (hasFullPath)
                     {
-                        string folderPathDrive = Path.GetPathRoot(folder.FullPath);
-                        if (!string.Equals(rootPathDrive, folderPathDrive, StringComparison.OrdinalIgnoreCase))
+                        string folderPathDrive = Path.GetPathRoot(Path.GetFullPath(folder.FullPath));
+                        // Only compare path roots when root path has root directory information
+                        if (!string.IsNullOrEmpty(rootPathDrive) &&
+                            rootPathDrive.Length == folderPathDrive.Length &&
+                            !string.Equals(rootPathDrive, folderPathDrive, StringComparison.OrdinalIgnoreCase))
                         {
                             useSeparateDrive = true;
                             if (!logDriveWarning)
