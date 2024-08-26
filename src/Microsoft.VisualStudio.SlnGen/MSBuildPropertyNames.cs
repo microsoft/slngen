@@ -119,5 +119,10 @@ namespace Microsoft.VisualStudio.SlnGen
         /// Represents the UsingMicrosoftNETSdk property.
         /// </summary>
         public const string UsingMicrosoftNETSdk = nameof(UsingMicrosoftNETSdk);
+
+        /// <summary>
+        /// Represents the SlnGenIsBuildable property.
+        /// </summary>
+        public const string SlnGenIsBuildable = nameof(SlnGenIsBuildable);
     }
 }
