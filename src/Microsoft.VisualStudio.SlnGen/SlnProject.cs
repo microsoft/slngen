@@ -135,8 +135,9 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <param name="project">The <see cref="Project " /> from MSBuild to create a solution project for.</param>
         /// <param name="customProjectTypeGuids"><see cref="IReadOnlyDictionary{String,Guid}" /> containing custom project type GUIDs.</param>
         /// <param name="isMainProject">Indicates whether this project is the main project in the solution.</param>
+        /// <param name="isBuildable">Indicates whether this project is buildable.</param>
         /// <returns>A <see cref="SlnProject" /> for the specified MSBuild project.</returns>
-        public static SlnProject FromProject(Project project, IReadOnlyDictionary<string, Guid> customProjectTypeGuids, bool isMainProject = false)
+        public static SlnProject FromProject(Project project, IReadOnlyDictionary<string, Guid> customProjectTypeGuids, bool isMainProject = false, bool isBuildable = true)
         {
             if (project == null)
             {
@@ -193,6 +194,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 ProjectTypeGuid = GetProjectTypeGuid(projectFileExtension, isUsingMicrosoftNETSdk, customProjectTypeGuids),
                 SharedProjectItems = sharedProjectItemPaths.Any() ? sharedProjectItemPaths : Array.Empty<string>(),
                 SolutionFolder = project.GetPropertyValueOrDefault(MSBuildPropertyNames.SlnGenSolutionFolder, string.Empty),
+                IsBuildable = isBuildable,
             };
         }
 

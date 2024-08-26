@@ -76,6 +76,16 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         }
 
         [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void GetIsBuildable(bool isBuildable)
+        {
+            SlnProject actualProject = CreateAndValidateProject(isBuildable: isBuildable);
+
+            actualProject.IsBuildable.ShouldBe(isBuildable);
+        }
+
+        [Theory]
         [InlineData("")]
         [InlineData(ProjectFileExtensions.CSharp)]
         [InlineData(ProjectFileExtensions.VisualBasic)]
@@ -394,7 +404,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             actualProjectTypeGuid.Value.ShouldBe(expectedProjectTypeGuid);
         }
 
-        private SlnProject CreateAndValidateProject(bool isMainProject = false, string expectedGuid = null, string extension = ProjectFileExtensions.CSharp, IDictionary<string, string> globalProperties = null, string isDeployable = null)
+        private SlnProject CreateAndValidateProject(bool isMainProject = false, string expectedGuid = null, string extension = ProjectFileExtensions.CSharp, IDictionary<string, string> globalProperties = null, string isDeployable = null, bool isBuildable = true)
         {
             if (!isDeployable.IsNullOrWhiteSpace())
             {
@@ -405,7 +415,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             Project expectedProject = CreateProject(expectedGuid, extension, globalProperties);
 
-            SlnProject actualProject = SlnProject.FromProject(expectedProject, new Dictionary<string, Guid>(), isMainProject);
+            SlnProject actualProject = SlnProject.FromProject(expectedProject, new Dictionary<string, Guid>(), isMainProject, isBuildable);
 
             actualProject.FullPath.ShouldBe(expectedProject.FullPath);
 

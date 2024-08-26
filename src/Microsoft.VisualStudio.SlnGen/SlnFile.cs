@@ -208,7 +208,13 @@ namespace Microsoft.VisualStudio.SlnGen
                 arguments.LoadProjectsInVisualStudio = new[] { bool.TrueString };
             }
 
-            solution.AddProjects(projectList, customProjectTypeGuids, arguments.IgnoreMainProject ? null : firstProject.FullPath);
+            bool isBuildable = true;
+            if (arguments.GetGlobalProperties().TryGetValue(MSBuildPropertyNames.SlnGenIsBuildable, out string isBuildableString))
+            {
+                isBuildable = bool.TrueString.Equals(isBuildableString, StringComparison.OrdinalIgnoreCase);
+            }
+
+            solution.AddProjects(projectList, customProjectTypeGuids, arguments.IgnoreMainProject ? null : firstProject.FullPath, isBuildable);
 
             solution.AddSolutionItems(solutionItems);
 
@@ -333,12 +339,13 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <param name="projects">An <see cref="IEnumerable{T}" /> of projects to add.</param>
         /// <param name="customProjectTypeGuids">An <see cref="IReadOnlyDictionary{TKey,TValue}" /> containing any custom project type GUIDs to use.</param>
         /// <param name="mainProjectFullPath">Optional full path to the main project.</param>
-        public void AddProjects(IEnumerable<Project> projects, IReadOnlyDictionary<string, Guid> customProjectTypeGuids, string mainProjectFullPath = null)
+        /// <param name="isBuildable">Indicates whether the projects are buildable.</param>
+        public void AddProjects(IEnumerable<Project> projects, IReadOnlyDictionary<string, Guid> customProjectTypeGuids, string mainProjectFullPath = null, bool isBuildable = true)
         {
             _projects.AddRange(
                 projects
                     .Distinct(new EqualityComparer<Project>((x, y) => string.Equals(x.FullPath, y.FullPath, StringComparison.OrdinalIgnoreCase), i => i.FullPath.GetHashCode()))
-                    .Select(i => SlnProject.FromProject(i, customProjectTypeGuids, string.Equals(i.FullPath, mainProjectFullPath, StringComparison.OrdinalIgnoreCase)))
+                    .Select(i => SlnProject.FromProject(i, customProjectTypeGuids, string.Equals(i.FullPath, mainProjectFullPath, StringComparison.OrdinalIgnoreCase), isBuildable))
                     .Where(i => i != null));
         }
 
