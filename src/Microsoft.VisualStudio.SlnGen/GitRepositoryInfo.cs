@@ -39,7 +39,7 @@ namespace Microsoft.VisualStudio.SlnGen
         }
 
         /// <summary>
-        /// Strips the Username and Password from the specified <see cref="Uri" />
+        /// Strips the Username and Password from the specified <see cref="Uri" />.
         /// </summary>
         /// <param name="uri">The <see cref="Uri" /> to strip the username and password from.</param>
         /// <returns>A <see cref="Uri" /> without the username and password.</returns>
