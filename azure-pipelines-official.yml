@@ -99,6 +99,28 @@ stages:
               publishFeedCredentials: 'NuGet-1ES-Full'
             condition: always()
 
+          - task: AzureCLI@2
+            displayName: 'Push SlnGen.Corext'
+            inputs:
+              azureSubscription: 'CloudBuild-Push-v2'
+              scriptType: 'pscore'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                # Get an access token for Azure DevOp (resource id is for AzDO)
+                $accessToken = az account get-access-token --query accessToken --resource 499b84ac-1321-427f-aa17-267ca6975798 -o tsv
+                
+                # Set the access token as a secret, so it doesn't get leaked in the logs
+                Write-Host "##vso[task.setsecret]$accessToken"
+                
+                # Override the apitoken of the nuget service connection, for the duration of this stage
+                # Service connection is for "microsoft.slngen Official"
+                Write-Host "##vso[task.setendpoint id=d8767bc1-a109-4cb7-80c2-6ac1ebf4346e;field=authParameter;key=apitoken]$accessToken"
+
+          - task: NuGetAuthenticate@1
+            inputs:
+              forceReinstallCredentialProvider: true
+              nuGetServiceConnections: 'CloudBuild-Push'
+
           - task: NuGetCommand@2
             displayName: 'Push SlnGen.Corext'
             inputs:
