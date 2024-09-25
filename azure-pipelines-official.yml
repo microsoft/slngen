@@ -15,7 +15,7 @@ variables:
   DotNet9Version: '9.x'
   DotNet9InstallArgs: '-version 9.0.100-alpha.1.23528.2'
   MSBuildArgs: '"/Property:Platform=$(BuildPlatform);Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
-  SignType: 'Real'
+  SignType: 'Test'
 trigger:
   batch: true
   branches:
@@ -49,7 +49,7 @@ extends:
           mb:
             signing:
               enabled: true
-              signType: 'real'
+              signType: 'Test'
               zipSources: false
           outputs:
           - output: pipelineArtifact
