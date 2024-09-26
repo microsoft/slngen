@@ -1,19 +1,20 @@
 resources:
-- repo: self
-
+  repositories:
+  - repository: MicroBuildTemplate
+    type: git
+    name: 1ESPipelineTemplates/MicroBuildTemplate
+    ref: refs/tags/release
 variables:
-  ArtifactsDirectoryName: 'artifacts'
+  LogDirectory: $(Build.ArtifactStagingDirectory)/logs
+  ArtifactsDirectory: artifacts
   BuildConfiguration: 'Release'
   BuildPlatform: 'Any CPU'
   DotNet6Version: '6.x'
   DotNet7Version: '7.x'
   DotNet8Version: '8.x'
   DotNet9Version: '9.x'
-  # Not using "--channel 9.0 --quality daily", see https://github.com/microsoft/slngen/issues/456
-  DotNet9InstallArgs: '-version 9.0.100-alpha.1.23528.2'
   MSBuildArgs: '"/Property:Platform=$(BuildPlatform);Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   SignType: 'Test'
-
 trigger:
   batch: true
   branches:
@@ -23,109 +24,81 @@ trigger:
   paths:
     exclude:
     - '*.md'
-
-stages:
-- stage:
-  displayName: 'Build'
-  jobs:
-  - job: Build
-    displayName: 'Build'
+pr: none
+extends:
+  template: azure-pipelines/MicroBuild.1ES.Official.yml@MicroBuildTemplate
+  parameters:
+    sdl:
+      sbom:
+        enabled: false
     pool:
-      name: 'VSEngSS-MicroBuild2022-1ES'
-    steps:
-    - script: 'echo ##vso[task.setvariable variable=SignType;]Real'
-      displayName: 'Set SignType to Real for tagged commits'
-      condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
-
-    - task: UseDotNet@2
-      displayName: 'Install .NET $(DotNet6Version)'
-      inputs:
-        version: '$(DotNet6Version)'
-
-    - task: UseDotNet@2
-      displayName: 'Install .NET $(DotNet7Version)'
-      inputs:
-        version: '$(DotNet7Version)'
-
-    - task: UseDotNet@2
-      displayName: 'Install .NET $(DotNet8Version)'
-      inputs:
-        version: '$(DotNet8Version)'
-        includePreviewVersions: true
-
-    - script: |
-        powershell -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -UseBasicParsing 'https://dot.net/v1/dotnet-install.ps1'))) $(DotNet9InstallArgs) -InstallDir C:\ToolCache\dotnet"
-        dotnet --info
-      displayName: 'Install .NET $(DotNet9Version)'
-
-    - task: MicroBuildSigningPlugin@1
-      displayName: 'Install MicroBuild Signing Plugin'
-      inputs:
-        signType: '$(SignType)'
-        zipSources: false
-
-    - task: VSBuild@1
-      displayName: 'Build Solution'
-      inputs:
-        solution: '**\*.sln'
-        msbuildArgs: '$(MSBuildArgs)'
-
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish Artifacts'
-      inputs:
-        PathtoPublish: '$(ArtifactsDirectoryName)'
-        ArtifactName: $(ArtifactsDirectoryName)
-      condition: always()
-
-- stage:
-  displayName: 'Deploy'
-  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
-  jobs:
-  - deployment: 'NuGet'
-    displayName: 'Publish NuGet Packages'
-    pool:
-      vmImage: 'windows-latest'
-    environment: 'SlnGen-NuGet'
-    strategy:
-      runOnce:
-        deploy:
-          steps:
-          - task: NuGetCommand@2
+      name: VSEngSS-MicroBuild2022-1ES
+      demands:
+      - msbuild
+      - visualstudio
+      os: windows
+    stages:
+    - stage: ''
+      displayName: 'Build'
+      jobs:
+      - job: Build
+        displayName: 'Build'
+        pool:
+          name: 'VSEngSS-MicroBuild2022-1ES'
+        templateContext:
+          mb:
+            signing:
+              enabled: true
+              signType: 'Test'
+              zipSources: false
+          outputs:
+          - output: pipelineArtifact
+            displayName: 'Publish Artifacts'
+            condition: always()
+            targetPath: $(ArtifactsDirectory)
+            artifactName: 'artifacts'
+          - output: pipelineArtifact
+            displayName: 'Publish Logs'
+            condition: always()
+            targetPath: $(LogDirectory)
+            artifactName: 'logs'
+          - output: nuget
             displayName: 'Push NuGet Packages to nuget.org'
-            inputs:
-              command: 'push'
-              packagesToPush: '$(Pipeline.Workspace)/$(ArtifactsDirectoryName)/**/Microsoft.VisualStudio.SlnGen*.nupkg'
-              nuGetFeedType: 'external'
-              publishFeedCredentials: 'NuGet-1ES-Full'
-            condition: always()
-
-          - task: AzureCLI@2
+            condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
+            packageParentPath: '$(ArtifactsDirectory)'
+            packagesToPush: '$(ArtifactsDirectory)/**/Microsoft.VisualStudio.SlnGen*.nupkg'
+            nuGetFeedType: 'external'
+            publishFeedCredentials: 'NuGet-1ES-Full'
+          - output: nuget
             displayName: 'Push SlnGen.Corext'
-            inputs:
-              azureSubscription: 'CloudBuild-Push-v2'
-              scriptType: 'pscore'
-              scriptLocation: 'inlineScript'
-              inlineScript: |
-                # Get an access token for Azure DevOp (resource id is for AzDO)
-                $accessToken = az account get-access-token --query accessToken --resource 499b84ac-1321-427f-aa17-267ca6975798 -o tsv
-                
-                # Set the access token as a secret, so it doesn't get leaked in the logs
-                Write-Host "##vso[task.setsecret]$accessToken"
-                
-                # Override the apitoken of the nuget service connection, for the duration of this stage
-                # Service connection is for "microsoft.slngen Official"
-                Write-Host "##vso[task.setendpoint id=d8767bc1-a109-4cb7-80c2-6ac1ebf4346e;field=authParameter;key=apitoken]$accessToken"
-
-          - task: NuGetAuthenticate@1
-            inputs:
-              forceReinstallCredentialProvider: true
-              nuGetServiceConnections: 'CloudBuild-Push'
-
-          - task: NuGetCommand@2
-            displayName: 'Push SlnGen.Corext'
-            inputs:
-              command: 'push'
-              packagesToPush: '$(Pipeline.Workspace)/$(ArtifactsDirectoryName)/**/SlnGen.Corext*.nupkg'
-              nuGetFeedType: 'external'
-              publishFeedCredentials: 'CloudBuild-Push'
-            condition: always()
+            condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
+            packageParentPath: '$(ArtifactsDirectory)'
+            packagesToPush: '$(ArtifactsDirectory)/**/SlnGen.Corext*.nupkg'
+            nuGetFeedType: 'external'
+            publishFeedCredentials: 'CloudBuild-Push'
+        steps:
+        - script: 'echo ##vso[task.setvariable variable=SignType;]Real'
+          displayName: 'Set SignType to Real for tagged commits'
+          condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
+        - task: UseDotNet@2
+          displayName: 'Install .NET $(DotNet6Version)'
+          inputs:
+            version: '$(DotNet6Version)'
+        - task: UseDotNet@2
+          displayName: 'Install .NET $(DotNet7Version)'
+          inputs:
+            version: '$(DotNet7Version)'
+        - task: UseDotNet@2
+          displayName: 'Install .NET $(DotNet8Version)'
+          inputs:
+            version: '$(DotNet8Version)'
+        - task: UseDotNet@2
+          displayName: 'Install .NET $(DotNet9Version)'
+          inputs:
+            version: '$(DotNet9Version)'
+            includePreviewVersions: true
+        - task: VSBuild@1
+          displayName: 'Build Solution'
+          inputs:
+            solution: '**\*.sln'
+            msbuildArgs: '$(MSBuildArgs)'
