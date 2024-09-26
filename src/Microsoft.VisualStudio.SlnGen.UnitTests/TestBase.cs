@@ -11,13 +11,9 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
     public abstract class TestBase : MSBuildTestBase
     {
         private const string DotNetSdkVersion =
-#if NET6_0
-                "6.0.0";
-#elif NET7_0 || NETFRAMEWORK
-                "7.0.0";
-#elif NET8_0
+#if NET8_0
                 "8.0.0";
-#elif NET9_0
+#elif NET9_0 || NETFRAMEWORK
                 "9.0.0";
 #else
                 Unknown target framework

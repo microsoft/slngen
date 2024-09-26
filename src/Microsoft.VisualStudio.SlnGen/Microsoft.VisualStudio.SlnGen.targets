@@ -8,28 +8,20 @@
           Condition="'$(CustomBeforeSlnGenTargets)' != '' and Exists('$(CustomBeforeSlnGenTargets)')" />
 
   <UsingTask TaskName="Microsoft.VisualStudio.SlnGen.Tasks.SlnGenToolTask"
-             AssemblyFile="$([MSBuild]::ValueOrDefault('$(SlnGenAssemblyFile)', '$(MSBuildThisFileDirectory)..\tools\net461\slngen.exe'))"
-             Condition="'$(MSBuildRuntimeType)' == 'Full' And '$(MSBuildToolsVersion)' != 'Current'" />
-
-  <UsingTask TaskName="Microsoft.VisualStudio.SlnGen.Tasks.SlnGenToolTask"
              AssemblyFile="$([MSBuild]::ValueOrDefault('$(SlnGenAssemblyFile)', '$(MSBuildThisFileDirectory)..\tools\net472\slngen.exe'))"
              Condition="'$(MSBuildRuntimeType)' == 'Full' And '$(MSBuildToolsVersion)' == 'Current'" />
 
   <UsingTask TaskName="Microsoft.VisualStudio.SlnGen.Tasks.SlnGenToolTask"
-             AssemblyFile="$([MSBuild]::ValueOrDefault('$(SlnGenAssemblyFile)', '$(MSBuildThisFileDirectory)..\tools\net6.0\slngen.dll'))"
-             Condition="'$(MSBuildRuntimeType)' == 'Core' And '$(MSBuildVersion)' &gt;= '17.0.0' And '$(MSBuildVersion)' &lt; '17.4.0'" />
-
-  <UsingTask TaskName="Microsoft.VisualStudio.SlnGen.Tasks.SlnGenToolTask"
-             AssemblyFile="$([MSBuild]::ValueOrDefault('$(SlnGenAssemblyFile)', '$(MSBuildThisFileDirectory)..\tools\net7.0\slngen.dll'))"
-             Condition="'$(MSBuildRuntimeType)' == 'Core' And '$(MSBuildVersion)' &gt;= '17.4.0' And '$(MSBuildVersion)' &lt; '17.8.0'" />
-
-  <UsingTask TaskName="Microsoft.VisualStudio.SlnGen.Tasks.SlnGenToolTask"
              AssemblyFile="$([MSBuild]::ValueOrDefault('$(SlnGenAssemblyFile)', '$(MSBuildThisFileDirectory)..\tools\net8.0\slngen.dll'))"
-             Condition="'$(MSBuildRuntimeType)' == 'Core' And '$(MSBuildVersion)' &gt;= '17.8.0'" />
+             Condition="'$(MSBuildRuntimeType)' == 'Core' And '$([MSBuild]::VersionGreaterThanOrEquals($(MSBuildVersion), 17.8))' == 'true'" />
 
-  <Target Name="SlnGen"
+  <UsingTask TaskName="Microsoft.VisualStudio.SlnGen.Tasks.SlnGenToolTask"
+             AssemblyFile="$([MSBuild]::ValueOrDefault('$(SlnGenAssemblyFile)', '$(MSBuildThisFileDirectory)..\tools\net9.0\slngen.dll'))"
+             Condition="'$(MSBuildRuntimeType)' == 'Core' And '$([MSBuild]::VersionGreaterThanOrEquals($(MSBuildVersion), 17.12))' == 'true'" />
+
+	<Target Name="SlnGen"
           DependsOnTargets="$(SlnGenDependsOn)">
-    <Error Text="SlnGen only supports .NET 6.0 or above." Condition="'$(MSBuildRuntimeType)' == 'Core' And '$(MSBuildVersion)' &lt; '17.0.0'" />
+    <Error Text="SlnGen only supports .NET 8.0 or above." Condition="'$(MSBuildRuntimeType)' == 'Core' And '$(MSBuildVersion)' &lt; '17.8.0'" />
     
     <Microsoft.VisualStudio.SlnGen.Tasks.SlnGenToolTask
       BuildingSolutionFile="$([MSBuild]::ValueOrDefault('$(BuildingSolutionFile)', 'false'))"

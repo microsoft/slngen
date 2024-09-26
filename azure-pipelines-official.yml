@@ -9,12 +9,8 @@ variables:
   ArtifactsDirectory: artifacts
   BuildConfiguration: 'Release'
   BuildPlatform: 'Any CPU'
-  DotNet6Version: '6.x'
-  DotNet7Version: '7.x'
-  DotNet8Version: '8.x'
-  DotNet9Version: '9.x'
   MSBuildArgs: '"/Property:Platform=$(BuildPlatform);Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
-  SignType: 'Test'
+  SignType: 'Real'
 trigger:
   batch: true
   branches:
@@ -49,7 +45,7 @@ extends:
           mb:
             signing:
               enabled: true
-              signType: 'Test'
+              signType: $(SignType)
               zipSources: false
           outputs:
           - output: pipelineArtifact
@@ -81,24 +77,32 @@ extends:
           displayName: 'Set SignType to Real for tagged commits'
           condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
         - task: UseDotNet@2
-          displayName: 'Install .NET $(DotNet6Version)'
+          displayName: 'Install .NET 8.x'
           inputs:
-            version: '$(DotNet6Version)'
+            version: '8.x'
         - task: UseDotNet@2
-          displayName: 'Install .NET $(DotNet7Version)'
+          displayName: 'Install .NET 9.x'
           inputs:
-            version: '$(DotNet7Version)'
-        - task: UseDotNet@2
-          displayName: 'Install .NET $(DotNet8Version)'
-          inputs:
-            version: '$(DotNet8Version)'
-        - task: UseDotNet@2
-          displayName: 'Install .NET $(DotNet9Version)'
-          inputs:
-            version: '$(DotNet9Version)'
+            version: '9.x'
             includePreviewVersions: true
         - task: VSBuild@1
           displayName: 'Build Solution'
           inputs:
             solution: '**\*.sln'
             msbuildArgs: '$(MSBuildArgs)'
+        - task: AzureCLI@2
+          displayName: 'Push SlnGen.Corext'
+          inputs:
+            azureSubscription: 'CloudBuild-Push-v2'
+            scriptType: 'pscore'
+            scriptLocation: 'inlineScript'
+            inlineScript: |
+              # Get an access token for Azure DevOp (resource id is for AzDO)
+              $accessToken = az account get-access-token --query accessToken --resource 499b84ac-1321-427f-aa17-267ca6975798 -o tsv
+
+              # Set the access token as a secret, so it doesn't get leaked in the logs
+              Write-Host "##vso[task.setsecret]$accessToken"
+
+              # Override the apitoken of the nuget service connection, for the duration of this stage
+              # Service connection is for "microsoft.slngen Official"
+              Write-Host "##vso[task.setendpoint id=d8767bc1-a109-4cb7-80c2-6ac1ebf4346e;field=authParameter;key=apitoken]$accessToken"

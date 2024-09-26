@@ -11,5 +11,7 @@
     <ContinuousIntegrationBuild Condition="'$(TF_BUILD)' == 'true'">true</ContinuousIntegrationBuild>
     <NoWarn>$(NoWarn);NETSDK1213</NoWarn>
     <TargetDotNet9 Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TargetDotNet9>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+    <UseArtifactsOutput>false</UseArtifactsOutput>
   </PropertyGroup>
 </Project>

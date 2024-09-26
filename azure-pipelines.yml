@@ -5,12 +5,6 @@ variables:
   ArtifactsDirectoryName: 'artifacts'
   BuildConfiguration: 'Debug'
   BuildPlatform: 'Any CPU'
-  DotNet6Version: '6.x'
-  DotNet7Version: '7.x'
-  DotNet8Version: '8.x'
-  DotNet9Version: '9.x'
-  # Not using "--channel 9.0 --quality daily", see https://github.com/microsoft/slngen/issues/456
-  DotNet9InstallArgs: '-version 9.0.100-alpha.1.23528.2'
   MSBuildArgs: '"/Property:Platform=$(BuildPlatform);Configuration=$(BuildConfiguration)"'
   SignType: 'Test'
 
@@ -50,38 +44,15 @@ jobs:
     vmImage: $(vmImage)
   steps:
   - task: UseDotNet@2
-    displayName: 'Install .NET $(DotNet6Version)'
+    displayName: 'Install .NET 8.x'
     inputs:
-      version: '$(DotNet6Version)'
+      version: '8.x'
 
   - task: UseDotNet@2
-    displayName: 'Install .NET $(DotNet7Version)'
+    displayName: 'Install .NET 9.x'
     inputs:
-      version: '$(DotNet7Version)'
-
-  - task: UseDotNet@2
-    displayName: 'Install .NET $(DotNet8Version)'
-    inputs:
-      version: '$(DotNet8Version)'
+      version: '9.x'
       includePreviewVersions: true
-
-  - script: |
-      powershell -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -UseBasicParsing 'https://dot.net/v1/dotnet-install.ps1'))) $(DotNet9InstallArgs) -InstallDir C:\hostedtoolcache\windows\dotnet"
-      dotnet --info
-    displayName: 'Install .NET $(DotNet9Version) (Windows)'
-    condition: eq(variables.osName, 'Windows')
-
-  - script: |
-      curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin $(DotNet9InstallArgs) --install-dir /opt/hostedtoolcache/dotnet
-      dotnet --info
-    displayName: 'Install .NET $(DotNet9Version) (Linux)'
-    condition: eq(variables.osName, 'Linux')
-
-  - script: |
-      curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin $(DotNet9InstallArgs) --install-dir /Users/runner/hostedtoolcache/dotnet
-      dotnet --info
-    displayName: 'Install .NET $(DotNet9Version) (MacOS)'
-    condition: eq(variables.osName, 'MacOS')
 
   - task: VSBuild@1
     displayName: 'Build (Visual Studio)'
@@ -103,22 +74,6 @@ jobs:
       arguments: '--no-restore --no-build --framework net472 /noautorsp $(MSBuildArgs) "/BinaryLogger:$(ArtifactsDirectoryName)/test-net472.binlog"'
       testRunTitle: '$(osName) .NET Framework v4.7.2'
     condition: and(succeededOrFailed(), eq(variables.osName, 'Windows'))
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Run Unit Tests (.NET 6)'
-    inputs:
-      command: 'test'
-      arguments: '--no-restore --no-build --framework net6.0 /noautorsp $(MSBuildArgs) "/BinaryLogger:$(ArtifactsDirectoryName)/test-net6.0.binlog"'
-      testRunTitle: '$(osName) .NET 6.0'
-    condition: succeededOrFailed()
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Run Unit Tests (.NET 7)'
-    inputs:
-      command: 'test'
-      arguments: '--no-restore --no-build --framework net7.0 /noautorsp $(MSBuildArgs) "/BinaryLogger:$(ArtifactsDirectoryName)/test-net7.0.binlog"'
-      testRunTitle: '$(osName) .NET 7.0'
-    condition: succeededOrFailed()
 
   - task: DotNetCoreCLI@2
     displayName: 'Run Unit Tests (.NET 8)'

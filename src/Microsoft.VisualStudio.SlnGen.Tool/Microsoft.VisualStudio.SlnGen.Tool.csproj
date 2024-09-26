@@ -1,12 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>slngen</ToolCommandName>
     <RollForward>LatestMajor</RollForward>
     <_GetChildProjectCopyToPublishDirectoryItems>false</_GetChildProjectCopyToPublishDirectoryItems>
-    <TargetDotNet9 Condition="'$(TargetDotNet9)' == '' And $([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '9.0'))">true</TargetDotNet9>
   </PropertyGroup>
   <Import Project="..\Shared\Shared.props" />
   <ItemGroup>
@@ -16,14 +15,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj"
-                      SetTargetFramework="TargetFramework=net461"
-                      IncludeAssets="None"
-                      OutputItemType="SlnGenBuildOutput"
-                      PrivateAssets="All"
-                      ReferenceOutputAssembly="false"
-                      SkipGetTargetFrameworkProperties="true"
-                      TargetFramework="net461" />
-    <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj"
                       SetTargetFramework="TargetFramework=net472"
                       IncludeAssets="None"
                       OutputItemType="SlnGenBuildOutput"
@@ -31,22 +22,6 @@
                       ReferenceOutputAssembly="false"
                       SkipGetTargetFrameworkProperties="true"
                       TargetFramework="net472" />
-    <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj"
-                      SetTargetFramework="TargetFramework=net6.0"
-                      IncludeAssets="None"
-                      OutputItemType="SlnGenBuildOutput"
-                      PrivateAssets="All"
-                      ReferenceOutputAssembly="false"
-                      SkipGetTargetFrameworkProperties="true"
-                      TargetFramework="net6.0" />
-    <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj"
-                      SetTargetFramework="TargetFramework=net7.0"
-                      IncludeAssets="None"
-                      OutputItemType="SlnGenBuildOutput"
-                      PrivateAssets="All"
-                      ReferenceOutputAssembly="false"
-                      SkipGetTargetFrameworkProperties="true"
-                      TargetFramework="net7.0" />
     <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj"
                       SetTargetFramework="TargetFramework=net8.0"
                       IncludeAssets="None"
@@ -62,8 +37,7 @@
                       PrivateAssets="All"
                       ReferenceOutputAssembly="false"
                       SkipGetTargetFrameworkProperties="true"
-                      TargetFramework="net9.0"
-                      Condition="'$(TargetDotNet9)' == 'true'" />
+                      TargetFramework="net9.0" />
   </ItemGroup>
   <Target Name="CopySlnGenToOutputDirectoryAndPackage"
           AfterTargets="PrepareForRun"
