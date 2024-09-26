@@ -13,7 +13,6 @@ variables:
   DotNet7Version: '7.x'
   DotNet8Version: '8.x'
   DotNet9Version: '9.x'
-  DotNet9InstallArgs: '-version 9.0.100-alpha.1.23528.2'
   MSBuildArgs: '"/Property:Platform=$(BuildPlatform);Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   SignType: 'Test'
 trigger:
@@ -69,6 +68,13 @@ extends:
             packagesToPush: '$(ArtifactsDirectory)/**/Microsoft.VisualStudio.SlnGen*.nupkg'
             nuGetFeedType: 'external'
             publishFeedCredentials: 'NuGet-1ES-Full'
+          - output: nuget
+            displayName: 'Push SlnGen.Corext'
+            condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
+            packageParentPath: '$(ArtifactsDirectory)'
+            packagesToPush: '$(ArtifactsDirectory)/**/SlnGen.Corext*.nupkg'
+            nuGetFeedType: 'external'
+            publishFeedCredentials: 'CloudBuild-Push'
         steps:
         - script: 'echo ##vso[task.setvariable variable=SignType;]Real'
           displayName: 'Set SignType to Real for tagged commits'
