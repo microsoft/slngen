@@ -13,11 +13,11 @@
 
   <UsingTask TaskName="Microsoft.VisualStudio.SlnGen.Tasks.SlnGenToolTask"
              AssemblyFile="$([MSBuild]::ValueOrDefault('$(SlnGenAssemblyFile)', '$(MSBuildThisFileDirectory)..\tools\net8.0\slngen.dll'))"
-             Condition="'$(MSBuildRuntimeType)' == 'Core' And '$(MSBuildVersion)' '$([MSBuild]::VersionGreaterThanOrEquals($(VersionNumber), '17.8.0'))' == 'true''" />
+             Condition="'$(MSBuildRuntimeType)' == 'Core' And '$([MSBuild]::VersionGreaterThanOrEquals($(MSBuildVersion), 17.8))' == 'true'" />
 
   <UsingTask TaskName="Microsoft.VisualStudio.SlnGen.Tasks.SlnGenToolTask"
              AssemblyFile="$([MSBuild]::ValueOrDefault('$(SlnGenAssemblyFile)', '$(MSBuildThisFileDirectory)..\tools\net9.0\slngen.dll'))"
-             Condition="'$(MSBuildRuntimeType)' == 'Core' And '$([MSBuild]::VersionGreaterThanOrEquals($(VersionNumber), '17.12.0'))' == 'true'" />
+             Condition="'$(MSBuildRuntimeType)' == 'Core' And '$([MSBuild]::VersionGreaterThanOrEquals($(MSBuildVersion), 17.12))' == 'true'" />
 
 	<Target Name="SlnGen"
           DependsOnTargets="$(SlnGenDependsOn)">
