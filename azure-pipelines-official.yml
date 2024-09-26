@@ -10,7 +10,7 @@ variables:
   BuildConfiguration: 'Release'
   BuildPlatform: 'Any CPU'
   MSBuildArgs: '"/Property:Platform=$(BuildPlatform);Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
-  SignType: 'Test'
+  SignType: 'Real'
 trigger:
   batch: true
   branches:
@@ -45,7 +45,7 @@ extends:
           mb:
             signing:
               enabled: true
-              signType: 'Test'
+              signType: $(SignType)
               zipSources: false
           outputs:
           - output: pipelineArtifact
