@@ -9,7 +9,7 @@ variables:
   ArtifactsDirectory: artifacts
   BuildConfiguration: 'Release'
   BuildPlatform: 'Any CPU'
-  MSBuildArgs: '"/Property:Platform=$(BuildPlatform);Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
+  MSBuildArgs: '"/Property:Platform=$(BuildPlatform);Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectory)\msbuild.binlog"'
   SignType: 'Real'
 trigger:
   batch: true
@@ -53,11 +53,6 @@ extends:
             condition: always()
             targetPath: $(ArtifactsDirectory)
             artifactName: 'artifacts'
-          - output: pipelineArtifact
-            displayName: 'Publish Logs'
-            condition: always()
-            targetPath: $(LogDirectory)
-            artifactName: 'logs'
           - output: nuget
             displayName: 'Push NuGet Packages to nuget.org'
             condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
