@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.Build.NoTargets/3.7.0">
   <PropertyGroup>
-    <TargetFrameworks>net461;net472</TargetFrameworks>
+    <TargetFrameworks>net472</TargetFrameworks>
     <ArtifactsPath>$(BaseArtifactsPath)\$(MSBuildProjectName)</ArtifactsPath>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Title>CoreXT Solution Generator</Title>
