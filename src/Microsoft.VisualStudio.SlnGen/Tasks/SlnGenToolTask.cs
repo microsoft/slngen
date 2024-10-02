@@ -5,8 +5,8 @@
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -108,6 +108,17 @@ namespace Microsoft.VisualStudio.SlnGen.Tasks
         public bool InheritGlobalProperties { get; set; }
 
         /// <summary>
+        /// Gets or sets the projects to include in the solution (optional).
+        /// If this is not supplied, <see cref="ProjectFullPath"/> is used.
+        /// </summary>
+        public ITaskItem[] Projects { get; set; }
+
+        /// <summary>
+        /// Gets or sets the verbosity to use for SlnGen.
+        /// </summary>
+        public string Verbosity { get; set; }
+
+        /// <summary>
         /// Gets or sets the path to the MSBuild directory.
         /// </summary>
         [Required]
@@ -150,13 +161,15 @@ namespace Microsoft.VisualStudio.SlnGen.Tasks
             commandLineBuilder.AppendFileNameIfNotNull(ThisAssemblyFileInfo.FullName);
 #endif
             commandLineBuilder.AppendSwitch("--nologo");
-            commandLineBuilder.AppendSwitch("--verbosity:Normal");
+            commandLineBuilder.AppendSwitch($"--verbosity:{Verbosity}");
             commandLineBuilder.AppendSwitch("--consolelogger:NoSummary;ForceNoAlign");
             commandLineBuilder.AppendSwitchIfNotNull("--devenvfullpath:", GetPropertyValue(MSBuildPropertyNames.SlnGenDevEnvFullPath));
             commandLineBuilder.AppendSwitchIfNotNull("--folders:", GetPropertyValue(MSBuildPropertyNames.SlnGenFolders));
             commandLineBuilder.AppendSwitchIfNotNull("--launch:", GetPropertyValue(MSBuildPropertyNames.SlnGenLaunchVisualStudio));
             commandLineBuilder.AppendSwitchIfNotNull("--loadprojects:", GetPropertyValue(MSBuildPropertyNames.SlnGenLoadProjects));
             commandLineBuilder.AppendSwitchIfNotNull("--solutionfile:", GetPropertyValue(MSBuildPropertyNames.SlnGenSolutionFileFullPath));
+            commandLineBuilder.AppendSwitchIfNotNull("--configuration:", GetPropertyValue(MSBuildPropertyNames.SlnGenConfiguration));
+            commandLineBuilder.AppendSwitchIfNotNull("--platform:", GetPropertyValue(MSBuildPropertyNames.SlnGenPlatform));
             commandLineBuilder.AppendSwitchIfNotNull("--property:", globalProperties.Count == 0 ? null : string.Join(";", globalProperties.Select(i => $"{i.Key}={i.Value}")));
 
             // The vsversion switch can be passed without a value to ask slngen to deduce the desired version.
@@ -185,7 +198,17 @@ namespace Microsoft.VisualStudio.SlnGen.Tasks
                 commandLineBuilder.AppendSwitch("--binarylogger");
             }
 
-            commandLineBuilder.AppendFileNameIfNotNull(ProjectFullPath);
+            if (Projects?.Length > 0)
+            {
+                foreach (ITaskItem project in Projects)
+                {
+                    commandLineBuilder.AppendFileNameIfNotNull(project.ItemSpec);
+                }
+            }
+            else
+            {
+                commandLineBuilder.AppendFileNameIfNotNull(ProjectFullPath);
+            }
 
             return commandLineBuilder.ToString();
         }
