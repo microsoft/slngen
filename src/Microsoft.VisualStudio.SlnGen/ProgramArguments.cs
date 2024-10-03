@@ -178,7 +178,7 @@ Some additional available parameters are:
             "--launch",
             CommandOptionType.MultipleValue,
             ValueName = "true|false",
-            Description = "Launch Visual Studio after generating the Solution file.  Default: true on Windows")]
+            Description = "Launch Visual Studio after generating the Solution file.  Default: true on Windows and macOS")]
         public string[] LaunchVisualStudio { get; set; }
 
         /// <summary>
