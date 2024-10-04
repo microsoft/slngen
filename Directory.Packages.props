@@ -25,7 +25,7 @@
     <PackageVersion Include="Microsoft.VisualStudio.ProjectSystem.SDK" Version="15.8.243" />
     <PackageVersion Include="Microsoft.VisualStudio.SDK" Version="17.11.40262" />
     <PackageVersion Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="3.11.2177" />
-    <PackageVersion Include="Microsoft.VSSDK.BuildTools" Version="17.9.3174" />
+    <PackageVersion Include="Microsoft.VSSDK.BuildTools" Version="17.11.435" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="MSBuild.ProjectCreation" Version="13.0.0" />
     <PackageVersion Include="Shouldly" Version="4.2.1" />
