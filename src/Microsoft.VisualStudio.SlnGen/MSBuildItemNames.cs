@@ -25,6 +25,11 @@ namespace Microsoft.VisualStudio.SlnGen
         public const string SlnGenCustomProjectTypeGuid = nameof(SlnGenCustomProjectTypeGuid);
 
         /// <summary>
+        /// The name of SlnGenProjects items.
+        /// </summary>
+        public const string SlnGenProjects = nameof(SlnGenProjects);
+
+        /// <summary>
         /// The name of the SlnGenSolutionItem items.
         /// </summary>
         public const string SlnGenSolutionItem = nameof(SlnGenSolutionItem);

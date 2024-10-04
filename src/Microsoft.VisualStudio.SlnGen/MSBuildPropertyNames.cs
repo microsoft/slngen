@@ -60,6 +60,11 @@ namespace Microsoft.VisualStudio.SlnGen
         public const string SlnGenBinLog = nameof(SlnGenBinLog);
 
         /// <summary>
+        /// Represents the SlnGenConfiguration property.
+        /// </summary>
+        public const string SlnGenConfiguration = nameof(SlnGenConfiguration);
+
+        /// <summary>
         /// Represents the SlnGenDebug property.
         /// </summary>
         public const string SlnGenDebug = nameof(SlnGenDebug);
@@ -101,6 +106,11 @@ namespace Microsoft.VisualStudio.SlnGen
         public const string SlnGenLoadProjects = nameof(SlnGenLoadProjects);
 
         /// <summary>
+        /// Represents the SlnGenPlatform property.
+        /// </summary>
+        public const string SlnGenPlatform = nameof(SlnGenPlatform);
+
+        /// <summary>
         /// Represents the SlnGenProjectName property.
         /// </summary>
         public const string SlnGenProjectName = nameof(SlnGenProjectName);
@@ -114,6 +124,11 @@ namespace Microsoft.VisualStudio.SlnGen
         /// Represents the name of a solution folder to place the project in.
         /// </summary>
         public const string SlnGenSolutionFolder = nameof(SlnGenSolutionFolder);
+
+        /// <summary>
+        /// Represents the SlnGenVerbosity property.
+        /// </summary>
+        public const string SlnGenVerbosity = nameof(SlnGenVerbosity);
 
         /// <summary>
         /// Represents the UsingMicrosoftNETSdk property.
