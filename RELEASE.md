@@ -32,7 +32,7 @@ Create a new release at https://github.com/microsoft/slngen/releases.  The tag m
 
 ## Push packages
 
-Approve the stages corresponding to the [SlnGen release](https://devdiv.visualstudio.com/DevDiv/_release?definitionId=3478) with the correct tag to push non-CoreXT packages to nuget.org and CoreXT packages to the CloudBuild feed.
+Repo maintainers are responsible for approving the stages corresponding to the [SlnGen release](https://devdiv.visualstudio.com/DevDiv/_release?definitionId=3478) with the correct tag to push non-CoreXT packages to nuget.org and CoreXT packages to the CloudBuild feed.
 
 Packages published to nuget.org use an Azure DevOps Service Connection [1ES-NuGet-Full](https://dev.azure.com/devdiv/DevDiv/_settings/adminservices?resourceId=841455b3-9379-4c8a-89a3-ec3ba7747d31).  The API key is good for one year
  and will need to be regenerated when it expires.  If a release fails, you will need to update the service connection with a new API key and re-run the deploy stage.
