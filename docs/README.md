@@ -6,9 +6,9 @@ Enterprise-level builds use custom logic like traversal to convey how they shoul
 SlnGen reads the project references of a given project to create a Visual Studio solution on demand.  For example, you can run it against a unit test project and be presented with a Visual Studio solution containing the unit test project and all of its project references.  You can also run SlnGen against a traversal project in a rooted folder to open a Visual Studio solution containing that view of your project tree.
 
 # Getting Started
-Download and install Visual studio 2019 version 16.4. See [Installation guide](https://docs.microsoft.com/en-us/visualstudio/install/update-visual-studio?view=vs-2019)
+Download and install the latest version of Visual studio 2022. See [Installation guide](https://learn.microsoft.com/en-us/visualstudio/install/update-visual-studio?view=vs-2022)
 
-SlnGen can be installed as a .NET Core global tool.  To do this, please [install .NET Core 3.0](https://dotnet.microsoft.com/download/dotnet-core/3.0) or above and run the following command:
+SlnGen can be installed as a .NET Core global tool. To do this, please [install .NET Core 8.0](https://dotnet.microsoft.com/download/dotnet-core/8.0) or above and run the following command:
 
 ```cmd
 dotnet tool install --global Microsoft.VisualStudio.SlnGen.Tool
@@ -18,7 +18,7 @@ Once installed, the command `slngen` is added to your `PATH` so its available in
 
 ```cmd
 You can invoke the tool using the following command: slngen
-Tool 'microsoft.visualstudio.slngen.tool' (version '3.0.37') was successfully installed.
+Tool 'microsoft.visualstudio.slngen.tool' (version '11.3.5') was successfully installed.
 ```
 
 See the [frequently asked questions](FAQ) if you are having any issues.
@@ -165,11 +165,14 @@ Use the following properties and items to customize the generated Solution file.
 | `SlnGenIsDeployable`    | Indicates whether or not a project is considered deployable by Visual Studio. | `true` or `false` | `false` <br />Service Fabric projects are automatically set to `true` |
 | `SlnGenSolutionFolder`  | Specifies a solution folder to place the project in.  `SlnGenFolders` must be `false`. | | |
 | `SlnGenProjectName`     | Specifies the display name of the project in the solution. | | Project file name without file extension |
+| `SlnGenVerbosity`       | Specifies the amount of information to display in the event log when using slngen for the particular solution. | `Quiet`, `Minimal`, `Normal`, `Detailed`, and `Diagnostic` | `Normal` |
+| `SlnGenPlatform`        | Specifies an additional platform to use when generating the solution. | | |
+| `SlnGenConfiguration`   | Specifies an additional configuration to use when generating the solution. | | |
 
 | Item | Description |
 |------|-------------|
-| `SlnGenSolutionItem` | Specifies a file to include as a Solution Item. |
-
+| `SlnGenSolutionItem` | Specifies a file to include as a solution item. |
+| `SlnGenProjects`     | Specifies a project to include in the solution. |
 
 ```xml
 <PropertyGroup>
@@ -178,11 +181,16 @@ Use the following properties and items to customize the generated Solution file.
 
   <!-- Disable folder hierarchy in Solution files, projects will be in a flat list instead -->
   <SlnGenFolders>false</SlnGenFolders>
+
+  <SlnGenVerbosity>Minimal</SlnGenVerbosity>
+  <SlnGenPlatform>AnyCPU</SlnGenPlatform>
+  <SlnGenConfiguration>Debug;Release</SlnGenConfiguration>
 </PropertyGroup>
 
 <ItemGroup>
   <SlnGenSolutionItem Include="$(MSBuildThisFileDirectory)global.json" />
   <SlnGenSolutionItem Include="$(MSBuildThisFileDirectory)README.md" />
+  <SlnGenProjects Include="..\..\..\UnitTests\UnitTests.csproj" />
 </ItemGroup>
 ```
 
