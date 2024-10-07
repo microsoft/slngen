@@ -30,7 +30,7 @@
     <PackageVersion Include="MSBuild.ProjectCreation" Version="13.0.0" />
     <PackageVersion Include="Shouldly" Version="4.2.1" />
     <PackageVersion Include="System.Configuration.ConfigurationManager" Version="$(SystemConfigurationConfigurationManagerPackageVersion)" />
-    <PackageVersion Include="xunit" Version="2.9.1" />
+    <PackageVersion Include="xunit" Version="2.9.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
     <!-- Pinning vulnerable packages -->
     <PackageVersion Include="System.Security.Cryptography.Xml" Version="8.0.1" />
