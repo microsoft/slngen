@@ -293,25 +293,28 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <returns>The GUID of the specified project.</returns>
         internal static Guid GetProjectGuid(Project project, bool isUsingMicrosoftNETSdk)
         {
-            Guid projectGuid = Guid.NewGuid();
+            Guid projectGuid;
 
-            if (!isUsingMicrosoftNETSdk && !Guid.TryParse(project.GetPropertyValueOrDefault(MSBuildPropertyNames.ProjectGuid, projectGuid.ToString()), out projectGuid))
+            string projectGuidValue = project.GetPropertyValue(MSBuildPropertyNames.ProjectGuid);
+            bool projectGuidIsEmpty = string.IsNullOrEmpty(projectGuidValue);
+
+            // If a ProjectGuid is provided it should be honored (regardless of project style) and must be valid
+            if (projectGuidIsEmpty)
             {
-                string projectGuidValue = project.GetPropertyValueOrDefault(MSBuildPropertyNames.ProjectGuid, projectGuid.ToString());
-
-                if (!Guid.TryParse(projectGuidValue, out projectGuid))
-                {
-                    throw new InvalidProjectFileException(
-                        projectFile: project.FullPath,
-                        lineNumber: 0,
-                        columnNumber: 0,
-                        endLineNumber: 0,
-                        endColumnNumber: 0,
-                        message: $"The {MSBuildPropertyNames.ProjectGuid} property value \"{projectGuidValue}\" is not a valid GUID.",
-                        errorSubcategory: null,
-                        errorCode: null,
-                        helpKeyword: null);
-                }
+                projectGuid = Guid.NewGuid();
+            }
+            else if (!Guid.TryParse(projectGuidValue, out projectGuid))
+            {
+                throw new InvalidProjectFileException(
+                    projectFile: project.FullPath,
+                    lineNumber: 0,
+                    columnNumber: 0,
+                    endLineNumber: 0,
+                    endColumnNumber: 0,
+                    message: $"The {MSBuildPropertyNames.ProjectGuid} property value \"{projectGuidValue}\" is not a valid GUID.",
+                    errorSubcategory: null,
+                    errorCode: null,
+                    helpKeyword: null);
             }
 
             return projectGuid;
