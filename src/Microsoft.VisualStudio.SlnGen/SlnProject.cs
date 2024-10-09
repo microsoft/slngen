@@ -298,13 +298,12 @@ namespace Microsoft.VisualStudio.SlnGen
             string projectGuidValue = project.GetPropertyValue(MSBuildPropertyNames.ProjectGuid);
             bool projectGuidIsEmpty = string.IsNullOrEmpty(projectGuidValue);
 
-            // ProjectGuid is optional for SDK-style projects but required for legacy projects, if a ProjectGuid
-            // is provided it should be honored (regardless of project style) and must be valid
-            if (projectGuidIsEmpty && isUsingMicrosoftNETSdk)
+            // If a ProjectGuid is provided it should be honored (regardless of project style) and must be valid
+            if (projectGuidIsEmpty)
             {
                 projectGuid = Guid.NewGuid();
             }
-            else if (projectGuidIsEmpty || !Guid.TryParse(projectGuidValue, out projectGuid))
+            else if (!Guid.TryParse(projectGuidValue, out projectGuid))
             {
                 throw new InvalidProjectFileException(
                     projectFile: project.FullPath,
