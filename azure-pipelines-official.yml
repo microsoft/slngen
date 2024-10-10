@@ -71,3 +71,9 @@ extends:
           inputs:
             solution: '**\*.sln'
             msbuildArgs: '$(MSBuildArgs)'
+        - task: PublishSymbols@2
+          displayName: 'Publish Symbols'
+          inputs:
+            SearchPattern: '**/bin/**/*.pdb'
+            IndexSources: false
+            SymbolServerType: TeamServices
