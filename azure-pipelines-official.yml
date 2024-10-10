@@ -7,7 +7,6 @@ resources:
 variables:
   LogDirectory: $(Build.ArtifactStagingDirectory)/logs
   ArtifactsDirectory: artifacts
-  SymbolsDirectory: symbols
   BuildConfiguration: 'Release'
   BuildPlatform: 'Any CPU'
   MSBuildArgs: '"/Property:Platform=$(BuildPlatform);Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectory)\msbuild.binlog"'
