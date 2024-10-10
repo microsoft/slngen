@@ -75,7 +75,6 @@ extends:
         - task: PublishSymbols@2
           displayName: 'Publish Symbols'
           inputs:
-            SymbolsFolder: $(Build.SourcesDirectory)/$(SymbolsDirectory)
-            SearchPattern: '**/*.pdb'
+            SearchPattern: '**/bin/**/*.pdb'
             IndexSources: false
             SymbolServerType: TeamServices
