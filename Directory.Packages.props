@@ -33,7 +33,7 @@
     <PackageVersion Include="xunit" Version="2.9.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
     <!-- Pinning vulnerable packages -->
-    <PackageVersion Include="System.Security.Cryptography.Xml" Version="8.0.1" />
+    <PackageVersion Include="System.Security.Cryptography.Xml" Version="8.0.2" />
     <PackageVersion Include="Microsoft.IO.Redist" Version="6.0.1" />
     <PackageVersion Include="System.Formats.Asn1" Version="8.0.1" />
     <PackageVersion Include="System.Net.Http" Version="4.3.4" />
