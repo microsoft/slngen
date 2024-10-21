@@ -77,7 +77,12 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <summary>
         /// SQL Server database projects (.sqlproj).
         /// </summary>
-        public const string SqlServerDb = ".sqlproj";
+        public const string SqlServerDbLegacy = ".sqlproj";
+
+        /// <summary>
+        /// SQL Server database projects (.sqlproj).
+        /// </summary>
+        public const string SqlServerDbSdk = ".sqlproj";
 
         /// <summary>
         /// Visual C++ Shared Project Items.
