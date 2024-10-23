@@ -91,7 +91,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         [InlineData(ProjectFileExtensions.VisualBasic)]
         [InlineData(ProjectFileExtensions.FSharp)]
         [InlineData(ProjectFileExtensions.Wix)]
-        [InlineData(ProjectFileExtensions.SqlServerDb)]
+        [InlineData(ProjectFileExtensions.SqlServerDbLegacy)]
         [InlineData(ProjectFileExtensions.AzureServiceFabric)]
         [InlineData(ProjectFileExtensions.Scope)]
         public void GetProjectTypeGuidLegacyProject(string extension)
@@ -124,7 +124,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         [InlineData(ProjectFileExtensions.VisualBasic)]
         [InlineData(ProjectFileExtensions.FSharp)]
         [InlineData(ProjectFileExtensions.Wix)]
-        [InlineData(ProjectFileExtensions.SqlServerDb)]
+        [InlineData(ProjectFileExtensions.SqlServerDbLegacy)]
         public void GetProjectTypeGuidSdkProject(string extension)
         {
             Dictionary<string, string> globalProperties = new Dictionary<string, string>
