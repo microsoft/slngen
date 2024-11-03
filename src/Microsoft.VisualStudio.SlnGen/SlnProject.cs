@@ -35,6 +35,7 @@ namespace Microsoft.VisualStudio.SlnGen
             [string.Empty] = DefaultLegacyProjectTypeGuid,
             [ProjectFileExtensions.CSharp] = DefaultLegacyProjectTypeGuid,
             [ProjectFileExtensions.VisualBasic] = new (VisualStudioProjectTypeGuids.LegacyVisualBasicProject),
+            [ProjectFileExtensions.SqlServerDbLegacy] = new (VisualStudioProjectTypeGuids.SqlServerDbProjectLegacy),
         };
 
         /// <summary>
@@ -45,6 +46,7 @@ namespace Microsoft.VisualStudio.SlnGen
             [string.Empty] = DefaultNetSdkProjectTypeGuid,
             [ProjectFileExtensions.CSharp] = DefaultNetSdkProjectTypeGuid,
             [ProjectFileExtensions.VisualBasic] = new (VisualStudioProjectTypeGuids.NetSdkVisualBasicProject),
+            [ProjectFileExtensions.SqlServerDbSdk] = new (VisualStudioProjectTypeGuids.SqlServerDbProjectSdk),
         };
 
         /// <summary>
@@ -63,7 +65,6 @@ namespace Microsoft.VisualStudio.SlnGen
             [ProjectFileExtensions.NuProj] = new (VisualStudioProjectTypeGuids.NuProj),
             [ProjectFileExtensions.Scope] = new (VisualStudioProjectTypeGuids.ScopeProject),
             [ProjectFileExtensions.Shproj] = new (VisualStudioProjectTypeGuids.SharedProject),
-            [ProjectFileExtensions.SqlServerDbLegacy] = new (VisualStudioProjectTypeGuids.SqlServerDbProjectLegacy),
             [ProjectFileExtensions.VcxItems] = new (VisualStudioProjectTypeGuids.Cpp),
             [ProjectFileExtensions.Wap] = new (VisualStudioProjectTypeGuids.WapProject),
             [ProjectFileExtensions.Wix] = new (VisualStudioProjectTypeGuids.Wix),
@@ -160,7 +161,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
             bool isUsingMicrosoftNETSdk = project.IsPropertyValueTrue(MSBuildPropertyNames.UsingMicrosoftNETSdk);
 
-            bool isUsingMicrosoftSQLSdk = project.IsPropertyValueTrue(MSBuildPropertyNames.UsingMicrosoftSQLSdk);
+            bool isUsingMicrosoftSQLSdk = project.DoesPropertyExist("NETCoreTargetsPath");
 
             string projectFileExtension = Path.GetExtension(fullPath);
 
@@ -348,13 +349,15 @@ namespace Microsoft.VisualStudio.SlnGen
 
             if (isUsingMicrosoftSQLSdk)
             {
-                projectTypeGuid = new Guid(VisualStudioProjectTypeGuids.SqlServerDbProjectSdk);
-                return projectTypeGuid;
+                if (KnownNetSdkProjectTypeGuids.TryGetValue(projectFileExtension, out projectTypeGuid))
+                {
+                    return projectTypeGuid;
+                }
             }
 
-            if (!KnownLegacyProjectTypeGuids.TryGetValue(projectFileExtension, out projectTypeGuid))
+            if (KnownLegacyProjectTypeGuids.TryGetValue(projectFileExtension, out projectTypeGuid))
             {
-                projectTypeGuid = DefaultLegacyProjectTypeGuid;
+                return projectTypeGuid;
             }
 
             return projectTypeGuid;

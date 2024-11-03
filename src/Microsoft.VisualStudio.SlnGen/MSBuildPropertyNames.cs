@@ -136,9 +136,9 @@ namespace Microsoft.VisualStudio.SlnGen
         public const string UsingMicrosoftNETSdk = nameof(UsingMicrosoftNETSdk);
 
         /// <summary>
-        /// Represents the UsingMicrosoftSQLSdk property.
+        /// Represents the NETCoreTargetsPath property.
         /// </summary>
-        public const string UsingMicrosoftSQLSdk = nameof(UsingMicrosoftSQLSdk);
+        public const string NETCoreTargetsPath = nameof(NETCoreTargetsPath);
 
         /// <summary>
         /// Represents the SlnGenIsBuildable property.
