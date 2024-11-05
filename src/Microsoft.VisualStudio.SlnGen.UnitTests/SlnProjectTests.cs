@@ -91,7 +91,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         [InlineData(ProjectFileExtensions.VisualBasic)]
         [InlineData(ProjectFileExtensions.FSharp)]
         [InlineData(ProjectFileExtensions.Wix)]
-        [InlineData(ProjectFileExtensions.SqlServerDbLegacy)]
+        [InlineData(ProjectFileExtensions.SqlServerDb)]
         [InlineData(ProjectFileExtensions.AzureServiceFabric)]
         [InlineData(ProjectFileExtensions.Scope)]
         public void GetProjectTypeGuidLegacyProject(string extension)
@@ -111,7 +111,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 case ProjectFileExtensions.VisualBasic:
                     actualProject.ProjectTypeGuid.ShouldBe(new Guid("F184B08F-C81C-45F6-A57F-5ABD9991F28F"));
                     break;
-                case ProjectFileExtensions.SqlServerDbLegacy:
+                case ProjectFileExtensions.SqlServerDb:
                     actualProject.ProjectTypeGuid.ShouldBe(new Guid("00D1A9C2-B5F0-4AF3-8072-F6C62B433612"));
                     break;
                 default:
@@ -126,7 +126,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         [InlineData(ProjectFileExtensions.VisualBasic)]
         [InlineData(ProjectFileExtensions.FSharp)]
         [InlineData(ProjectFileExtensions.Wix)]
-        [InlineData(ProjectFileExtensions.SqlServerDbLegacy)]
+        [InlineData(ProjectFileExtensions.SqlServerDb)]
         public void GetProjectTypeGuidSdkProject(string extension)
         {
             Dictionary<string, string> globalProperties = new Dictionary<string, string>
@@ -150,8 +150,8 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                     actualProject.ProjectTypeGuid.ShouldBe(new Guid("778DAE3C-4631-46EA-AA77-85C1314464D9"));
                     break;
 
-                case ProjectFileExtensions.SqlServerDbLegacy:
-                    actualProject.ProjectTypeGuid.ShouldBe(new Guid("00D1A9C2-B5F0-4AF3-8072-F6C62B433612"));
+                case ProjectFileExtensions.SqlServerDb:
+                    actualProject.ProjectTypeGuid.ShouldBe(new Guid("42EA0DBD-9CF1-443E-919E-BE9C484E4577"));
                     break;
 
                 default:

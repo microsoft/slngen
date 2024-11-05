@@ -35,7 +35,7 @@ namespace Microsoft.VisualStudio.SlnGen
             [string.Empty] = DefaultLegacyProjectTypeGuid,
             [ProjectFileExtensions.CSharp] = DefaultLegacyProjectTypeGuid,
             [ProjectFileExtensions.VisualBasic] = new (VisualStudioProjectTypeGuids.LegacyVisualBasicProject),
-            [ProjectFileExtensions.SqlServerDbLegacy] = new (VisualStudioProjectTypeGuids.SqlServerDbProjectLegacy),
+            [ProjectFileExtensions.SqlServerDb] = new (VisualStudioProjectTypeGuids.SqlServerDbProjectLegacy),
         };
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace Microsoft.VisualStudio.SlnGen
             [string.Empty] = DefaultNetSdkProjectTypeGuid,
             [ProjectFileExtensions.CSharp] = DefaultNetSdkProjectTypeGuid,
             [ProjectFileExtensions.VisualBasic] = new (VisualStudioProjectTypeGuids.NetSdkVisualBasicProject),
-            [ProjectFileExtensions.SqlServerDbSdk] = new (VisualStudioProjectTypeGuids.SqlServerDbProjectSdk),
+            [ProjectFileExtensions.SqlServerDb] = new (VisualStudioProjectTypeGuids.SqlServerDbProjectSdk),
         };
 
         /// <summary>
