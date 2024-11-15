@@ -11,7 +11,7 @@ variables:
   BuildPlatform: 'Any CPU'
   MSBuildArgs: '"/Property:Platform=$(BuildPlatform);Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectory)\msbuild.binlog"'
   SignType: 'Real'
-  DotNet10InstallArgs: '--channel 10.0 --quality daily'
+  DotNet10InstallArgs: '-channel 10.0 -quality daily'
 
 trigger:
   batch: true
