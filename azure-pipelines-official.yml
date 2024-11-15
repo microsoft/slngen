@@ -11,6 +11,9 @@ variables:
   BuildPlatform: 'Any CPU'
   MSBuildArgs: '"/Property:Platform=$(BuildPlatform);Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectory)\msbuild.binlog"'
   SignType: 'Real'
+  # Not using "--channel 10.0 --quality daily", see https://github.com/microsoft/slngen/issues/456
+  DotNet10InstallArgs: '-version 10.0.100-alpha.1.24510.13'
+
 trigger:
   batch: true
   branches:
@@ -65,6 +68,11 @@ extends:
           displayName: 'Install .NET 9.x'
           inputs:
             version: '9.x'
+        - script: |
+            powershell -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -UseBasicParsing 'https://dot.net/v1/dotnet-install.ps1'))) $(DotNet10InstallArgs) -InstallDir D:\a\_work\_tool\dotnet"
+            dotnet --info
+          displayName: 'Install .NET 10.x'
+
         - task: VSBuild@1
           displayName: 'Build Solution'
           inputs:

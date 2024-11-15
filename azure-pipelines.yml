@@ -53,6 +53,24 @@ jobs:
     inputs:
       version: '9.x'
 
+  - script: |
+      powershell -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -UseBasicParsing 'https://dot.net/v1/dotnet-install.ps1'))) $(DotNet10InstallArgs) -InstallDir C:\hostedtoolcache\windows\dotnet"
+      dotnet --info
+    displayName: 'Install .NET 10.x (Windows)'
+    condition: eq(variables.osName, 'Windows')
+
+  - script: |
+      curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin $(DotNet10InstallArgs) --install-dir /opt/hostedtoolcache/dotnet
+      dotnet --info
+    displayName: 'Install .NET 10.x (Linux)'
+    condition: eq(variables.osName, 'Linux')
+
+  - script: |
+      curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin $(DotNet10InstallArgs) --install-dir /Users/runner/hostedtoolcache/dotnet
+      dotnet --info
+    displayName: 'Install .NET 10.x (MacOS)'
+    condition: eq(variables.osName, 'MacOS')
+
   - task: VSBuild@1
     displayName: 'Build (Visual Studio)'
     inputs:
