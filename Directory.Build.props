@@ -11,7 +11,7 @@
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
     <ContinuousIntegrationBuild Condition="'$(TF_BUILD)' == 'true'">true</ContinuousIntegrationBuild>
     <NoWarn>$(NoWarn);NETSDK1213</NoWarn>
-	<TargetDotNet10 Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TargetDotNet10>
+    <TargetDotNet10 Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TargetDotNet10>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
     <UseArtifactsOutput>false</UseArtifactsOutput>
   </PropertyGroup>
