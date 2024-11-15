@@ -105,7 +105,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             slnFile.AddProjects(new[] { projectA, projectB, projectC, projectD, projectE, projectF, projectG });
 
-            string solutionFilePath = GetTempFileName();
+            string solutionFilePath = GetTempFileName(".sln");
 
             slnFile.Save(solutionFilePath, useFolders: false);
 
@@ -192,7 +192,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             slnFile.AddProjects(new[] { projectA, projectB, projectC, projectD, projectE });
 
-            string solutionFilePath = GetTempFileName();
+            string solutionFilePath = GetTempFileName(".sln");
 
             slnFile.Save(solutionFilePath, useFolders: false, alwaysBuild: false);
 
@@ -231,7 +231,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             slnFile.AddProjects(new[] { project });
 
-            string solutionFilePath = GetTempFileName();
+            string solutionFilePath = GetTempFileName(".sln");
 
             slnFile.Save(solutionFilePath, useFolders: false);
 
@@ -313,7 +313,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             slnFile.AddProjects(new[] { projectA, projectB, projectC, projectD });
 
-            string solutionFilePath = GetTempFileName();
+            string solutionFilePath = GetTempFileName(".sln");
 
             slnFile.Save(solutionFilePath, useFolders: false);
 
@@ -331,7 +331,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         [Fact]
         public void ExistingSolutionIsReused()
         {
-            string path = GetTempFileName();
+            string solutionFilePath = GetTempFileName(".sln");
 
             Guid projectGuid = Guid.Parse("7BE5A5CA-169D-4955-AB4D-EDDE662F4AE5");
 
@@ -355,13 +355,13 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             slnFile.AddProjects(new[] { project });
 
-            slnFile.Save(path, useFolders: false);
+            slnFile.Save(solutionFilePath, useFolders: false);
 
-            SlnFile.TryParseExistingSolution(path, out Guid solutionGuid, out _).ShouldBeTrue();
+            SlnFile.TryParseExistingSolution(solutionFilePath, out Guid solutionGuid, out _).ShouldBeTrue();
 
             solutionGuid.ShouldBe(slnFile.SolutionGuid);
 
-            SolutionFile solutionFile = SolutionFile.Parse(path);
+            SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
 
             ProjectInSolution projectInSolution = solutionFile.ProjectsInOrder.ShouldHaveSingleItem();
 
@@ -774,7 +774,7 @@ EndGlobal
 
             string[] solutionItems = new[] { Path.Combine(root, "SubFolder1", solutionItem1Name) };
 
-            string solutionFilePath = GetTempFileName();
+            string solutionFilePath = GetTempFileName(".sln");
 
             SlnFile slnFile = new SlnFile();
 
@@ -1029,7 +1029,7 @@ EndGlobal
 
             string[] solutionItems = new[] { Path.Combine(root, "SubFolder3", solutionItem1Name) };
 
-            string solutionFilePath = GetTempFileName();
+            string solutionFilePath = GetTempFileName(".sln");
 
             SlnFile slnFile = new SlnFile();
 
@@ -1087,7 +1087,7 @@ EndGlobal
 
             string[] solutionItems = new[] { Path.Combine(root, "SubFolder3", solutionItem1Name) };
 
-            string solutionFilePath = GetTempFileName();
+            string solutionFilePath = GetTempFileName(".sln");
 
             SlnFile slnFile = new SlnFile();
 
@@ -1154,7 +1154,7 @@ EndGlobal
 
             string[] solutionItems = new[] { Path.Combine(root, "SubFolder3", solutionItem1Name) };
 
-            string solutionFilePath = GetTempFileName();
+            string solutionFilePath = GetTempFileName(".sln");
 
             SlnFile slnFile = new SlnFile();
 
@@ -1208,7 +1208,7 @@ EndGlobal
         [Fact]
         public void VisualStudioVersionIsWritten()
         {
-            string solutionFilePath = GetTempFileName();
+            string solutionFilePath = GetTempFileName(".sln");
 
             SlnFile slnFile = new SlnFile
             {
@@ -1243,7 +1243,7 @@ EndGlobal
         public void Save_WithSolutionItemsAddedToSpecificFolder_SolutionItemsExistInSpecificFolder()
         {
             // Arrange
-            string solutionFilePath = GetTempFileName();
+            string solutionFilePath = GetTempFileName(".sln");
 
             var slnFile = new SlnFile()
             {
@@ -1350,7 +1350,7 @@ EndGlobal
         public void Save_WithSolutionItemsAddedWithParentFolder_SolutionItemsNestedInParentFolder()
         {
             // Arrange
-            string solutionFilePath = GetTempFileName();
+            string solutionFilePath = GetTempFileName(".sln");
 
             var slnFile = new SlnFile()
             {
@@ -1425,7 +1425,7 @@ EndGlobal
         [InlineData(false)]
         public void SlnProject_IsBuildable_ReflectedAsProjectConfigurationInSolutionIncludeInBuild(bool isBuildable)
         {
-            string solutionFilePath = GetTempFileName();
+            string solutionFilePath = GetTempFileName(".sln");
 
             SlnFile slnFile = new SlnFile();
             SlnProject slnProject = new SlnProject
@@ -1472,7 +1472,7 @@ EndGlobal
 
         private void ValidateProjectInSolution(Action<SlnProject, ProjectInSolution> customValidator, SlnProject[] projects, bool useFolders)
         {
-            string solutionFilePath = GetTempFileName();
+            string solutionFilePath = GetTempFileName(".sln");
 
             SlnFile slnFile = new SlnFile();
 
