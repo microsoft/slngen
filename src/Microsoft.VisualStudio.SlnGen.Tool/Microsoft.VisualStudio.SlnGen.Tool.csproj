@@ -38,6 +38,14 @@
                       ReferenceOutputAssembly="false"
                       SkipGetTargetFrameworkProperties="true"
                       TargetFramework="net9.0" />
+    <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj"
+                      SetTargetFramework="TargetFramework=net10.0"
+                      IncludeAssets="None"
+                      OutputItemType="SlnGenBuildOutput"
+                      PrivateAssets="All"
+                      ReferenceOutputAssembly="false"
+                      SkipGetTargetFrameworkProperties="true"
+                      TargetFramework="net10.0" />
   </ItemGroup>
   <Target Name="CopySlnGenToOutputDirectoryAndPackage"
           AfterTargets="PrepareForRun"

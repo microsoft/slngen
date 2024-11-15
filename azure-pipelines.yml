@@ -90,6 +90,14 @@ jobs:
       testRunTitle: '$(osName) .NET 9.0'
     condition: succeededOrFailed()
 
+  - task: DotNetCoreCLI@2
+    displayName: 'Run Unit Tests (.NET 10)'
+    inputs:
+      command: 'test'
+      arguments: '--no-restore --no-build --framework net10.0 /noautorsp $(MSBuildArgs) "/BinaryLogger:$(ArtifactsDirectoryName)/test-net10.0.binlog"'
+      testRunTitle: '$(osName) .NET 10.0'
+    condition: succeededOrFailed()
+
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifacts'
     inputs:
