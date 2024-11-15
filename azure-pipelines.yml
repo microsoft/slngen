@@ -52,7 +52,6 @@ jobs:
     displayName: 'Install .NET 9.x'
     inputs:
       version: '9.x'
-      includePreviewVersions: true
 
   - task: VSBuild@1
     displayName: 'Build (Visual Studio)'
