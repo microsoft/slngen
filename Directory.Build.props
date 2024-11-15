@@ -7,6 +7,7 @@
     <LangVersion>Latest</LangVersion>
     <MSBuildTreatWarningsAsErrors>true</MSBuildTreatWarningsAsErrors>
     <NoWarn>$(NoWarn);SA0001;SA1515;SA1005;SA1629;NETSDK1192</NoWarn>
+    <NoWarn>$(NoWarn);NETSDK1223</NoWarn> <!-- CI does not have VS 17.12 yet -->
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
     <ContinuousIntegrationBuild Condition="'$(TF_BUILD)' == 'true'">true</ContinuousIntegrationBuild>
     <NoWarn>$(NoWarn);NETSDK1213</NoWarn>
