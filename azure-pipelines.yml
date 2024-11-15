@@ -7,8 +7,7 @@ variables:
   BuildPlatform: 'Any CPU'
   MSBuildArgs: '"/Property:Platform=$(BuildPlatform);Configuration=$(BuildConfiguration)"'
   SignType: 'Test'
-  # Not using "--channel 10.0 --quality daily", see https://github.com/microsoft/slngen/issues/456
-  DotNet10InstallArgs: '-version 10.0.100-alpha.1.24564.1'
+  DotNet10InstallArgs: '--channel 10.0 --quality daily'
 
 trigger:
   batch: 'true'

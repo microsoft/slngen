@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net472;net8.0;net9.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>net472;net8.0;net9.0</TargetFrameworks>
+	<TargetFrameworks Condition="'$(TargetDotNet10)' == 'true'">$(TargetFrameworks);net10.0</TargetFrameworks>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.config</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <IncludeReferenceCopyLocalPathsInBuildOutputInPackage>true</IncludeReferenceCopyLocalPathsInBuildOutputInPackage>
     <IsTool>true</IsTool>
@@ -27,7 +28,8 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net472\MSBuild.exe" Private="false" Condition="'$(TargetFramework)' == 'net472'" />
-    <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net8.0\MSBuild.dll" Private="false" Condition="'$(TargetFramework)' == 'net8.0' Or '$(TargetFramework)' == 'net9.0' Or '$(TargetFramework)' == 'net10.0'" />
+    <Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net8.0\MSBuild.dll" Private="false" Condition="'$(TargetFramework)' == 'net8.0'" />
+	<Reference Include="$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net9.0\MSBuild.dll" Private="false" Condition="'$(TargetFramework)' == 'net9.0' Or '$(TargetFramework)' == 'net10.0'" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" Condition="'$(TargetFramework)' == 'net472'" />
