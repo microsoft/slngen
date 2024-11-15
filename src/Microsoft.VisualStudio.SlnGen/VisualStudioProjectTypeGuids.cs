@@ -82,7 +82,12 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <summary>
         /// SQL Server database projects (.sqlproj).
         /// </summary>
-        public const string SqlServerDbProject = "00D1A9C2-B5F0-4AF3-8072-F6C62B433612";
+        public const string SqlServerDbProjectLegacy = "00D1A9C2-B5F0-4AF3-8072-F6C62B433612";
+
+        /// <summary>
+        /// SQL Server database projects (.sqlproj).
+        /// </summary>
+        public const string SqlServerDbProjectSdk = "42EA0DBD-9CF1-443E-919E-BE9C484E4577";
 
         /// <summary>
         /// Windows Application Packaging projects (.wapproj).

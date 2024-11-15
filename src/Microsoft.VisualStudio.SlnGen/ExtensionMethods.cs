@@ -118,6 +118,22 @@ namespace Microsoft.VisualStudio.SlnGen
         }
 
         /// <summary>
+        /// Returns true if a property value exists else returns false.
+        /// </summary>
+        /// <param name = "project" > The < see cref="Project" /> to get the property of.</param>
+        /// <param name="name">The name of the property.</param>
+        /// <returns>if the property exists return true, otherwise false.</returns>
+        public static bool DoesPropertyExist(this Project project, string name)
+        {
+            if (project.GetPropertyValue(name).Equals(String.Empty))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Splits the current string as a semicolon delimited list of equals sign separated key/value pairs.
         /// </summary>
         /// <param name="value">The value to split.</param>

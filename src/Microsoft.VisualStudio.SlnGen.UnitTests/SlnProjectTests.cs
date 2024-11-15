@@ -111,7 +111,9 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 case ProjectFileExtensions.VisualBasic:
                     actualProject.ProjectTypeGuid.ShouldBe(new Guid("F184B08F-C81C-45F6-A57F-5ABD9991F28F"));
                     break;
-
+                case ProjectFileExtensions.SqlServerDb:
+                    actualProject.ProjectTypeGuid.ShouldBe(new Guid("00D1A9C2-B5F0-4AF3-8072-F6C62B433612"));
+                    break;
                 default:
                     actualProject.ProjectTypeGuid.ShouldBe(SlnProject.KnownProjectTypeGuids[extension]);
                     break;
@@ -146,6 +148,10 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
                 case ProjectFileExtensions.VisualBasic:
                     actualProject.ProjectTypeGuid.ShouldBe(new Guid("778DAE3C-4631-46EA-AA77-85C1314464D9"));
+                    break;
+
+                case ProjectFileExtensions.SqlServerDb:
+                    actualProject.ProjectTypeGuid.ShouldBe(new Guid("42EA0DBD-9CF1-443E-919E-BE9C484E4577"));
                     break;
 
                 default:

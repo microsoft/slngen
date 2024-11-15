@@ -35,6 +35,7 @@ namespace Microsoft.VisualStudio.SlnGen
             [string.Empty] = DefaultLegacyProjectTypeGuid,
             [ProjectFileExtensions.CSharp] = DefaultLegacyProjectTypeGuid,
             [ProjectFileExtensions.VisualBasic] = new (VisualStudioProjectTypeGuids.LegacyVisualBasicProject),
+            [ProjectFileExtensions.SqlServerDb] = new (VisualStudioProjectTypeGuids.SqlServerDbProjectLegacy),
         };
 
         /// <summary>
@@ -45,6 +46,7 @@ namespace Microsoft.VisualStudio.SlnGen
             [string.Empty] = DefaultNetSdkProjectTypeGuid,
             [ProjectFileExtensions.CSharp] = DefaultNetSdkProjectTypeGuid,
             [ProjectFileExtensions.VisualBasic] = new (VisualStudioProjectTypeGuids.NetSdkVisualBasicProject),
+            [ProjectFileExtensions.SqlServerDb] = new (VisualStudioProjectTypeGuids.SqlServerDbProjectSdk),
         };
 
         /// <summary>
@@ -63,7 +65,6 @@ namespace Microsoft.VisualStudio.SlnGen
             [ProjectFileExtensions.NuProj] = new (VisualStudioProjectTypeGuids.NuProj),
             [ProjectFileExtensions.Scope] = new (VisualStudioProjectTypeGuids.ScopeProject),
             [ProjectFileExtensions.Shproj] = new (VisualStudioProjectTypeGuids.SharedProject),
-            [ProjectFileExtensions.SqlServerDb] = new (VisualStudioProjectTypeGuids.SqlServerDbProject),
             [ProjectFileExtensions.VcxItems] = new (VisualStudioProjectTypeGuids.Cpp),
             [ProjectFileExtensions.Wap] = new (VisualStudioProjectTypeGuids.WapProject),
             [ProjectFileExtensions.Wix] = new (VisualStudioProjectTypeGuids.Wix),
@@ -160,6 +161,8 @@ namespace Microsoft.VisualStudio.SlnGen
 
             bool isUsingMicrosoftNETSdk = project.IsPropertyValueTrue(MSBuildPropertyNames.UsingMicrosoftNETSdk);
 
+            bool isUsingMicrosoftSQLSdk = project.DoesPropertyExist("NETCoreTargetsPath");
+
             string projectFileExtension = Path.GetExtension(fullPath);
 
             bool isSharedProject = string.Equals(projectFileExtension, ProjectFileExtensions.Shproj, StringComparison.Ordinal) || string.Equals(projectFileExtension, ProjectFileExtensions.VcxItems, StringComparison.Ordinal);
@@ -191,7 +194,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 Name = name,
                 Platforms = GetPlatforms(project, projectFileExtension, isUsingMicrosoftNETSdk),
                 ProjectGuid = GetProjectGuid(project, isUsingMicrosoftNETSdk),
-                ProjectTypeGuid = GetProjectTypeGuid(projectFileExtension, isUsingMicrosoftNETSdk, customProjectTypeGuids),
+                ProjectTypeGuid = GetProjectTypeGuid(projectFileExtension, isUsingMicrosoftNETSdk, customProjectTypeGuids, isUsingMicrosoftSQLSdk),
                 SharedProjectItems = sharedProjectItemPaths.Any() ? sharedProjectItemPaths : Array.Empty<string>(),
                 SolutionFolder = project.GetPropertyValueOrDefault(MSBuildPropertyNames.SlnGenSolutionFolder, string.Empty),
                 IsBuildable = isBuildable,
@@ -327,7 +330,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <param name="isUsingMicrosoftNETSdk">A value indicating whether or not the specified project is using Microsoft.NET.Sdk.</param>
         /// <param name="customProjectTypeGuids">An <see cref="IReadOnlyDictionary{String, Guid}" /> containing any user specified project type GUIDs to use.</param>
         /// <returns>A <see cref="Guid" /> representing the project type of the specified project.</returns>
-        internal static Guid GetProjectTypeGuid(string projectFileExtension, bool isUsingMicrosoftNETSdk, IReadOnlyDictionary<string, Guid> customProjectTypeGuids)
+        internal static Guid GetProjectTypeGuid(string projectFileExtension, bool isUsingMicrosoftNETSdk, IReadOnlyDictionary<string, Guid> customProjectTypeGuids, bool isUsingMicrosoftSQLSdk)
         {
             if (customProjectTypeGuids.TryGetValue(projectFileExtension, out Guid projectTypeGuid) || KnownProjectTypeGuids.TryGetValue(projectFileExtension, out projectTypeGuid))
             {
@@ -344,9 +347,17 @@ namespace Microsoft.VisualStudio.SlnGen
                 return projectTypeGuid;
             }
 
+            if (isUsingMicrosoftSQLSdk)
+            {
+                if (KnownNetSdkProjectTypeGuids.TryGetValue(projectFileExtension, out projectTypeGuid))
+                {
+                    return projectTypeGuid;
+                }
+            }
+
             if (!KnownLegacyProjectTypeGuids.TryGetValue(projectFileExtension, out projectTypeGuid))
             {
-                projectTypeGuid = DefaultLegacyProjectTypeGuid;
+                return projectTypeGuid = DefaultLegacyProjectTypeGuid;
             }
 
             return projectTypeGuid;

@@ -136,6 +136,11 @@ namespace Microsoft.VisualStudio.SlnGen
         public const string UsingMicrosoftNETSdk = nameof(UsingMicrosoftNETSdk);
 
         /// <summary>
+        /// Represents the NETCoreTargetsPath property.
+        /// </summary>
+        public const string NETCoreTargetsPath = nameof(NETCoreTargetsPath);
+
+        /// <summary>
         /// Represents the SlnGenIsBuildable property.
         /// </summary>
         public const string SlnGenIsBuildable = nameof(SlnGenIsBuildable);
