@@ -355,9 +355,9 @@ namespace Microsoft.VisualStudio.SlnGen
                 }
             }
 
-            if (KnownLegacyProjectTypeGuids.TryGetValue(projectFileExtension, out projectTypeGuid))
+            if (!KnownLegacyProjectTypeGuids.TryGetValue(projectFileExtension, out projectTypeGuid))
             {
-                return projectTypeGuid;
+                return projectTypeGuid = DefaultLegacyProjectTypeGuid; ;
             }
 
             return projectTypeGuid;
