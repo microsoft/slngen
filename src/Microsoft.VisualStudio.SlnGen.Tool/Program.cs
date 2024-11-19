@@ -32,6 +32,7 @@ namespace Microsoft.VisualStudio.SlnGen
             UnsupportedNETSdk = 2,
             UnknownNETSdk = 3,
             SlnGenNotFound = 4,
+            UnsupportedMSBuild = 5,
             UnhandledException = -1,
         }
 
@@ -81,17 +82,11 @@ namespace Microsoft.VisualStudio.SlnGen
                     {
                         case "3":
                         case "5":
-                            Utility.WriteError(Error, "The currently configured .NET SDK {0} is not supported, SlnGen requires .NET SDK 5 or greater.", developmentEnvironment.DotNetSdkVersion);
+                        case "6":
+                        case "7":
+                            Utility.WriteError(Error, "The currently configured .NET SDK {0} is not supported, SlnGen requires .NET SDK 8 or greater.", developmentEnvironment.DotNetSdkVersion);
 
                             return (int)ExitCode.UnsupportedNETSdk;
-
-                        case "6":
-                            framework = "net6.0";
-                            break;
-
-                        case "7":
-                            framework = "net7.0";
-                            break;
 
                         case "8":
                             framework = "net8.0";
@@ -99,6 +94,10 @@ namespace Microsoft.VisualStudio.SlnGen
 
                         case "9":
                             framework = "net9.0";
+                            break;
+
+                        case "10":
+                            framework = "net10.0";
                             break;
 
                         default:
@@ -111,16 +110,14 @@ namespace Microsoft.VisualStudio.SlnGen
                 {
                     FileVersionInfo msBuildVersionInfo = FileVersionInfo.GetVersionInfo(developmentEnvironment.MSBuildExe.FullName);
 
-                    switch (msBuildVersionInfo.FileMajorPart)
+                    if (msBuildVersionInfo.FileMajorPart < 17)
                     {
-                        case 15:
-                            framework = "net461";
-                            break;
+                        Utility.WriteError(Error, "The currently configured MSBuild {0} is not supported, SlnGen requires MSBuild 17.0 or greater.", msBuildVersionInfo.FileMajorPart);
 
-                        default:
-                            framework = "net472";
-                            break;
+                        return (int)ExitCode.UnsupportedMSBuild;
                     }
+
+                    framework = "net472";
                 }
 
                 FileInfo slnGenFileInfo = new FileInfo(Path.Combine(thisAssemblyFileInfo.DirectoryName!, "..", thisAssemblyFileInfo.DirectoryName!.EndsWith("any") ? ".." : string.Empty, "slngen", framework, useDotnet ? "slngen.dll" : "slngen.exe"));
