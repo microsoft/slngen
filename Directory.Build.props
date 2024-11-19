@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
   <PropertyGroup>
     <BaseArtifactsPath>$(MSBuildThisFileDirectory)artifacts</BaseArtifactsPath>
     <DefaultItemExcludes>*log</DefaultItemExcludes>
@@ -11,7 +11,7 @@
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
     <ContinuousIntegrationBuild Condition="'$(TF_BUILD)' == 'true'">true</ContinuousIntegrationBuild>
     <NoWarn>$(NoWarn);NETSDK1213</NoWarn>
-    <TargetDotNet9 Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TargetDotNet9>
+    <TargetDotNet10 Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TargetDotNet10>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
     <UseArtifactsOutput>false</UseArtifactsOutput>
   </PropertyGroup>

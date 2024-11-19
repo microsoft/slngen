@@ -7,7 +7,7 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <MicrosoftBuildPackageVersion>17.12.6</MicrosoftBuildPackageVersion>
-    <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'net461'">17.12.6</MicrosoftBuildPackageVersion>
+    <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'net8.0'">17.11.4</MicrosoftBuildPackageVersion>
     <SystemConfigurationConfigurationManagerPackageVersion>9.0.0</SystemConfigurationConfigurationManagerPackageVersion>
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion>8.0.0</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion Condition="'$(TargetFramework)' == 'net472'">6.0.0</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
@@ -23,7 +23,7 @@
     <PackageVersion Include="Microsoft.Extensions.FileSystemGlobbing" Version="9.0.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
     <PackageVersion Include="Microsoft.VisualStudio.ProjectSystem.SDK" Version="15.8.243" />
-    <PackageVersion Include="Microsoft.VisualStudio.SDK" Version="17.11.40262" />
+    <PackageVersion Include="Microsoft.VisualStudio.SDK" Version="17.12.40392" />
     <PackageVersion Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="3.12.2149" />
     <PackageVersion Include="Microsoft.VSSDK.BuildTools" Version="17.12.2069" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
