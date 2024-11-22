@@ -69,7 +69,7 @@ extends:
           inputs:
             version: '9.x'
         - script: |
-            powershell -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -UseBasicParsing 'https://dot.net/v1/dotnet-install.ps1'))) $(DotNet10InstallArgs) -InstallDir D:\a\_work\_tool\dotnet"
+            powershell -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -UseBasicParsing 'https://dot.net/v1/dotnet-install.ps1'))) $(DotNet10InstallArgs) -InstallDir C:\ToolCache\dotnet"
             dotnet --info
           displayName: 'Install .NET 10.x'
 
