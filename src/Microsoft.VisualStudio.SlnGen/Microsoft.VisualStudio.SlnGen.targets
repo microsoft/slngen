@@ -11,17 +11,18 @@
              AssemblyFile="$([MSBuild]::ValueOrDefault('$(SlnGenAssemblyFile)', '$(MSBuildThisFileDirectory)..\tools\net472\slngen.exe'))"
              Condition="'$(MSBuildRuntimeType)' == 'Full' And '$(MSBuildToolsVersion)' == 'Current'" />
 
+  <!-- Unlike properties and items, the first UsingTask element that applies to a TaskName will be used, therefore we sort these from highest version to lowest. -->
   <UsingTask TaskName="Microsoft.VisualStudio.SlnGen.Tasks.SlnGenToolTask"
-             AssemblyFile="$([MSBuild]::ValueOrDefault('$(SlnGenAssemblyFile)', '$(MSBuildThisFileDirectory)..\tools\net8.0\slngen.dll'))"
-             Condition="'$(MSBuildRuntimeType)' == 'Core' And '$([MSBuild]::VersionGreaterThanOrEquals($(MSBuildVersion), 17.8))' == 'true'" />
+             AssemblyFile="$([MSBuild]::ValueOrDefault('$(SlnGenAssemblyFile)', '$(MSBuildThisFileDirectory)..\tools\net10.0\slngen.dll'))"
+             Condition="'$(MSBuildRuntimeType)' == 'Core' And '$([MSBuild]::VersionGreaterThanOrEquals($(MSBuildVersion), 17.13))' == 'true'" />
 
   <UsingTask TaskName="Microsoft.VisualStudio.SlnGen.Tasks.SlnGenToolTask"
              AssemblyFile="$([MSBuild]::ValueOrDefault('$(SlnGenAssemblyFile)', '$(MSBuildThisFileDirectory)..\tools\net9.0\slngen.dll'))"
              Condition="'$(MSBuildRuntimeType)' == 'Core' And '$([MSBuild]::VersionGreaterThanOrEquals($(MSBuildVersion), 17.12))' == 'true'" />
 
   <UsingTask TaskName="Microsoft.VisualStudio.SlnGen.Tasks.SlnGenToolTask"
-             AssemblyFile="$([MSBuild]::ValueOrDefault('$(SlnGenAssemblyFile)', '$(MSBuildThisFileDirectory)..\tools\net10.0\slngen.dll'))"
-             Condition="'$(MSBuildRuntimeType)' == 'Core' And '$([MSBuild]::VersionGreaterThanOrEquals($(MSBuildVersion), 17.13))' == 'true'" />
+             AssemblyFile="$([MSBuild]::ValueOrDefault('$(SlnGenAssemblyFile)', '$(MSBuildThisFileDirectory)..\tools\net8.0\slngen.dll'))"
+             Condition="'$(MSBuildRuntimeType)' == 'Core' And '$([MSBuild]::VersionGreaterThanOrEquals($(MSBuildVersion), 17.8))' == 'true'" />
 
   <Target Name="SlnGen"
           DependsOnTargets="$(SlnGenDependsOn)">
