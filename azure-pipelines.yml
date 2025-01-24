@@ -8,7 +8,7 @@ variables:
   MSBuildArgs: '"/Property:Platform=$(BuildPlatform);Configuration=$(BuildConfiguration)"'
   SignType: 'Test'
   # Not using "--channel 10.0 --quality daily", see https://github.com/microsoft/slngen/issues/456
-  DotNet10InstallArgs: '-version 10.0.100-alpha.1.24571.14'
+  DotNet10InstallArgs: '-version 10.0.100-alpha.1.25074.9'
 
 trigger:
   batch: 'true'
