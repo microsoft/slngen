@@ -143,11 +143,22 @@ namespace Microsoft.VisualStudio.SlnGen
                 return 0;
             }
 
+            bool useSimpleCache = true;
+
+            var msbuildVersion = FileVersionInfo.GetVersionInfo(CurrentDevelopmentEnvironment.MSBuildExe.FullName);
+
+            // Work around https://github.com/dotnet/msbuild/issues/11394 by falling back to the slower PRE cache
+            // on known-affected MSBuild versions (this should be much more tightly scoped after that bug is fixed).
+            if (msbuildVersion.ProductMajorPart == 17 && msbuildVersion.ProductMinorPart >= 13)
+            {
+                useSimpleCache = false;
+            }
+
             MSBuildFeatureFlags featureFlags = new MSBuildFeatureFlags
             {
                 CacheFileEnumerations = true,
                 LoadAllFilesAsReadOnly = true,
-                UseSimpleProjectRootElementCacheConcurrency = true,
+                UseSimpleProjectRootElementCacheConcurrency = useSimpleCache,
 #if NETFRAMEWORK
                 MSBuildExePath = CurrentDevelopmentEnvironment.MSBuildExe.FullName,
 #else
