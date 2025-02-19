@@ -145,7 +145,13 @@ namespace Microsoft.VisualStudio.SlnGen
 
             bool useSimpleCache = true;
 
-            var msbuildVersion = FileVersionInfo.GetVersionInfo(CurrentDevelopmentEnvironment.MSBuildExe.FullName);
+#if NETFRAMEWORK
+            string msBuildPath = CurrentDevelopmentEnvironment.MSBuildExe.FullName;
+#else
+            string msBuildPath = CurrentDevelopmentEnvironment.MSBuildDll.FullName;
+#endif
+
+            var msbuildVersion = FileVersionInfo.GetVersionInfo(msBuildPath);
 
             // Work around https://github.com/dotnet/msbuild/issues/11394 by falling back to the slower PRE cache
             // on known-affected MSBuild versions (this should be much more tightly scoped after that bug is fixed).
@@ -159,11 +165,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 CacheFileEnumerations = true,
                 LoadAllFilesAsReadOnly = true,
                 UseSimpleProjectRootElementCacheConcurrency = useSimpleCache,
-#if NETFRAMEWORK
-                MSBuildExePath = CurrentDevelopmentEnvironment.MSBuildExe.FullName,
-#else
-                MSBuildExePath = CurrentDevelopmentEnvironment.MSBuildDll.FullName,
-#endif
+                MSBuildExePath = msBuildPath,
             };
 
             LoggerVerbosity verbosity = ForwardingLogger.ParseLoggerVerbosity(arguments.Verbosity?.LastOrDefault());
