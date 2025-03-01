@@ -6,6 +6,9 @@ using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Utilities.ProjectCreation;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.VisualStudio.SolutionPersistence;
+using Microsoft.VisualStudio.SolutionPersistence.Model;
+using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 using Shouldly;
 using System;
 using System.Collections.Generic;
@@ -13,6 +16,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.VisualStudio.SlnGen.UnitTests
@@ -108,8 +113,9 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             slnFile.AddProjects(new[] { projectA, projectB, projectC, projectD, projectE, projectF, projectG });
 
             string solutionFilePath = GetTempFileName(".sln");
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionFilePath);
 
-            slnFile.Save(solutionFilePath, useFolders: false);
+            slnFile.Save(serializer, solutionFilePath, useFolders: false);
 
             SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
 
@@ -195,8 +201,9 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             slnFile.AddProjects(new[] { projectA, projectB, projectC, projectD, projectE });
 
             string solutionFilePath = GetTempFileName(".sln");
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionFilePath);
 
-            slnFile.Save(solutionFilePath, useFolders: false, alwaysBuild: false);
+            slnFile.Save(serializer, solutionFilePath, useFolders: false, alwaysBuild: false);
 
             SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
 
@@ -234,8 +241,9 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             slnFile.AddProjects(new[] { project });
 
             string solutionFilePath = GetTempFileName(".sln");
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionFilePath);
 
-            slnFile.Save(solutionFilePath, useFolders: false);
+            slnFile.Save(serializer, solutionFilePath, useFolders: false);
 
             SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
 
@@ -316,8 +324,9 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             slnFile.AddProjects(new[] { projectA, projectB, projectC, projectD });
 
             string solutionFilePath = GetTempFileName(".sln");
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionFilePath);
 
-            slnFile.Save(solutionFilePath, useFolders: false);
+            slnFile.Save(serializer, solutionFilePath, useFolders: false);
 
             SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
 
@@ -334,6 +343,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         public void ExistingSolutionIsReused()
         {
             string solutionFilePath = GetTempFileName(".sln");
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionFilePath);
 
             Guid projectGuid = Guid.Parse("7BE5A5CA-169D-4955-AB4D-EDDE662F4AE5");
 
@@ -357,9 +367,9 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             slnFile.AddProjects(new[] { project });
 
-            slnFile.Save(solutionFilePath, useFolders: false);
+            slnFile.Save(serializer, solutionFilePath, useFolders: false);
 
-            SlnFile.TryParseExistingSolution(solutionFilePath, out Guid solutionGuid, out _).ShouldBeTrue();
+            SlnFile.TryParseExistingSolution(solutionFilePath, out Guid solutionGuid, out _, out serializer).ShouldBeTrue();
 
             solutionGuid.ShouldBe(slnFile.SolutionGuid);
 
@@ -373,10 +383,13 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         [Fact]
         public void MultipleProjects()
         {
+            string projectAPath = Path.GetRandomFileName();
+            string projectBPath = Path.GetRandomFileName();
+
             SlnProject projectA = new SlnProject
             {
-                FullPath = GetTempFileName(),
-                Name = "ProjectA",
+                FullPath = Path.Combine(TestRootPath, projectAPath),
+                Name = Path.GetFileNameWithoutExtension(projectAPath),
                 ProjectGuid = new Guid("C95D800E-F016-4167-8E1B-1D3FF94CE2E2"),
                 ProjectTypeGuid = new Guid("88152E7E-47E3-45C8-B5D3-DDB15B2F0435"),
                 IsMainProject = true,
@@ -384,8 +397,8 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             SlnProject projectB = new SlnProject
             {
-                FullPath = GetTempFileName(),
-                Name = "ProjectB",
+                FullPath = Path.Combine(TestRootPath, projectBPath),
+                Name = Path.GetFileNameWithoutExtension(projectBPath),
                 ProjectGuid = new Guid("EAD108BE-AC70-41E6-A8C3-450C545FDC0E"),
                 ProjectTypeGuid = new Guid("F38341C3-343F-421A-AE68-94CD9ADCD32F"),
             };
@@ -396,27 +409,31 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         [Fact]
         public void NoFolders()
         {
+            string projectAPath = Path.GetRandomFileName();
+            string projectBPath = Path.GetRandomFileName();
+            string projectCPath = Path.GetRandomFileName();
+
             SlnProject[] projects =
             {
                 new SlnProject
                 {
-                    FullPath = GetTempFileName(),
-                    Name = "ProjectA",
+                    FullPath = Path.Combine(TestRootPath, projectAPath),
+                    Name = Path.GetFileNameWithoutExtension(projectAPath),
                     ProjectGuid = new Guid("C95D800E-F016-4167-8E1B-1D3FF94CE2E2"),
                     ProjectTypeGuid = new Guid("88152E7E-47E3-45C8-B5D3-DDB15B2F0435"),
                     IsMainProject = true,
                 },
                 new SlnProject
                 {
-                    FullPath = GetTempFileName(),
-                    Name = "ProjectB",
+                    FullPath = Path.Combine(TestRootPath, projectBPath),
+                    Name = Path.GetFileNameWithoutExtension(projectBPath),
                     ProjectGuid = new Guid("EAD108BE-AC70-41E6-A8C3-450C545FDC0E"),
                     ProjectTypeGuid = new Guid("F38341C3-343F-421A-AE68-94CD9ADCD32F"),
                 },
                 new SlnProject
                 {
-                    FullPath = GetTempFileName(),
-                    Name = "ProjectC",
+                    FullPath = Path.Combine(TestRootPath, projectCPath),
+                    Name = Path.GetFileNameWithoutExtension(projectCPath),
                     ProjectGuid = new Guid("EDD837F8-48ED-45E1-BC77-6387EC6466AC"),
                     ProjectTypeGuid = new Guid("7C203CD8-314C-4358-AD5C-66152E899EAF"),
                 },
@@ -428,7 +445,8 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         [Fact]
         public void PathsWorkForAllDirectorySeparatorChars()
         {
-            const string solutionText = @"Microsoft Visual Studio Solution File, Format Version 12.00
+            const string solutionText = @"
+Microsoft Visual Studio Solution File, Format Version 12.00
 Project(""{9A19103F-16F7-4668-BE54-9A1E7A4F7556}"") = ""ProjectA"", ""ProjectA\ProjectA.csproj"", ""{E859E866-96F9-474E-A1EA-6539385AD236}""
 EndProject
 Project(""{9A19103F-16F7-4668-BE54-9A1E7A4F7556}"") = ""ProjectB"", ""ProjectB\ProjectB.csproj"", ""{893607F9-C204-4CB2-8BF2-1F71B4198CD2}""
@@ -495,7 +513,8 @@ EndGlobal
         [Fact]
         public void ProjectsNotBuildable()
         {
-            const string solutionText = @"Microsoft Visual Studio Solution File, Format Version 12.00
+            const string solutionText = @"
+Microsoft Visual Studio Solution File, Format Version 12.00
 Project(""{9A19103F-16F7-4668-BE54-9A1E7A4F7556}"") = ""ProjectA"", ""ProjectA\ProjectA.csproj"", ""{E859E866-96F9-474E-A1EA-6539385AD236}""
 EndProject
 Project(""{9A19103F-16F7-4668-BE54-9A1E7A4F7556}"") = ""ProjectB"", ""ProjectB\ProjectB.csproj"", ""{893607F9-C204-4CB2-8BF2-1F71B4198CD2}""
@@ -597,8 +616,8 @@ EndGlobal
 
             string solutionFilePath = GetSolutionFilePath(new Project[] { projectA, projectB, projectC });
             string contents = File.ReadAllText(solutionFilePath);
-            contents.ShouldContain("\"..\\testB\",");
-            contents.ShouldContain("\"..\\testC\",");
+            contents.ShouldContain("Project(\"{2150E333-8FDC-42A3-9474-1A3956D46DE8}\") = \"testB\", \"testB\",");
+            contents.ShouldContain("Project(\"{2150E333-8FDC-42A3-9474-1A3956D46DE8}\") = \"testC\", \"testC\",");
         }
 
         [Fact]
@@ -618,8 +637,8 @@ EndGlobal
 
             string solutionFilePath = GetSolutionFilePath(new Project[] { projectA, projectB, projectC });
             string contents = File.ReadAllText(solutionFilePath);
-            contents.ShouldNotContain("\"..\\testB\",");
-            contents.ShouldNotContain("\"..\\testC\",");
+            contents.ShouldNotContain("Project(\"{2150E333-8FDC-42A3-9474-1A3956D46DE8}\") = \"testB\", \"testB\",");
+            contents.ShouldNotContain("Project(\"{2150E333-8FDC-42A3-9474-1A3956D46DE8}\") = \"testC\", \"testC\",");
         }
 
         [Fact]
@@ -631,8 +650,8 @@ EndGlobal
 
             string solutionFilePath = GetSolutionFilePath(new Project[] { projectA, projectB, projectC });
             string contents = File.ReadAllText(solutionFilePath);
-            contents.ShouldNotContain("\"..\\testB\",");
-            contents.ShouldNotContain("\"..\\testC\",");
+            contents.ShouldNotContain("Project(\"{2150E333-8FDC-42A3-9474-1A3956D46DE8}\") = \"testB\", \"testB\",");
+            contents.ShouldNotContain("Project(\"{2150E333-8FDC-42A3-9474-1A3956D46DE8}\") = \"testC\", \"testC\",");
         }
 
         [Fact]
@@ -668,7 +687,7 @@ EndGlobal
                 {
                     FullPath = Path.Combine(TestRootPath, "B", "B.csproj"),
                     Name = "B",
-                    ProjectGuid = new Guid("0CCA75AE-ED20-431E-8853-B9F54333E87A"),
+                    ProjectGuid = new Guid("88152E7E-47E3-45C8-B5D3-DDB15B2F0435"),
                     ProjectTypeGuid = new Guid(projectTypeGuid),
                     Configurations = new[]
                     {
@@ -698,19 +717,21 @@ EndGlobal
                 },
             });
 
-            string path = Path.GetTempFileName();
+            string path = Path.ChangeExtension(Path.GetTempFileName(), ".sln");
 
-            slnFile.Save(path, useFolders: false);
+            slnFile.CreateSolutionDirectory(path);
+            slnFile.Save(SolutionSerializers.GetSerializerByMoniker(path), path, useFolders: false);
 
             string directoryName = new DirectoryInfo(TestRootPath).Name;
 
             File.ReadAllText(path).ShouldBe(
-                $@"Microsoft Visual Studio Solution File, Format Version 12.00
+                $@"
+Microsoft Visual Studio Solution File, Format Version 12.00
 Project(""{{7E0F1516-6200-48BD-83FC-3EFA3AB4A574}}"") = ""C"", ""{directoryName}\C\C.csproj"", ""{{0CCA75AE-ED20-431E-8853-B9F54333E87A}}""
 EndProject
 Project(""{{7E0F1516-6200-48BD-83FC-3EFA3AB4A574}}"") = ""A"", ""{directoryName}\A\A.csproj"", ""{{D744C26F-1CCB-456A-B490-CEB39334051B}}""
 EndProject
-Project(""{{7E0F1516-6200-48BD-83FC-3EFA3AB4A574}}"") = ""B"", ""{directoryName}\B\B.csproj"", ""{{0CCA75AE-ED20-431E-8853-B9F54333E87A}}""
+Project(""{{7E0F1516-6200-48BD-83FC-3EFA3AB4A574}}"") = ""B"", ""{directoryName}\B\B.csproj"", ""{{88152E7E-47E3-45C8-B5D3-DDB15B2F0435}}""
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -726,10 +747,10 @@ Global
 		{{D744C26F-1CCB-456A-B490-CEB39334051B}}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{{D744C26F-1CCB-456A-B490-CEB39334051B}}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{{D744C26F-1CCB-456A-B490-CEB39334051B}}.Release|Any CPU.Build.0 = Release|Any CPU
-		{{0CCA75AE-ED20-431E-8853-B9F54333E87A}}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{{0CCA75AE-ED20-431E-8853-B9F54333E87A}}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{{0CCA75AE-ED20-431E-8853-B9F54333E87A}}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{{0CCA75AE-ED20-431E-8853-B9F54333E87A}}.Release|Any CPU.Build.0 = Release|Any CPU
+		{{88152E7E-47E3-45C8-B5D3-DDB15B2F0435}}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{{88152E7E-47E3-45C8-B5D3-DDB15B2F0435}}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{{88152E7E-47E3-45C8-B5D3-DDB15B2F0435}}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{{88152E7E-47E3-45C8-B5D3-DDB15B2F0435}}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -777,12 +798,14 @@ EndGlobal
             string[] solutionItems = new[] { Path.Combine(root, "SubFolder1", solutionItem1Name) };
 
             string solutionFilePath = GetTempFileName(".sln");
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionFilePath);
 
             SlnFile slnFile = new SlnFile();
 
             slnFile.AddProjects(projects, new Dictionary<string, Guid>(), projects[1].FullPath);
             slnFile.AddSolutionItems(solutionItems);
-            slnFile.Save(solutionFilePath, useFolders: false);
+
+            slnFile.Save(serializer, solutionFilePath, useFolders: false);
 
             SolutionFile s = SolutionFile.Parse(solutionFilePath);
 
@@ -814,11 +837,12 @@ EndGlobal
 
             directoryInfo.Exists.ShouldBeFalse();
 
-            string fullPath = Path.Combine(directoryInfo.FullName, Path.GetRandomFileName());
+            string fullPath = Path.Combine(directoryInfo.FullName, GetTempFileName(".sln"));
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(fullPath);
 
             SlnFile slnFile = new SlnFile();
 
-            slnFile.Save(fullPath, useFolders: false);
+            slnFile.Save(serializer, fullPath, useFolders: false);
 
             File.Exists(fullPath).ShouldBeTrue();
         }
@@ -872,10 +896,12 @@ EndGlobal
         [Fact]
         public void SingleProject()
         {
+            string filePath = Path.GetRandomFileName();
+            string fileName = Path.GetFileNameWithoutExtension(filePath);
             SlnProject projectA = new SlnProject
             {
-                FullPath = GetTempFileName(),
-                Name = "ProjectA",
+                FullPath = Path.Combine(TestRootPath, filePath),
+                Name = fileName,
                 ProjectGuid = new Guid("C95D800E-F016-4167-8E1B-1D3FF94CE2E2"),
                 ProjectTypeGuid = new Guid("88152E7E-47E3-45C8-B5D3-DDB15B2F0435"),
                 IsMainProject = true,
@@ -887,7 +913,7 @@ EndGlobal
         [Fact]
         public void TryParseExistingSolution()
         {
-            FileInfo solutionFilePath = new FileInfo(GetTempFileName());
+            FileInfo solutionFilePath = new FileInfo(GetTempFileName(".sln"));
 
             Dictionary<string, Guid> projects = new Dictionary<string, Guid>
             {
@@ -897,8 +923,8 @@ EndGlobal
 
             Dictionary<string, Guid> folders = new Dictionary<string, Guid>
             {
-                [@"FolderA"] = new Guid("9C915FE4-72A5-4368-8979-32B3983E6041"),
-                [@"FolderB"] = new Guid("D3A9F802-38CC-4F8D-8DE9-8DF9C8B7EADC"),
+                ["//FolderA//"] = new Guid("9C915FE4-72A5-4368-8979-32B3983E6041"),
+                ["//FolderB//"] = new Guid("D3A9F802-38CC-4F8D-8DE9-8DF9C8B7EADC"),
             };
 
             Dictionary<FileInfo, Guid> projectFiles = projects.ToDictionary(i => new FileInfo(Path.Combine(solutionFilePath.DirectoryName!, i.Key)), i => i.Value);
@@ -952,7 +978,7 @@ Global
 	EndGlobalSection
 EndGlobal
 ");
-            SlnFile.TryParseExistingSolution(solutionFilePath.FullName, out Guid solutionGuid, out IReadOnlyDictionary<string, Guid> projectGuidsByPath).ShouldBeTrue();
+            SlnFile.TryParseExistingSolution(solutionFilePath.FullName, out Guid solutionGuid, out IReadOnlyDictionary<string, Guid> projectGuidsByPath, out _).ShouldBeTrue();
 
             solutionGuid.ShouldBe(Guid.Parse("CFFC4187-96EE-4465-B5B3-0BAFD3C14BB6"));
 
@@ -962,28 +988,32 @@ EndGlobal
         [Fact]
         public void WithFolders()
         {
+            string projectAPath = Path.GetRandomFileName();
+            string projectBPath = Path.GetRandomFileName();
+            string projectCPath = Path.GetRandomFileName();
+
             SlnProject[] projects =
             {
                 new SlnProject
                 {
-                    FullPath = GetTempFileName(),
-                    Name = "ProjectA",
+                    FullPath = Path.Combine(TestRootPath, projectAPath),
+                    Name = Path.GetFileNameWithoutExtension(projectAPath),
                     ProjectGuid = new Guid("C95D800E-F016-4167-8E1B-1D3FF94CE2E2"),
                     ProjectTypeGuid = new Guid("88152E7E-47E3-45C8-B5D3-DDB15B2F0435"),
                     IsMainProject = true,
                 },
                 new SlnProject
                 {
-                    FullPath = GetTempFileName(),
-                    Name = "ProjectB",
+                    FullPath = Path.Combine(TestRootPath, projectBPath),
+                    Name = Path.GetFileNameWithoutExtension(projectBPath),
                     ProjectGuid = new Guid("F3CEBCAB-98E5-4041-84DB-033C9682F340"),
                     ProjectTypeGuid = new Guid("EEC9AD2B-9B7E-4581-864E-76A2BB607C3F"),
                     IsMainProject = true,
                 },
                 new SlnProject
                 {
-                    FullPath = GetTempFileName(),
-                    Name = "ProjectC",
+                    FullPath = Path.Combine(TestRootPath, projectCPath),
+                    Name = Path.GetFileNameWithoutExtension(projectCPath),
                     ProjectGuid = new Guid("0079D674-EC4D-4D09-9C4E-699D0D1B0F72"),
                     ProjectTypeGuid = new Guid("7717E4E9-5443-401B-A964-55727AF96E0C"),
                     IsMainProject = true,
@@ -1032,12 +1062,13 @@ EndGlobal
             string[] solutionItems = new[] { Path.Combine(root, "SubFolder3", solutionItem1Name) };
 
             string solutionFilePath = GetTempFileName(".sln");
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionFilePath);
 
             SlnFile slnFile = new SlnFile();
 
             slnFile.AddProjects(projects, new Dictionary<string, Guid>(), projects[1].FullPath);
             slnFile.AddSolutionItems(solutionItems);
-            slnFile.Save(solutionFilePath, true);
+            slnFile.Save(serializer, solutionFilePath, true);
 
             SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
 
@@ -1090,12 +1121,13 @@ EndGlobal
             string[] solutionItems = new[] { Path.Combine(root, "SubFolder3", solutionItem1Name) };
 
             string solutionFilePath = GetTempFileName(".sln");
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionFilePath);
 
             SlnFile slnFile = new SlnFile();
 
             slnFile.AddProjects(projects, new Dictionary<string, Guid>());
             slnFile.AddSolutionItems(solutionItems);
-            slnFile.Save(solutionFilePath, true);
+            slnFile.Save(serializer, solutionFilePath, true);
 
             SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
 
@@ -1157,12 +1189,13 @@ EndGlobal
             string[] solutionItems = new[] { Path.Combine(root, "SubFolder3", solutionItem1Name) };
 
             string solutionFilePath = GetTempFileName(".sln");
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionFilePath);
 
             SlnFile slnFile = new SlnFile();
 
             slnFile.AddProjects(projects, new Dictionary<string, Guid>(), ignoreMainProject ? null : projects[1].FullPath);
             slnFile.AddSolutionItems(solutionItems);
-            slnFile.Save(solutionFilePath, useFolders: true, collapseFolders: collapseFolders);
+            slnFile.Save(serializer, solutionFilePath, useFolders: true, collapseFolders: collapseFolders);
 
             SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
 
@@ -1211,6 +1244,7 @@ EndGlobal
         public void VisualStudioVersionIsWritten()
         {
             string solutionFilePath = GetTempFileName(".sln");
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionFilePath);
 
             SlnFile slnFile = new SlnFile
             {
@@ -1218,18 +1252,15 @@ EndGlobal
                 SolutionGuid = new Guid("{6370DE27-36B7-44AE-B47A-1ECF4A6D740A}"),
             };
 
-            slnFile.Save(solutionFilePath, useFolders: false);
+            slnFile.Save(serializer, solutionFilePath, useFolders: false);
 
             File.ReadAllText(solutionFilePath).ShouldBe(
-                @"Microsoft Visual Studio Solution File, Format Version 12.00
+                @"
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 1
 VisualStudioVersion = 1.2.3.4
 MinimumVisualStudioVersion = 10.0.40219.1
 Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
@@ -1246,6 +1277,7 @@ EndGlobal
         {
             // Arrange
             string solutionFilePath = GetTempFileName(".sln");
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionFilePath);
 
             var slnFile = new SlnFile()
             {
@@ -1255,21 +1287,16 @@ EndGlobal
             slnFile.AddSolutionItems("docs", new[] { Path.Combine(this.TestRootPath, "README.md") });
 
             // Act
-            slnFile.Save(solutionFilePath, useFolders: false);
+            slnFile.Save(serializer, solutionFilePath, useFolders: false);
 
-            // Assert
-            File.ReadAllText(solutionFilePath).ShouldBe(
-                @"Microsoft Visual Studio Solution File, Format Version 12.00
-Project(""{2150E333-8FDC-42A3-9474-1A3956D46DE8}"") = ""docs"", ""docs"", ""{B283EBC2-E01F-412D-9339-FD56EF114549}"" 
+            const string ExpectedSolutionContents = @"
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project(""{2150E333-8FDC-42A3-9474-1A3956D46DE8}"") = ""docs"", ""docs"", ""{B283EBC2-E01F-412D-9339-FD56EF114549}""
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
 	EndProjectSection
 EndProject
 Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
@@ -1277,8 +1304,10 @@ Global
 		SolutionGuid = {6370DE27-36B7-44AE-B47A-1ECF4A6D740A}
 	EndGlobalSection
 EndGlobal
-",
-                StringCompareShould.IgnoreLineEndings);
+";
+
+            // Assert
+            File.ReadAllText(solutionFilePath).ShouldBe(ExpectedSolutionContents, StringCompareShould.IgnoreLineEndings);
         }
 
         [Fact]
@@ -1305,10 +1334,10 @@ EndGlobal
             SlnFile slnFile = new ();
             SlnProject[] projects = new[] { projectA, projectB };
             string solutionFilePath = isWindowsPlatform ? @$"X:\{Path.GetRandomFileName()}" : $"/mnt/{Path.GetRandomFileName()}";
-            StringBuilderTextWriter writer = new (new StringBuilder(), new List<string>());
+            ISolutionSerializer serializer = new MockSolutionSerializer();
 
             slnFile.AddProjects(projects);
-            slnFile.Save(solutionFilePath, writer, useFolders: true, logger);
+            slnFile.Save(serializer, solutionFilePath, useFolders: true, logger);
 
             logger.Errors.Count.ShouldBe(0);
 
@@ -1328,7 +1357,6 @@ EndGlobal
         {
             TestLogger logger = new ();
             SlnFile slnFile = new ();
-            StringBuilderTextWriter writer = new (new StringBuilder(), new List<string>());
 
             SlnProject project = new SlnProject
             {
@@ -1341,8 +1369,10 @@ EndGlobal
             };
 
             string solutionFilePath = Path.Combine(TestRootPath, "sample.sln");
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionFilePath);
+
             slnFile.AddProjects([project]);
-            slnFile.Save(solutionFilePath, writer, useFolders: true, logger, collapseFolders: true);
+            slnFile.Save(serializer, solutionFilePath, useFolders: true, logger, collapseFolders: true);
 
             logger.Errors.Count.ShouldBe(0);
             logger.Warnings.Count.ShouldBe(0);
@@ -1353,6 +1383,7 @@ EndGlobal
         {
             // Arrange
             string solutionFilePath = GetTempFileName(".sln");
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionFilePath);
 
             var slnFile = new SlnFile()
             {
@@ -1380,26 +1411,24 @@ EndGlobal
             slnFile.AddProjects(new[] { project });
 
             // Act
-            slnFile.Save(solutionFilePath, useFolders: false);
+            slnFile.Save(serializer, solutionFilePath, useFolders: false);
 
             // Assert
             File.ReadAllText(solutionFilePath).ShouldBe(
-                @"Microsoft Visual Studio Solution File, Format Version 12.00
+                @"
+Microsoft Visual Studio Solution File, Format Version 12.00
 Project(""{65815BD7-8B14-4E69-8328-D5C4ED3245BE}"") = ""ProjectA"", ""ProjectA.csproj"", ""{2ACFA184-2D17-4F80-A132-EC462B48A065}""
 EndProject
-Project(""{2150E333-8FDC-42A3-9474-1A3956D46DE8}"") = ""docs"", ""docs"", ""{24073434-9641-4234-A3E8-352E5E549B65}"" 
+Project(""{2150E333-8FDC-42A3-9474-1A3956D46DE8}"") = ""docs"", ""docs"", ""{24073434-9641-4234-A3E8-352E5E549B65}""
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project(""{2150E333-8FDC-42A3-9474-1A3956D46DE8}"") = ""license"", ""license"", ""{9124D1F8-9153-40CC-BC94-3B2A3AA51E91}"" 
+Project(""{2150E333-8FDC-42A3-9474-1A3956D46DE8}"") = ""license"", ""license"", ""{9124D1F8-9153-40CC-BC94-3B2A3AA51E91}""
 	ProjectSection(SolutionItems) = preProject
 		LICENSE.txt = LICENSE.txt
 	EndProjectSection
 EndProject
-	GlobalSection(NestedProjects) = preSolution
-		{9124D1F8-9153-40CC-BC94-3B2A3AA51E91} = {24073434-9641-4234-A3E8-352E5E549B65}
-	EndGlobalSection
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1413,6 +1442,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{9124D1F8-9153-40CC-BC94-3B2A3AA51E91} = {24073434-9641-4234-A3E8-352E5E549B65}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6370DE27-36B7-44AE-B47A-1ECF4A6D740A}
@@ -1428,12 +1460,15 @@ EndGlobal
         public void SlnProject_IsBuildable_ReflectedAsProjectConfigurationInSolutionIncludeInBuild(bool isBuildable)
         {
             string solutionFilePath = GetTempFileName(".sln");
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionFilePath);
+
+            string projectFilePath = Path.GetRandomFileName();
 
             SlnFile slnFile = new SlnFile();
             SlnProject slnProject = new SlnProject
             {
-                FullPath = GetTempFileName(),
-                Name = "Project",
+                FullPath = Path.Combine(TestRootPath, projectFilePath),
+                Name = Path.GetFileNameWithoutExtension(projectFilePath),
                 ProjectGuid = Guid.NewGuid(),
                 ProjectTypeGuid = Guid.NewGuid(),
                 Configurations = new[] { "Debug", "Release" },
@@ -1442,7 +1477,7 @@ EndGlobal
             };
 
             slnFile.AddProjects(new[] { slnProject });
-            slnFile.Save(solutionFilePath, useFolders: false);
+            slnFile.Save(serializer, solutionFilePath, useFolders: false);
 
             ValidateProjectInSolution(
                 (slnProject, projectInSolution) =>
@@ -1475,11 +1510,13 @@ EndGlobal
         private void ValidateProjectInSolution(Action<SlnProject, ProjectInSolution> customValidator, SlnProject[] projects, bool useFolders)
         {
             string solutionFilePath = GetTempFileName(".sln");
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionFilePath);
 
             SlnFile slnFile = new SlnFile();
 
             slnFile.AddProjects(projects);
-            slnFile.Save(solutionFilePath, useFolders);
+            slnFile.CreateSolutionDirectory(solutionFilePath);
+            slnFile.Save(serializer, solutionFilePath, useFolders);
 
             SolutionFile solutionFile = SolutionFile.Parse(solutionFilePath);
 
@@ -1558,6 +1595,31 @@ EndGlobal
 #else
             return solutionFile.ProjectsInOrder.FirstOrDefault(i => i.ProjectName.Equals(name));
 #endif
+        }
+
+        private class MockSolutionSerializer : ISolutionSerializer
+        {
+            public string Name => throw new NotImplementedException();
+
+            public ISerializerModelExtension CreateModelExtension()
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool IsSupported(string moniker)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<SolutionModel> OpenAsync(string moniker, CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task SaveAsync(string moniker, SolutionModel model, CancellationToken cancellationToken)
+            {
+                return Task.CompletedTask;
+            }
         }
     }
 }

@@ -6,11 +6,12 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <MicrosoftBuildPackageVersion>17.12.6</MicrosoftBuildPackageVersion>
+    <MicrosoftBuildPackageVersion>17.14.0-preview-24624-01</MicrosoftBuildPackageVersion>
     <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'net8.0'">17.11.4</MicrosoftBuildPackageVersion>
     <SystemConfigurationConfigurationManagerPackageVersion>9.0.0</SystemConfigurationConfigurationManagerPackageVersion>
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion>8.0.0</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion Condition="'$(TargetFramework)' == 'net472'">6.0.0</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
+    <MicrosoftVisualStudioSolutionPersistenceVersion>1.0.28</MicrosoftVisualStudioSolutionPersistenceVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="EnvironmentAbstractions" Version="5.0.0" />
@@ -25,6 +26,7 @@
     <PackageVersion Include="Microsoft.VisualStudio.ProjectSystem.SDK" Version="15.8.243" />
     <PackageVersion Include="Microsoft.VisualStudio.SDK" Version="17.12.40392" />
     <PackageVersion Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="3.12.2149" />
+    <PackageVersion Include="Microsoft.VisualStudio.SolutionPersistence" Version="$(MicrosoftVisualStudioSolutionPersistenceVersion)" />
     <PackageVersion Include="Microsoft.VSSDK.BuildTools" Version="17.12.2069" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="MSBuild.ProjectCreation" Version="14.0.0" />
