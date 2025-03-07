@@ -100,7 +100,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
                     return new DevelopmentEnvironment
                     {
-                        MSBuildExe = new FileInfo(Path.Combine(msbuildToolsPath!, "MSBuild.exe")),
+                        MSBuildExe = GetPathToMSBuildExe(new FileInfo(Path.Combine(msbuildToolsPath!, "MSBuild.exe"))),
                         IsCorext = true,
                         VisualStudio = VisualStudioConfiguration.GetLaunchableInstances()
                             .Where(i => !i.IsBuildTools && i.HasMSBuild && i.InstallationVersion.Major == visualStudioVersion.Major)
