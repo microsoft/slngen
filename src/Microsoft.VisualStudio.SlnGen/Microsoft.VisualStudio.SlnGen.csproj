@@ -55,4 +55,13 @@
       <RuntimeFramework Update="@(RuntimeFramework)" Version="$(_PreviousRuntimeFramework)" />
     </ItemGroup>
   </Target>
+  <!--
+    By default, NuGet includes "framework references" so that packages can import CLR assemblies, but this kind of package does not need them added to
+    projects that reference this package.
+  -->
+  <Target Name="RemovePackageFrameworkReferences" AfterTargets="_WalkEachTargetPerFramework">
+    <ItemGroup>
+        <_FrameworkAssemblyReferences Remove="@(_FrameworkAssemblyReferences)" />
+    </ItemGroup>
+  </Target>
 </Project>
