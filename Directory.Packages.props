@@ -7,7 +7,7 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <MicrosoftBuildPackageVersion>17.12.6</MicrosoftBuildPackageVersion>
-    <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'net8.0'">17.11.4</MicrosoftBuildPackageVersion>
+    <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'net8.0'">17.12.6</MicrosoftBuildPackageVersion>
     <SystemConfigurationConfigurationManagerPackageVersion>9.0.0</SystemConfigurationConfigurationManagerPackageVersion>
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion>8.0.0</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion Condition="'$(TargetFramework)' == 'net472'">6.0.0</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
@@ -20,7 +20,7 @@
     <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" />
     <PackageVersion Include="Microsoft.Build.Runtime" Version="$(MicrosoftBuildPackageVersion)" />
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.FileSystemGlobbing" Version="9.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.FileSystemGlobbing" Version="9.0.4" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
     <PackageVersion Include="Microsoft.VisualStudio.ProjectSystem.SDK" Version="15.8.243" />
     <PackageVersion Include="Microsoft.VisualStudio.SDK" Version="17.12.40392" />
