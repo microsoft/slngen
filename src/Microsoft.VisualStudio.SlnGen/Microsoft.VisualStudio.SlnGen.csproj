@@ -12,6 +12,9 @@
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
+    <PreferNativeArm64>true</PreferNativeArm64>
+  </PropertyGroup>
   <ItemDefinitionGroup>
     <PackageReference>
       <PrivateAssets>All</PrivateAssets>
