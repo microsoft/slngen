@@ -1538,7 +1538,7 @@ EndGlobal
 
         private ProjectInSolution GetSolutionFolderByName(SolutionFile solutionFile, string name)
         {
-#if NET9_0_OR_GREATER
+#if NET10_0_OR_GREATER
             // In MSBuild 17.13 and above, solution folders are stored in a private property and not included in ProjectsInOrder
             PropertyInfo solutionFoldersByGuidProperty = typeof(SolutionFile).GetProperty("SolutionFoldersByGuid", BindingFlags.Instance | BindingFlags.NonPublic);
 
@@ -1555,6 +1555,7 @@ EndGlobal
             }
 
             return value.FirstOrDefault(i => i.Value.ProjectName.Equals(name)).Value;
+
 #else
             return solutionFile.ProjectsInOrder.FirstOrDefault(i => i.ProjectName.Equals(name));
 #endif
