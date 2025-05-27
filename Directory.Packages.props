@@ -6,8 +6,8 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <MicrosoftBuildPackageVersion>17.12.6</MicrosoftBuildPackageVersion>
-    <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'net8.0'">17.11.4</MicrosoftBuildPackageVersion>
+    <MicrosoftBuildPackageVersion>17.14.8</MicrosoftBuildPackageVersion>
+    <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'net8.0'">17.11.31</MicrosoftBuildPackageVersion>
     <SystemConfigurationConfigurationManagerPackageVersion>9.0.0</SystemConfigurationConfigurationManagerPackageVersion>
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion>8.0.0</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion Condition="'$(TargetFramework)' == 'net472'">6.0.0</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
@@ -34,11 +34,11 @@
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
     <!-- Pinning vulnerable packages -->
     <PackageVersion Include="MessagePack" Version="2.5.187" />
-    <PackageVersion Include="Microsoft.IO.Redist" Version="6.0.1" />
-    <PackageVersion Include="System.Formats.Asn1" Version="8.0.1" />
+    <PackageVersion Include="Microsoft.IO.Redist" Version="6.1.0" />
+    <PackageVersion Include="System.Formats.Asn1" Version="9.0.0" />
     <PackageVersion Include="System.Net.Http" Version="4.3.4" />
-    <PackageVersion Include="System.Security.Cryptography.Xml" Version="8.0.2" />
-    <PackageVersion Include="System.Text.Json" Version="8.0.5" />
+    <PackageVersion Include="System.Security.Cryptography.Xml" Version="9.0.0" />
+    <PackageVersion Include="System.Text.Json" Version="9.0.0" />
     <PackageVersion Include="System.Text.RegularExpressions" Version="4.3.1" />
   </ItemGroup>
   <ItemGroup>
