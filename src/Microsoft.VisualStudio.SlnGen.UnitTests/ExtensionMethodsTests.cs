@@ -78,7 +78,8 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         {
             Project project = ProjectCreator.Create()
                 .Save(GetTempFileName(ProjectFileExtensions.Cpp));
-            project.GetConditionedPropertyValues("Foo").ShouldBeEquivalentTo(Enumerable.Empty<string>());
+            project.GetConditionedPropertyValues("Foo")
+                .ShouldBeEquivalentTo(Enumerable.Empty<string>());
         }
 
         [Fact]
@@ -87,7 +88,9 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             Project project = ProjectCreator.Create()
                 .PropertyGroup(condition: " '$(Foo)' == 'Bar' ")
                 .Save(GetTempFileName(ProjectFileExtensions.FSharp));
-            project.GetConditionedPropertyValues("Foo").ToList().ShouldBeEquivalentTo(new List<string> { "Bar" });
+            project.GetConditionedPropertyValues("Foo")
+                .ToList()
+                .ShouldBeEquivalentTo(new List<string> { "Bar" });
         }
 
         [Fact]
@@ -96,7 +99,9 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             Project project = ProjectCreator.Create()
                 .Property("Foo", "Bar")
                 .Save(GetTempFileName(ProjectFileExtensions.FSharp));
-            project.GetPossiblePropertyValuesOrDefault("Foo", "Baz").ToList().ShouldBeEquivalentTo(new List<string> { "Bar" });
+            project.GetPossiblePropertyValuesOrDefault("Foo", "Baz")
+                .ToList()
+                .ShouldBeEquivalentTo(new List<string> { "Bar" });
         }
 
         [Fact]
@@ -106,7 +111,9 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 .PropertyGroup(condition: " '$(Platform)' == 'x86' ")
                 .PropertyGroup(condition: " '$(Platform)' == 'arm64' ")
                 .Save(GetTempFileName(ProjectFileExtensions.CSharp));
-            project.GetPossiblePropertyValuesOrDefault("Platform", "AnyCPU").ToList().ShouldBeEquivalentTo(new List<string> { "x86", "arm64" });
+            project.GetPossiblePropertyValuesOrDefault("Platform", "AnyCPU")
+                .ToList()
+                .ShouldBeEquivalentTo(new List<string> { "x86", "arm64" });
         }
 
         [Fact]
@@ -114,7 +121,9 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         {
             Project project = ProjectCreator.Create()
                 .Save(GetTempFileName(ProjectFileExtensions.FSharp));
-            project.GetPossiblePropertyValuesOrDefault("Foo", "Baz").ToList().ShouldBeEquivalentTo(new List<string> { "Baz" });
+            project.GetPossiblePropertyValuesOrDefault("Foo", "Baz")
+                .ToList()
+                .ShouldBeEquivalentTo(new List<string> { "Baz" });
         }
 
 #if NETFRAMEWORK
