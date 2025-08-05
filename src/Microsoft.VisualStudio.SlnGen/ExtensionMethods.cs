@@ -50,7 +50,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <param name="project">The <see cref="Project"/> to get the property value from.</param>
         /// <param name="name">The name of the property to get the value of.</param>
         /// <returns>The values of the property if one exists, otherwise an empty Enumerable.</returns>
-        public static IEnumerable<string> GetConditionedPropertyValuesOrDefault(this Project project, string name)
+        public static IEnumerable<string> GetConditionedPropertyValues(this Project project, string name)
         {
             if (!project.ConditionedProperties.ContainsKey(name))
             {
@@ -71,7 +71,7 @@ namespace Microsoft.VisualStudio.SlnGen
         {
             HashSet<string> values = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (string conditionPropertyValue in project.GetConditionedPropertyValuesOrDefault(name))
+            foreach (string conditionPropertyValue in project.GetConditionedPropertyValues(name))
             {
                 values.Add(conditionPropertyValue);
             }
