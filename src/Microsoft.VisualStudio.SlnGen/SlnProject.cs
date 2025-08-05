@@ -210,7 +210,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <returns>A <see cref="IReadOnlyList{String}" /> containing the configurations that the project supports.</returns>
         internal static IReadOnlyList<string> GetConfigurations(Project project, string projectFileExtension, bool isUsingMicrosoftNETSdk)
         {
-            if (string.Equals(projectFileExtension, ".vcxproj"))
+            if (string.Equals(projectFileExtension, ProjectFileExtensions.Cpp) || string.Equals(projectFileExtension, ProjectFileExtensions.AzureServiceFabric))
             {
                 HashSet<string> items = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -449,7 +449,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
         private static IReadOnlyList<string> GetPlatforms(Project project, string projectFileExtension, bool isUsingMicrosoftNETSdk)
         {
-            if (string.Equals(projectFileExtension, ".vcxproj"))
+            if (string.Equals(projectFileExtension, ProjectFileExtensions.Cpp) || string.Equals(projectFileExtension, ProjectFileExtensions.AzureServiceFabric))
             {
                 HashSet<string> items = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
