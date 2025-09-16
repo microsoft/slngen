@@ -49,6 +49,7 @@ extends:
             signing:
               enabled: true
               signType: $(SignType)
+              signWithProd: true
               zipSources: false
           outputs:
           - output: pipelineArtifact
