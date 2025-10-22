@@ -3,13 +3,17 @@
 // Licensed under the MIT license.
 
 using Microsoft.Build.Evaluation;
+using Microsoft.VisualStudio.SolutionPersistence;
+using Microsoft.VisualStudio.SolutionPersistence.Model;
+using Microsoft.VisualStudio.SolutionPersistence.Serializer;
+using Microsoft.VisualStudio.SolutionPersistence.Serializer.SlnV12;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace Microsoft.VisualStudio.SlnGen
 {
@@ -18,50 +22,7 @@ namespace Microsoft.VisualStudio.SlnGen
     /// </summary>
     public sealed class SlnFile
     {
-        /// <summary>
-        /// The beginning of the line that ends a global section.
-        /// </summary>
-        private const string GlobalSectionEnd = "\tEndGlobalSection";
-
-        /// <summary>
-        /// The beginning of the line that starts the extensibility global section.
-        /// </summary>
-        private const string GlobalSectionStartExtensibilityGlobals = "\tGlobalSection(ExtensibilityGlobals)";
-
-        /// <summary>
-        /// The solution header.
-        /// </summary>
-        private const string Header = "Microsoft Visual Studio Solution File, Format Version {0}";
-
-        /// <summary>
-        /// The beginning of the line that ends project information.
-        /// </summary>
-        private const string ProjectSectionEnd = "EndProject";
-
-        /// <summary>
-        /// The beginning of the line that contains project information.
-        /// </summary>
-        private const string ProjectSectionStart = "Project(\"";
-
-        /// <summary>
-        /// The beginning of the line that contains the solution GUID.
-        /// </summary>
-        private const string SectionSettingSolutionGuid = "\t\tSolutionGuid = ";
-
-        /// <summary>
-        /// A regular expression used to parse the project section.
-        /// </summary>
-        private static readonly Regex GuidRegex = new (@"(?<Guid>\{[0-9a-fA-F\-]+\})");
-
-        /// <summary>
-        /// The separator to split project information by.
-        /// </summary>
-        private static readonly string[] ProjectSectionSeparator = { "\", \"" };
-
-        /// <summary>
-        /// The file format version.
-        /// </summary>
-        private readonly string _fileFormatVersion;
+        private static readonly char[] DirectorySeparatorCharacters = new char[] { Path.DirectorySeparatorChar };
 
         /// <summary>
         /// Gets the projects.
@@ -76,17 +37,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <summary>
         /// Initializes a new instance of the <see cref="SlnFile" /> class.
         /// </summary>
-        /// <param name="fileFormatVersion">The file format version.</param>
-        public SlnFile(string fileFormatVersion)
-        {
-            _fileFormatVersion = fileFormatVersion;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SlnFile" /> class.
-        /// </summary>
         public SlnFile()
-            : this("12.00")
         {
         }
 
@@ -156,6 +107,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 }
 
                 var firstProjectName = firstProject.GetPropertyValueOrDefault(MSBuildPropertyNames.SlnGenProjectName, Path.GetFileName(firstProject.FullPath));
+
                 string solutionFileName = Path.ChangeExtension(firstProjectName, "sln");
 
                 solutionFileFullPath = Path.Combine(solutionDirectoryFullPath!, solutionFileName);
@@ -172,7 +124,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 }
             }
 
-            SlnFile solution = new SlnFile
+            SlnFile slnFile = new ()
             {
                 Platforms = arguments.GetPlatforms(),
                 Configurations = arguments.GetConfigurations(),
@@ -182,10 +134,10 @@ namespace Microsoft.VisualStudio.SlnGen
             {
                 if (arguments.VisualStudioVersion.Version != null && Version.TryParse(arguments.VisualStudioVersion.Version, out Version version))
                 {
-                    solution.VisualStudioVersion = version;
+                    slnFile.VisualStudioVersion = version;
                 }
 
-                if (solution.VisualStudioVersion == null)
+                if (slnFile.VisualStudioVersion == null)
                 {
                     string devEnvFullPath = arguments.GetDevEnvFullPath(Program.CurrentDevelopmentEnvironment.VisualStudio);
 
@@ -193,18 +145,16 @@ namespace Microsoft.VisualStudio.SlnGen
                     {
                         FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(devEnvFullPath);
 
-                        solution.VisualStudioVersion = new Version(fileVersionInfo.ProductMajorPart, fileVersionInfo.ProductMinorPart, fileVersionInfo.ProductBuildPart, fileVersionInfo.FilePrivatePart);
+                        slnFile.VisualStudioVersion = new Version(fileVersionInfo.ProductMajorPart, fileVersionInfo.ProductMinorPart, fileVersionInfo.ProductBuildPart, fileVersionInfo.FilePrivatePart);
                     }
                 }
             }
 
-            if (TryParseExistingSolution(solutionFileFullPath, out Guid solutionGuid, out IReadOnlyDictionary<string, Guid> projectGuidsByPath))
+            if (TryParseExistingSolution(solutionFileFullPath, out Guid solutionGuid, out IReadOnlyDictionary<string, Guid> projectGuidsByPath, out ISolutionSerializer serializer))
             {
                 logger.LogMessageNormal("Updating existing solution file and reusing Visual Studio cache");
-
-                solution.SolutionGuid = solutionGuid;
-                solution.ExistingProjectGuids = projectGuidsByPath;
-
+                slnFile.SolutionGuid = solutionGuid;
+                slnFile.ExistingProjectGuids = projectGuidsByPath;
                 arguments.LoadProjectsInVisualStudio = new[] { bool.TrueString };
             }
 
@@ -214,112 +164,79 @@ namespace Microsoft.VisualStudio.SlnGen
                 isBuildable = bool.TrueString.Equals(isBuildableString, StringComparison.OrdinalIgnoreCase);
             }
 
-            solution.AddProjects(projectList, customProjectTypeGuids, arguments.IgnoreMainProject ? null : firstProject.FullPath, isBuildable);
+            slnFile.AddProjects(projectList, customProjectTypeGuids, arguments.IgnoreMainProject ? null : firstProject.FullPath, isBuildable);
 
-            solution.AddSolutionItems(solutionItems);
+            slnFile.AddSolutionItems(solutionItems);
 
             string slnGenFoldersPropertyValue = firstProject.GetPropertyValueOrDefault(MSBuildPropertyNames.SlnGenFolders, "false");
             var enableFolders = arguments.EnableFolders(slnGenFoldersPropertyValue);
 
             if (!logger.HasLoggedErrors)
             {
-                solution.Save(solutionFileFullPath, enableFolders, logger, arguments.EnableCollapseFolders(), arguments.EnableAlwaysBuild());
+                slnFile.CreateSolutionDirectory(solutionFileFullPath);
+                slnFile.Save(serializer, solutionFileFullPath, enableFolders, logger, arguments.EnableCollapseFolders(), arguments.EnableAlwaysBuild());
             }
 
-            return (solutionFileFullPath, customProjectTypeGuids.Count, solutionItems.Count, solution.SolutionGuid);
+            return (solutionFileFullPath, customProjectTypeGuids.Count, solutionItems.Count, solutionGuid);
         }
 
         /// <summary>
         /// Attempts to read the existing GUID from a solution file if one exists.
         /// </summary>
-        /// <param name="path">The path to a solution file.</param>
+        /// <param name="solutionFileFullPath">Path to the existing solution file.</param>
         /// <param name="solutionGuid">Receives the <see cref="Guid" /> of the existing solution file if one is found, otherwise default(Guid).</param>
         /// <param name="projectGuidsByPath">Receives the project GUIDs by their full paths.</param>
-        /// <returns>true if the solution GUID was found, otherwise false.</returns>
-        public static bool TryParseExistingSolution(string path, out Guid solutionGuid, out IReadOnlyDictionary<string, Guid> projectGuidsByPath)
+        /// <param name="serializer">Serializer which can reads and determines the appropriate solution model from the solution file (based on the moniker).</param>
+        /// <returns>true if the solution file could be correctly parsed.</returns>
+        public static bool TryParseExistingSolution(string solutionFileFullPath, out Guid solutionGuid, out IReadOnlyDictionary<string, Guid> projectGuidsByPath, out ISolutionSerializer serializer)
         {
-            solutionGuid = default;
             projectGuidsByPath = default;
+            solutionGuid = default;
+            serializer = SolutionSerializers.GetSerializerByMoniker(solutionFileFullPath);
 
-            bool foundSolutionGuid = false;
-
-            Dictionary<string, Guid> projectGuids = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
-
-            FileInfo fileInfo = new FileInfo(path);
-
+            FileInfo fileInfo = new FileInfo(solutionFileFullPath);
             if (!fileInfo.Exists || fileInfo.Directory == null)
             {
                 return false;
             }
 
-            using FileStream stream = File.OpenRead(path);
-            using StreamReader reader = new StreamReader(stream, Encoding.GetEncoding(0), detectEncodingFromByteOrderMarks: true);
-
-            string line;
-
-            while ((line = reader.ReadLine()) != null)
+            if (serializer is null)
             {
-                if (line.StartsWith(ProjectSectionStart))
-                {
-                    string[] projectDetails = line.Split(ProjectSectionSeparator, StringSplitOptions.RemoveEmptyEntries);
-
-                    if (projectDetails.Length == 3)
-                    {
-                        Match projectGuidMatch = GuidRegex.Match(projectDetails[2]);
-
-                        if (!projectGuidMatch.Groups["Guid"].Success)
-                        {
-                            continue;
-                        }
-
-                        string projectGuidString = projectGuidMatch.Groups["Guid"].Value;
-
-                        Match projectTypeGuidMatch = GuidRegex.Match(projectDetails[0]);
-
-                        if (!projectTypeGuidMatch.Groups["Guid"].Success)
-                        {
-                            continue;
-                        }
-
-                        if (!Guid.TryParse(projectGuidString, out Guid projectGuid) || !Guid.TryParse(projectTypeGuidMatch.Groups["Guid"].Value, out Guid projectTypeGuid))
-                        {
-                            continue;
-                        }
-
-                        string projectPath = projectDetails[1].Trim().Trim('\"');
-
-                        projectGuids[projectPath] = projectGuid;
-                    }
-
-                    while ((line = reader.ReadLine()) != null)
-                    {
-                        if (line.StartsWith(ProjectSectionEnd))
-                        {
-                            break;
-                        }
-                    }
-                }
-
-                if (line != null && line.StartsWith(GlobalSectionStartExtensibilityGlobals))
-                {
-                    while ((line = reader.ReadLine()) != null)
-                    {
-                        if (line.StartsWith(SectionSettingSolutionGuid))
-                        {
-                            string solutionGuidString = line.Substring(SectionSettingSolutionGuid.Length);
-
-                            foundSolutionGuid = Guid.TryParse(solutionGuidString, out solutionGuid);
-                        }
-
-                        if (line.StartsWith(GlobalSectionEnd))
-                        {
-                            break;
-                        }
-                    }
-                }
+                return false;
             }
 
-            projectGuidsByPath = projectGuids;
+            bool foundSolutionGuid = false;
+
+            try
+            {
+                SolutionModel existingSolution = serializer.OpenAsync(solutionFileFullPath, CancellationToken.None).Result;
+
+                Dictionary<string, Guid> projectGuids = new (StringComparer.OrdinalIgnoreCase);
+                foreach (SolutionProjectModel project in existingSolution.SolutionProjects)
+                {
+                    projectGuids[project.FilePath] = project.Id;
+                }
+
+                foreach (SolutionFolderModel folder in existingSolution.SolutionFolders)
+                {
+                    projectGuids[GetSolutionFolderPathWithForwardSlashes(folder.Path)] = folder.Id;
+                }
+
+                IEnumerable<SolutionPropertyBag> existingSlnProperties = existingSolution.GetSlnProperties();
+                SolutionPropertyBag extensibilityGlobals = existingSlnProperties.Where(x => x.Id == "ExtensibilityGlobals").FirstOrDefault();
+                if (extensibilityGlobals is not null)
+                {
+                    extensibilityGlobals.TryGetValue("SolutionGuid", out string solutionGuidStr);
+                    foundSolutionGuid = Guid.TryParse(solutionGuidStr, out solutionGuid);
+                }
+
+                projectGuidsByPath = projectGuids;
+            }
+            catch (SolutionException)
+            {
+                // There was an unrecoverable syntax error reading the solution file.
+                return false;
+            }
 
             return foundSolutionGuid;
         }
@@ -392,47 +309,49 @@ namespace Microsoft.VisualStudio.SlnGen
         }
 
         /// <summary>
-        /// Saves the Visual Studio solution to a file.
+        /// Creates the directory where the solution resides.
         /// </summary>
-        /// <param name="path">The full path to the file to write to.</param>
-        /// <param name="useFolders">Specifies if folders should be created.</param>
-        /// <param name="logger">A <see cref="ISlnGenLogger" /> to use for logging.</param>
-        /// <param name="collapseFolders">An optional value indicating whether or not folders containing a single item should be collapsed into their parent folder.</param>
-        /// <param name="alwaysBuild">An optional value indicating whether or not to always include the project in the build even if it has no matching configuration.</param>
-        public void Save(string path, bool useFolders, ISlnGenLogger logger = null, bool collapseFolders = false, bool alwaysBuild = true)
+        /// <param name="rootPath">A root path for the solution.</param>
+        internal void CreateSolutionDirectory(string rootPath)
         {
-            string directoryName = Path.GetDirectoryName(path);
+            string directoryName = Path.GetDirectoryName(rootPath);
 
             if (!directoryName.IsNullOrWhiteSpace())
             {
                 Directory.CreateDirectory(directoryName!);
             }
-
-            using FileStream fileStream = File.Create(path);
-
-            using StreamWriter writer = new StreamWriter(fileStream, Encoding.UTF8);
-
-            Save(path, writer, useFolders, logger, collapseFolders, alwaysBuild);
         }
 
         /// <summary>
         /// Saves the Visual Studio solution to a file.
         /// </summary>
+        /// <param name="serializer">Serializer which saves the solution model to the solution file (based on its moniker).</param>
         /// <param name="rootPath">A root path for the solution to make other paths relative to.</param>
-        /// <param name="writer">The <see cref="TextWriter" /> to save the solution file to.</param>
         /// <param name="useFolders">Specifies if folders should be created.</param>
         /// <param name="logger">A <see cref="ISlnGenLogger" /> to use for logging.</param>
         /// <param name="collapseFolders">An optional value indicating whether or not folders containing a single item should be collapsed into their parent folder.</param>
         /// <param name="alwaysBuild">An optional value indicating whether or not to always include the project in the build even if it has no matching configuration.</param>
-        internal void Save(string rootPath, TextWriter writer, bool useFolders, ISlnGenLogger logger = null, bool collapseFolders = false, bool alwaysBuild = true)
+        internal void Save(ISolutionSerializer serializer, string rootPath, bool useFolders, ISlnGenLogger logger = null, bool collapseFolders = false, bool alwaysBuild = true)
         {
-            writer.WriteLine(Header, _fileFormatVersion);
+            SolutionModel newSolution = new ();
+
+            // Set UTF8 BOM encoding for .sln
+            if (serializer is ISolutionSerializer<SlnV12SerializerSettings> v12Serializer)
+            {
+                newSolution.SerializerExtension = v12Serializer.CreateModelExtension(new ()
+                {
+                    Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true),
+                });
+            }
 
             if (VisualStudioVersion != null)
             {
-                writer.WriteLine($"# Visual Studio Version {VisualStudioVersion.Major}");
-                writer.WriteLine($"VisualStudioVersion = {VisualStudioVersion}");
-                writer.WriteLine($"MinimumVisualStudioVersion = {MinimumVisualStudioVersion}");
+                newSolution.VisualStudioProperties.OpenWith = $"Visual Studio Version {VisualStudioVersion.Major}";
+                newSolution.VisualStudioProperties.Version = VisualStudioVersion;
+                if (Version.TryParse(MinimumVisualStudioVersion, out var minimumVisualStudioVersion))
+                {
+                    newSolution.VisualStudioProperties.MinimumVersion = minimumVisualStudioVersion;
+                }
             }
 
             List<SlnProject> sortedProjects = _projects.OrderBy(i => i.IsMainProject ? 0 : 1).ThenBy(i => i.FullPath).ToList();
@@ -445,8 +364,9 @@ namespace Microsoft.VisualStudio.SlnGen
                     project.ProjectGuid = existingProjectGuid;
                 }
 
-                writer.WriteLine($@"Project(""{project.ProjectTypeGuid.ToSolutionString()}"") = ""{project.Name}"", ""{solutionPath}"", ""{project.ProjectGuid.ToSolutionString()}""");
-                writer.WriteLine("EndProject");
+                SolutionProjectModel projectModel = newSolution.AddProject(solutionPath, project.ProjectTypeGuid.ToSolutionString(), null);
+                projectModel.DisplayName = project.Name;
+                projectModel.Id = project.ProjectGuid;
             }
 
             SlnHierarchy hierarchy = null;
@@ -466,9 +386,8 @@ namespace Microsoft.VisualStudio.SlnGen
                 {
                     if (solutionItems.Value.SolutionItems.Any())
                     {
-                        writer.WriteLine($@"Project(""{SlnFolder.FolderProjectTypeGuidString}"") = ""{solutionItems.Key}"", ""{solutionItems.Key}"", ""{solutionItems.Value.FolderGuid.ToSolutionString()}"" ");
-                        WriteSolutionItemsProjectSection(rootPath, writer, solutionItems.Value.SolutionItems);
-                        writer.WriteLine("EndProject");
+                        SolutionFolderModel newFolder = AddFolderToModel(newSolution, solutionItems.Key, solutionItems.Value.FolderGuid);
+                        AddSolutionItemsToModel(newFolder, solutionItems.Value.SolutionItems, rootPath);
                     }
                 }
 
@@ -476,14 +395,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 var solutionItemsWithParents = _solutionItems.Where(x => x.Value.ParentFolderGuid.HasValue).ToArray();
                 if (solutionItemsWithParents.Length > 0)
                 {
-                    writer.WriteLine(@"	GlobalSection(NestedProjects) = preSolution");
-
-                    foreach (KeyValuePair<string, SlnItem> solutionItem in solutionItemsWithParents)
-                    {
-                        writer.WriteLine($@"		{solutionItem.Value.FolderGuid.ToSolutionString()} = {solutionItem.Value.ParentFolderGuid.Value.ToSolutionString()}");
-                    }
-
-                    writer.WriteLine("	EndGlobalSection");
+                    AddNestedProjectsToModel(newSolution, solutionItemsWithParents);
                 }
             }
 
@@ -523,27 +435,22 @@ namespace Microsoft.VisualStudio.SlnGen
                     // guard against root folder
                     if (folder != hierarchy.RootFolder)
                     {
-                        writer.WriteLine($@"Project(""{folder.ProjectTypeGuidString}"") = ""{folder.Name}"", ""{projectSolutionPath}"", ""{folder.FolderGuid.ToSolutionString()}""");
+                        SolutionFolderModel newFolder = AddFolderToModel(newSolution, folder.Name, folder.FolderGuid);
                         if (folder.SolutionItems.Count > 0)
                         {
-                            WriteSolutionItemsProjectSection(rootPath, writer, folder.SolutionItems);
+                            AddSolutionItemsToModel(newFolder, folder.SolutionItems, rootPath);
                         }
-
-                        writer.WriteLine("EndProject");
                     }
                     else if (folder.SolutionItems.Count > 0)
                     {
                         // Special case for solution items in root folder
-                        writer.WriteLine($@"Project(""{SlnFolder.FolderProjectTypeGuidString}"") = ""Solution Items"", ""Solution Items"", ""{{B283EBC2-E01F-412D-9339-FD56EF114549}}"" ");
-                        WriteSolutionItemsProjectSection(rootPath, writer, folder.SolutionItems);
-                        writer.WriteLine("EndProject");
+                        SolutionFolderModel newFolder = AddFolderToModel(newSolution, "Solution Items", new Guid("B283EBC2-E01F-412D-9339-FD56EF114549"));
+                        AddSolutionItemsToModel(newFolder, folder.SolutionItems, rootPath);
                     }
                 }
+
+                AddHierarchyNestedProjectsToModel(newSolution, hierarchy);
             }
-
-            writer.WriteLine("Global");
-
-            writer.WriteLine("	GlobalSection(SolutionConfigurationPlatforms) = preSolution");
 
             HashSet<string> solutionPlatforms = Platforms != null && Platforms.Any()
                 ? new HashSet<string>(GetValidSolutionPlatforms(Platforms), StringComparer.OrdinalIgnoreCase)
@@ -553,22 +460,103 @@ namespace Microsoft.VisualStudio.SlnGen
                 ? new HashSet<string>(Configurations, StringComparer.OrdinalIgnoreCase)
                 : new HashSet<string>(sortedProjects.SelectMany(i => i.Configurations).Where(i => !i.IsNullOrWhiteSpace()), StringComparer.OrdinalIgnoreCase);
 
-            foreach (string configuration in solutionConfigurations)
+            AddSolutionConfigurationPlatformsToModel(newSolution, solutionConfigurations, solutionPlatforms);
+
+            bool hasSharedProject = AddProjectConfigurationPlatformsToModel(newSolution, sortedProjects, solutionConfigurations, solutionPlatforms, alwaysBuild);
+
+            if (hasSharedProject)
             {
-                foreach (string platform in solutionPlatforms)
+                AddSharedMSBuildProjectFilesToModel(newSolution, sortedProjects, rootPath);
+            }
+
+            AddSolutionGuidToModel(newSolution);
+
+            serializer.SaveAsync(rootPath, newSolution, CancellationToken.None).Wait();
+        }
+
+        private static string GetSolutionFolderPathWithForwardSlashes(string path)
+        {
+            // SolutionModel::AddFolder expects paths to have leading, trailing and inner forward slashes
+            // https://github.com/microsoft/vs-solutionpersistence/blob/87ee8ea069662d55c336a9bd68fe4851d0384fa5/src/Microsoft.VisualStudio.SolutionPersistence/Model/SolutionModel.cs#L171C1-L172C1
+            return "/" + string.Join("/", GetPathWithDirectorySeparator(path).Split(DirectorySeparatorCharacters, StringSplitOptions.RemoveEmptyEntries)) + "/";
+        }
+
+        private static string GetPathWithDirectorySeparator(string path) => path.Replace('\\', '/');
+
+        private static SolutionFolderModel AddFolderToModel(SolutionModel newSolution, string solutionFolder, Guid folderGuid)
+        {
+            SolutionFolderModel solutionFolderModel = newSolution.AddFolder(GetSolutionFolderPathWithForwardSlashes(solutionFolder));
+            solutionFolderModel.Id = folderGuid;
+            return solutionFolderModel;
+        }
+
+        private static void AddSolutionItemsToModel(SolutionFolderModel newFolder, IEnumerable<string> solutionItems, string rootPath)
+        {
+            SolutionPropertyBag slnProperties = new ("SolutionItems", scope: PropertiesScope.PreLoad);
+            foreach (string solutionItem in solutionItems
+                .Select(i => i.ToRelativePath(rootPath).ToSolutionPath())
+                .Where(i => !string.IsNullOrWhiteSpace(i)))
+            {
+                slnProperties.Add(solutionItem, solutionItem);
+            }
+
+            newFolder.AddSlnProperties(slnProperties);
+        }
+
+        private static void AddNestedProjectsToModel(SolutionModel newSolution, KeyValuePair<string, SlnItem>[] solutionItemsWithParents)
+        {
+            SolutionPropertyBag slnProperties = new ("NestedProjects", scope: PropertiesScope.PreLoad);
+            foreach (KeyValuePair<string, SlnItem> solutionItem in solutionItemsWithParents)
+            {
+                slnProperties.Add(solutionItem.Value.FolderGuid.ToSolutionString(), solutionItem.Value.ParentFolderGuid.Value.ToSolutionString());
+            }
+
+            newSolution.AddSlnProperties(slnProperties);
+        }
+
+        private static void AddHierarchyNestedProjectsToModel(SolutionModel newSolution, SlnHierarchy hierarchy)
+        {
+            var foldersWithParents = hierarchy.Folders.Where(i => i.Parent != null).ToArray();
+            if (foldersWithParents.Length > 0)
+            {
+                SolutionPropertyBag slnProperties = new ("NestedProjects", scope: PropertiesScope.PreLoad);
+                foreach (SlnFolder folder in foldersWithParents)
                 {
-                    if (!string.IsNullOrWhiteSpace(configuration) && !string.IsNullOrWhiteSpace(platform))
+                    foreach (SlnProject project in folder.Projects)
                     {
-                        writer.WriteLine($"		{configuration}|{platform} = {configuration}|{platform}");
+                        slnProperties.Add(project.ProjectGuid.ToSolutionString(), folder.FolderGuid.ToSolutionString());
                     }
+
+                    // guard against root folder
+                    if (folder.Parent != hierarchy.RootFolder)
+                    {
+                        slnProperties.Add(folder.FolderGuid.ToSolutionString(), folder.Parent.FolderGuid.ToSolutionString());
+                    }
+                }
+
+                newSolution.AddSlnProperties(slnProperties);
+            }
+        }
+
+        private void AddSharedMSBuildProjectFilesToModel(SolutionModel newSolution, List<SlnProject> sortedProjects, string rootPath)
+        {
+            SolutionPropertyBag slnProperties = new ("SharedMSBuildProjectFiles", scope: PropertiesScope.PreLoad);
+            foreach (SlnProject project in sortedProjects)
+            {
+                foreach (string sharedProjectItem in project.SharedProjectItems)
+                {
+                    slnProperties.Add($"{sharedProjectItem.ToRelativePath(rootPath).ToSolutionPath()}*{project.ProjectGuid.ToSolutionString(uppercase: false).ToLowerInvariant()}*SharedItemsImports", $"{GetSharedProjectOptions(project)}");
                 }
             }
 
-            writer.WriteLine("	EndGlobalSection");
+            newSolution.AddSlnProperties(slnProperties);
+        }
 
-            writer.WriteLine("	GlobalSection(ProjectConfigurationPlatforms) = postSolution");
-
+        private bool AddProjectConfigurationPlatformsToModel(SolutionModel newSolution, List<SlnProject> sortedProjects, HashSet<string> solutionConfigurations, HashSet<string> solutionPlatforms, bool alwaysBuild)
+        {
             bool hasSharedProject = false;
+
+            SolutionPropertyBag slnProperties = new ("ProjectConfigurationPlatforms", scope: PropertiesScope.PostLoad);
 
             foreach (SlnProject project in sortedProjects)
             {
@@ -588,88 +576,51 @@ namespace Microsoft.VisualStudio.SlnGen
                     {
                         bool foundPlatform = TryGetProjectSolutionPlatform(platform, project, out string projectSolutionPlatform, out string projectBuildPlatform);
 
-                        writer.WriteLine($@"		{projectGuid}.{configuration}|{platform}.ActiveCfg = {projectSolutionConfiguration}|{projectSolutionPlatform}");
+                        slnProperties.Add($"{projectGuid}.{configuration}|{platform}.ActiveCfg", $"{projectSolutionConfiguration}|{projectSolutionPlatform}");
 
                         if (foundPlatform && foundConfiguration && project.IsBuildable)
                         {
-                            writer.WriteLine($@"		{projectGuid}.{configuration}|{platform}.Build.0 = {projectSolutionConfiguration}|{projectBuildPlatform}");
+                            slnProperties.Add($"{projectGuid}.{configuration}|{platform}.Build.0", $"{projectSolutionConfiguration}|{projectBuildPlatform}");
                         }
 
                         if (project.IsDeployable)
                         {
-                            writer.WriteLine($@"		{projectGuid}.{configuration}|{platform}.Deploy.0 = {projectSolutionConfiguration}|{projectSolutionPlatform}");
+                            slnProperties.Add($"{projectGuid}.{configuration}|{platform}.Deploy.0", $"{projectSolutionConfiguration}|{projectSolutionPlatform}");
                         }
                     }
                 }
             }
 
-            writer.WriteLine("	EndGlobalSection");
+            newSolution.AddSlnProperties(slnProperties);
 
-            writer.WriteLine("	GlobalSection(SolutionProperties) = preSolution");
-            writer.WriteLine("		HideSolutionNode = FALSE");
-            writer.WriteLine("	EndGlobalSection");
-
-            if (hierarchy != null)
-            {
-                var foldersWithParents = hierarchy.Folders.Where(i => i.Parent != null).ToArray();
-                if (foldersWithParents.Length > 0)
-                {
-                    writer.WriteLine(@"	GlobalSection(NestedProjects) = preSolution");
-
-                    foreach (SlnFolder folder in foldersWithParents)
-                    {
-                        foreach (SlnProject project in folder.Projects)
-                        {
-                            writer.WriteLine($@"		{project.ProjectGuid.ToSolutionString()} = {folder.FolderGuid.ToSolutionString()}");
-                        }
-
-                        // guard against root folder
-                        if (folder.Parent != hierarchy.RootFolder)
-                        {
-                            writer.WriteLine($@"		{folder.FolderGuid.ToSolutionString()} = {folder.Parent.FolderGuid.ToSolutionString()}");
-                        }
-                    }
-
-                    writer.WriteLine("	EndGlobalSection");
-                }
-            }
-
-            writer.WriteLine("	GlobalSection(ExtensibilityGlobals) = postSolution");
-            writer.WriteLine($"		SolutionGuid = {SolutionGuid.ToSolutionString()}");
-            writer.WriteLine("	EndGlobalSection");
-
-            if (hasSharedProject)
-            {
-                writer.WriteLine("	GlobalSection(SharedMSBuildProjectFiles) = preSolution");
-
-                foreach (SlnProject project in sortedProjects)
-                {
-                    foreach (string sharedProjectItem in project.SharedProjectItems)
-                    {
-                        writer.WriteLine($"		{sharedProjectItem.ToRelativePath(rootPath).ToSolutionPath()}*{project.ProjectGuid.ToSolutionString(uppercase: false).ToLowerInvariant()}*SharedItemsImports = {GetSharedProjectOptions(project)}");
-                    }
-                }
-
-                writer.WriteLine("	EndGlobalSection");
-            }
-
-            writer.WriteLine("EndGlobal");
+            return hasSharedProject;
         }
 
-        private static void WriteSolutionItemsProjectSection(
-            string rootPath,
-            TextWriter writer,
-            IEnumerable<string> solutionItems)
+        private void AddSolutionConfigurationPlatformsToModel(SolutionModel newSolution, HashSet<string> solutionConfigurations, HashSet<string> solutionPlatforms)
         {
-            writer.WriteLine("	ProjectSection(SolutionItems) = preProject");
-            foreach (string solutionItem in solutionItems
-                         .Select(i => i.ToRelativePath(rootPath).ToSolutionPath())
-                         .Where(i => !string.IsNullOrWhiteSpace(i)))
+            SolutionPropertyBag slnProperties = new ("SolutionConfigurationPlatforms", scope: PropertiesScope.PreLoad);
+            foreach (string configuration in solutionConfigurations)
             {
-                writer.WriteLine($"		{solutionItem} = {solutionItem}");
+                foreach (string platform in solutionPlatforms)
+                {
+                    if (!string.IsNullOrWhiteSpace(configuration) && !string.IsNullOrWhiteSpace(platform))
+                    {
+                        slnProperties.Add($"{configuration}|{platform}", $"{configuration}|{platform}");
+                    }
+                }
             }
 
-            writer.WriteLine("	EndProjectSection");
+            newSolution.AddSlnProperties(slnProperties);
+        }
+
+        private void AddSolutionGuidToModel(SolutionModel newSolution)
+        {
+            SolutionPropertyBag newExtensibilityGlobals = new ("ExtensibilityGlobals")
+            {
+                { "SolutionGuid", SolutionGuid.ToString() },
+            };
+
+            newSolution.AddSlnProperties(newExtensibilityGlobals);
         }
 
         private string GetSharedProjectOptions(SlnProject project)
