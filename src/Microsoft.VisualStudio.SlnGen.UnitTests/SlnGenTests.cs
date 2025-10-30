@@ -156,7 +156,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         [Fact]
         public void InsertsVSVersion()
         {
-            string requestedVSVersion = "17";
+            string requestedVSVersion = "18";
             Dictionary<string, string> globalProperties = new Dictionary<string, string>
             {
                 [MSBuildPropertyNames.DesignTimeBuild] = bool.TrueString,
