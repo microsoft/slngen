@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFrameworks>net472;net8.0;net9.0</TargetFrameworks>
-  <TargetFrameworks Condition="'$(TargetDotNet10)' == 'true'">$(TargetFrameworks);net10.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(TargetDotNet10)' == 'true'">$(TargetFrameworks);net10.0</TargetFrameworks>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.config</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <IncludeReferenceCopyLocalPathsInBuildOutputInPackage>true</IncludeReferenceCopyLocalPathsInBuildOutputInPackage>
     <IsTool>true</IsTool>
@@ -12,7 +12,7 @@
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <PreferNativeArm64>true</PreferNativeArm64>
   </PropertyGroup>
   <ItemDefinitionGroup>
