@@ -10,7 +10,7 @@
     <NoWarn>$(NoWarn);NETSDK1223</NoWarn> <!-- CI does not have VS 17.12 yet -->
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
     <ContinuousIntegrationBuild Condition="'$(TF_BUILD)' == 'true'">true</ContinuousIntegrationBuild>
-    <NoWarn>$(NoWarn);NETSDK1213</NoWarn>
+    <NoWarn>$(NoWarn);NETSDK1213;NETSDK1233</NoWarn>
     <TargetDotNet10 Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TargetDotNet10>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
     <UseArtifactsOutput>false</UseArtifactsOutput>
