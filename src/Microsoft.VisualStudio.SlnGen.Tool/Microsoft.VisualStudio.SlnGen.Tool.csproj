@@ -45,8 +45,7 @@
                       PrivateAssets="All"
                       ReferenceOutputAssembly="false"
                       SkipGetTargetFrameworkProperties="true"
-                      TargetFramework="net10.0"
-                      Condition="'$(TargetDotNet10)' == 'true'" />
+                      TargetFramework="net10.0" />
   </ItemGroup>
   <Target Name="CopySlnGenToOutputDirectoryAndPackage"
           AfterTargets="PrepareForRun"
