@@ -8,4 +8,5 @@ $medium-breakpoint: 80em !default;
 
 .main-content {
     border: 10px solid red;
+    max-width: 100rem;
 }
