@@ -10,12 +10,13 @@
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <DevelopmentDependency>true</DevelopmentDependency>
     <IncludeSymbols>false</IncludeSymbols>
-    <!-- SlnGen.Corext is a NoTargets net472 packaging project; SourceLink 10.x
-         triggers ResolveAssemblyReferences which fails with MSB3245.
-         SourceLink isn't needed for this packaging-only project. -->
-    <EnableSourceLink>false</EnableSourceLink>
-    <EmbedUntrackedSources>false</EmbedUntrackedSources>
-    <DeterministicSourcePaths>false</DeterministicSourcePaths>
+    <!-- SlnGen.Corext is a NoTargets net472 packaging project that only
+         repacks the SlnGen output. SourceLink 10.x triggers
+         ResolveAssemblyReferences via the SourceControl info targets,
+         which then fails MSB3245 trying to resolve the implicit
+         mscorlib / System.Numerics references. Since this project never
+         compiles code, suppress the implicit framework references. -->
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);GetMyPackageFiles</TargetsForTfmSpecificContentInPackage>
   </PropertyGroup>
   <ItemGroup>
