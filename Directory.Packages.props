@@ -16,7 +16,7 @@
     <PackageVersion Include="EnvironmentAbstractions" Version="5.0.0" />
     <PackageVersion Include="EnvironmentAbstractions.BannedApiAnalyzer" Version="5.0.0" />
     <PackageVersion Include="EnvironmentAbstractions.TestHelpers" Version="5.0.0" />
-    <PackageVersion Include="McMaster.Extensions.CommandLineUtils" Version="4.1.1" />
+    <PackageVersion Include="McMaster.Extensions.CommandLineUtils" Version="5.1.0" />
     <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" />
     <PackageVersion Include="Microsoft.Build.Runtime" Version="$(MicrosoftBuildPackageVersion)" />
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageVersion)" />
@@ -36,9 +36,9 @@
     <!-- Pinning vulnerable packages -->
     <PackageVersion Include="MessagePack" Version="2.5.187" />
     <PackageVersion Include="Microsoft.IO.Redist" Version="6.1.0" />
-    <PackageVersion Include="System.Formats.Asn1" Version="9.0.0" />
+    <PackageVersion Include="System.Formats.Asn1" Version="9.0.16" />
     <PackageVersion Include="System.Net.Http" Version="4.3.4" />
-    <PackageVersion Include="System.Security.Cryptography.Xml" Version="9.0.0" />
+    <PackageVersion Include="System.Security.Cryptography.Xml" Version="9.0.16" />
     <PackageVersion Include="System.Text.Json" Version="9.0.0" />
     <PackageVersion Include="System.Text.RegularExpressions" Version="4.3.1" />
   </ItemGroup>
