@@ -1,0 +1,205 @@
+{
+  "properties": {
+    "helpUri": "https://eng.ms/docs/microsoft-security/security/azure-security/cloudai-security-fundamentals-engineering/security-integration/guardian-wiki/microsoft-guardian/general/baselines"
+  },
+  "version": "1.0.0",
+  "baselines": {
+    "default": {
+      "name": "default",
+      "createdDate": "2026-05-18 22:19:00Z",
+      "lastUpdatedDate": "2026-05-18 22:19:00Z"
+    }
+  },
+  "results": {
+    "729a26edf1d3343dd0b1501ac22df77cf4b1aa9af471600f3d8de2731934097f": {
+      "signature": "729a26edf1d3343dd0b1501ac22df77cf4b1aa9af471600f3d8de2731934097f",
+      "alternativeSignatures": [
+        "fe38bcd61c369df3baba133ac7413e995dc9880afdb0d32eef3f712229d685a7",
+        "f84af6427558525e3012abccb9e213353776663fb5d6263436ee9957111fe37c",
+        "c691b205e5f363b594c354b04f255a36c2f2f0c6cc6c15b7d0a22d5700f91593"
+      ],
+      "target": "src/Microsoft.VisualStudio.SlnGen/Program.cs",
+      "line": 200,
+      "uriBaseId": "file:///D:/a/_work/1/s/",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "roslynanalyzers",
+      "ruleId": "CA1310",
+      "createdDate": "2026-05-18 22:19:00Z",
+      "expirationDate": "2026-11-04 22:19:52Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2026-05-18 22:19:52Z"
+    },
+    "2a85f2bfcfa8e78794452dee89ca3aa55b22494b1511d8dea7455cde26efc2b6": {
+      "signature": "2a85f2bfcfa8e78794452dee89ca3aa55b22494b1511d8dea7455cde26efc2b6",
+      "alternativeSignatures": [
+        "c33569f32317cc32f5081e047d8da760cd09e0fa992e3b4842b6e3efabd4ef4d",
+        "40dbfdb44a9a684cafe678ba79d6d83e7371c6f342e92833c89056cd4125b270",
+        "645faebcd1dba74e2ff421e772a4dceda4eeb91f2b49422844bfcdd2b9b4d546"
+      ],
+      "target": "src/Microsoft.VisualStudio.SlnGen/SlnFile.cs",
+      "line": 262,
+      "uriBaseId": "file:///D:/a/_work/1/s/",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "roslynanalyzers",
+      "ruleId": "CA1310",
+      "createdDate": "2026-05-18 22:19:00Z",
+      "expirationDate": "2026-11-04 22:19:52Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2026-05-18 22:19:52Z"
+    },
+    "33104e5885ac048f2ab60da924f1b368426526641c9af476b64147509f79be1b": {
+      "signature": "33104e5885ac048f2ab60da924f1b368426526641c9af476b64147509f79be1b",
+      "alternativeSignatures": [
+        "c5062e2cc0614efca3898a8e33048fbfe75fb1bb0e3f0f9ddde0a479cdb9a525",
+        "bfa0b7162338f9eaefed852bf7a7dc295a4116d3d36319102d619e719e948456",
+        "54852a26743d12d29c6264c3b97683656d158234317bc33aedca51542d417936"
+      ],
+      "target": "src/Microsoft.VisualStudio.SlnGen/SlnFile.cs",
+      "line": 296,
+      "uriBaseId": "file:///D:/a/_work/1/s/",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "roslynanalyzers",
+      "ruleId": "CA1310",
+      "createdDate": "2026-05-18 22:19:00Z",
+      "expirationDate": "2026-11-04 22:19:52Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2026-05-18 22:19:52Z"
+    },
+    "f3ea8381415704f9b7790a28a2c597492a33ff2d56a9962a80060e68a75a0802": {
+      "signature": "f3ea8381415704f9b7790a28a2c597492a33ff2d56a9962a80060e68a75a0802",
+      "alternativeSignatures": [
+        "9d62f0ef1870fb7a0f98896a407df2687b9e09e8873df1c177dae9a2a183655d",
+        "b0f818f671d8c7db81e034528501920a4ca227cb9108856cef7d986315574445",
+        "f4211325defbacb49c8ffa30d472f8e321c2aa6809c6605790dce5b62b90e10a"
+      ],
+      "target": "src/Microsoft.VisualStudio.SlnGen/SlnFile.cs",
+      "line": 303,
+      "uriBaseId": "file:///D:/a/_work/1/s/",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "roslynanalyzers",
+      "ruleId": "CA1310",
+      "createdDate": "2026-05-18 22:19:00Z",
+      "expirationDate": "2026-11-04 22:19:52Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2026-05-18 22:19:52Z"
+    },
+    "d3d6789372668c4830de27b669f65577477a18aeab2d48e421d35b987fec241c": {
+      "signature": "d3d6789372668c4830de27b669f65577477a18aeab2d48e421d35b987fec241c",
+      "alternativeSignatures": [
+        "9419171a083208e12e27b0dfdaf4f55bf16c5be5026c427fa93df5ed4b0b8390",
+        "619ffd8b74f8f48d535ac846f068c5b0ed012d37304fab0b00c6403a90b649dc",
+        "103ec80e88bead42e20bf4eeef8e77fcc1a186477bf418beedaa8fa142a5c13a"
+      ],
+      "target": "src/Microsoft.VisualStudio.SlnGen/SlnFile.cs",
+      "line": 307,
+      "uriBaseId": "file:///D:/a/_work/1/s/",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "roslynanalyzers",
+      "ruleId": "CA1310",
+      "createdDate": "2026-05-18 22:19:00Z",
+      "expirationDate": "2026-11-04 22:19:52Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2026-05-18 22:19:52Z"
+    },
+    "533abd493d80dc6f0c75c322680f6cf4dc791c81f8e3d113be9aa10ec0a29a97": {
+      "signature": "533abd493d80dc6f0c75c322680f6cf4dc791c81f8e3d113be9aa10ec0a29a97",
+      "alternativeSignatures": [
+        "5e4006a54516a98283e089e2a0eda9bc1bfb5c2571a226f7fd18631c23d6c745",
+        "a9d1b807c00798add83e01f683b7c9560558451f0c83b2765d4dee7a8bedfc9e",
+        "9781f3379c97dbe3d9fd3ced1caddcf7677cb830f3e2948679f441be54216592"
+      ],
+      "target": "src/Microsoft.VisualStudio.SlnGen/SlnFile.cs",
+      "line": 314,
+      "uriBaseId": "file:///D:/a/_work/1/s/",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "roslynanalyzers",
+      "ruleId": "CA1310",
+      "createdDate": "2026-05-18 22:19:00Z",
+      "expirationDate": "2026-11-04 22:19:52Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2026-05-18 22:19:52Z"
+    },
+    "0ed7092d40110be8b4f5d4874f31c95e7e6aec2cac6b06b009ef07f7a5932b88": {
+      "signature": "0ed7092d40110be8b4f5d4874f31c95e7e6aec2cac6b06b009ef07f7a5932b88",
+      "alternativeSignatures": [
+        "65c4d19c01af3856b666c7878f11fc0142dd742340d087f7590f0f0b859c4a9e",
+        "3da15b056f45d4bfde11df410c1b4139b84f330214aa995641e953cd4e932add",
+        "f04631c6d7b4376dd276ac1cc3094b082506dc0951a0850e79e86434300868d7"
+      ],
+      "target": "src/Microsoft.VisualStudio.SlnGen/SlnFile.cs",
+      "line": 677,
+      "uriBaseId": "file:///D:/a/_work/1/s/",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "roslynanalyzers",
+      "ruleId": "CA1310",
+      "createdDate": "2026-05-18 22:19:00Z",
+      "expirationDate": "2026-11-04 22:19:52Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2026-05-18 22:19:52Z"
+    },
+    "028ca1b4543e5bb7e293165f131167666246820e62f75e306427912056757633": {
+      "signature": "028ca1b4543e5bb7e293165f131167666246820e62f75e306427912056757633",
+      "alternativeSignatures": [
+        "aba9cbcf74e718c296bf91e8ed77b4c5436aa4f709a725db5ed6a6821f2cbc5e",
+        "2cfb88f3673ddd7df260e465b89c245aa0601c89603e08ae9a637a3a95dff57a",
+        "517c0c8d5e5b8ec41cd9a38350908290910d55268f1ce093909d8706690c4601"
+      ],
+      "target": "src/Microsoft.VisualStudio.SlnGen/SlnFile.cs",
+      "line": 682,
+      "uriBaseId": "file:///D:/a/_work/1/s/",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "roslynanalyzers",
+      "ruleId": "CA1310",
+      "createdDate": "2026-05-18 22:19:00Z",
+      "expirationDate": "2026-11-04 22:19:52Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2026-05-18 22:19:52Z"
+    },
+    "78ac4d6b5833a7117eb682b3bdaaf77cbd97a8972af4a3504167094d5d286979": {
+      "signature": "78ac4d6b5833a7117eb682b3bdaaf77cbd97a8972af4a3504167094d5d286979",
+      "alternativeSignatures": [
+        "f67cf55337f95de5aa851b919e91d6f53e581ca53d3d5917dccda720a28ac04b",
+        "544b718f1c081d3ac84f1ea412c53e79fb3e5160eb9077e1e97723e4627ea927",
+        "87d3755f09bf1dde9d595f99ab9b4448c35e553663843b468133b9be51dbf5cb"
+      ],
+      "target": "src/Microsoft.VisualStudio.SlnGen/SlnProject.cs",
+      "line": 260,
+      "uriBaseId": "file:///D:/a/_work/1/s/",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "roslynanalyzers",
+      "ruleId": "CA1310",
+      "createdDate": "2026-05-18 22:19:00Z",
+      "expirationDate": "2026-11-04 22:19:52Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2026-05-18 22:19:52Z"
+    },
+    "9298806565a72ec460e4577c76a7b8f6e069dae5bd80bd53d032e6ee13a64dc3": {
+      "signature": "9298806565a72ec460e4577c76a7b8f6e069dae5bd80bd53d032e6ee13a64dc3",
+      "alternativeSignatures": [
+        "0c39765dd9a2b192b29af5994f5a76cdde71131cdb4a6b5a065aaea01849f6e5",
+        "a0c803ff803d9d09380493faa9bdd90a6d09e94a8b22341a1caf1e0dee595805",
+        "700b9d67047e58de26a3d7f616e963e20201f4a6871ae5b2ef1bbfaacacdccfd"
+      ],
+      "target": "src/Microsoft.VisualStudio.SlnGen.Tool/Program.cs",
+      "line": 123,
+      "uriBaseId": "file:///D:/a/_work/1/s/",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "roslynanalyzers",
+      "ruleId": "CA1310",
+      "createdDate": "2026-05-18 22:19:00Z",
+      "expirationDate": "2026-11-04 22:19:52Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2026-05-18 22:19:52Z"
+    }
+  }
+}
