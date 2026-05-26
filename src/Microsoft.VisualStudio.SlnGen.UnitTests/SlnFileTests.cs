@@ -1576,26 +1576,22 @@ EndGlobal
         private ProjectInSolution GetSolutionFolderByName(SolutionFile solutionFile, string name)
         {
 #if NET10_0_OR_GREATER
-            // In MSBuild 17.13 and above, solution folders are stored in a private property and not included in ProjectsInOrder
+            // In MSBuild 17.13 and above, solution folders may be stored in a private SolutionFoldersByGuid property
+            // in addition to (or instead of) ProjectsInOrder. Check both to remain compatible with both layouts.
             PropertyInfo solutionFoldersByGuidProperty = typeof(SolutionFile).GetProperty("SolutionFoldersByGuid", BindingFlags.Instance | BindingFlags.NonPublic);
 
-            if (solutionFoldersByGuidProperty == null)
+            if (solutionFoldersByGuidProperty != null
+                && solutionFoldersByGuidProperty.GetValue(solutionFile) is IReadOnlyDictionary<string, ProjectInSolution> value)
             {
-                throw new InvalidOperationException("SolutionFoldersByGuid property not found");
+                ProjectInSolution match = value.FirstOrDefault(i => i.Value.ProjectName.Equals(name)).Value;
+
+                if (match != null)
+                {
+                    return match;
+                }
             }
-
-            IReadOnlyDictionary<string, ProjectInSolution> value = solutionFoldersByGuidProperty.GetValue(solutionFile) as IReadOnlyDictionary<string, ProjectInSolution>;
-
-            if (value == null)
-            {
-                throw new InvalidOperationException("SolutionFoldersByGuid is null");
-            }
-
-            return value.FirstOrDefault(i => i.Value.ProjectName.Equals(name)).Value;
-
-#else
-            return solutionFile.ProjectsInOrder.FirstOrDefault(i => i.ProjectName.Equals(name));
 #endif
+            return solutionFile.ProjectsInOrder.FirstOrDefault(i => i.ProjectName.Equals(name) && i.ProjectType == SolutionProjectType.SolutionFolder);
         }
 
         private class MockSolutionSerializer : ISolutionSerializer
