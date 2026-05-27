@@ -260,6 +260,15 @@ Examples:
         public string[] Property { get; set; }
 
         /// <summary>
+        /// Gets or sets the format of the generated solution file.
+        /// </summary>
+        [Option(
+            "-f|--format <format>",
+            CommandOptionType.SingleValue,
+            Description = "Specifies the format of the solution file to generate.  Valid values are 'sln' (Visual Studio solution file) and 'slnx' (XML solution file).  This switch is ignored when --solutionfile is specified and its extension determines the format.  Default: sln")]
+        public string Format { get; set; }
+
+        /// <summary>
         /// Gets or sets the full path to the solution file to generate.
         /// </summary>
         [Option(
@@ -315,6 +324,31 @@ Examples:
         /// </summary>
         /// <returns>true to always include the project in the build even if it has no matching configuration, otherwise false.</returns>
         public bool EnableAlwaysBuild() => GetBoolean(AlwaysBuild);
+
+        /// <summary>
+        /// Gets the file extension to use for the auto-generated solution file based on the <see cref="Format" /> argument.
+        /// </summary>
+        /// <returns>"sln" by default, or "slnx" when <see cref="Format" /> is "slnx".</returns>
+        /// <exception cref="InvalidOperationException">Thrown when <see cref="Format" /> is set to a value other than "sln" or "slnx".</exception>
+        public string GetSolutionFileExtension()
+        {
+            if (string.IsNullOrWhiteSpace(Format))
+            {
+                return "sln";
+            }
+
+            if (string.Equals(Format, "sln", StringComparison.OrdinalIgnoreCase))
+            {
+                return "sln";
+            }
+
+            if (string.Equals(Format, "slnx", StringComparison.OrdinalIgnoreCase))
+            {
+                return "slnx";
+            }
+
+            throw new InvalidOperationException($"Invalid --format value '{Format}'.  Valid values are 'sln' or 'slnx'.");
+        }
 
         /// <summary>
         /// Gets a value indicating whether or not folders should be collapsed.

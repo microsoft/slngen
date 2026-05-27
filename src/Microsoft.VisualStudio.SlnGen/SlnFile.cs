@@ -108,7 +108,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
                 var firstProjectName = firstProject.GetPropertyValueOrDefault(MSBuildPropertyNames.SlnGenProjectName, Path.GetFileName(firstProject.FullPath));
 
-                string solutionFileName = Path.ChangeExtension(firstProjectName, "sln");
+                string solutionFileName = Path.ChangeExtension(firstProjectName, arguments.GetSolutionFileExtension());
 
                 solutionFileFullPath = Path.Combine(solutionDirectoryFullPath!, solutionFileName);
             }
