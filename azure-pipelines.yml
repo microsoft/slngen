@@ -55,6 +55,9 @@ jobs:
     displayName: 'Install .NET 10.x (Windows)'
     condition: eq(variables.osName, 'Windows')
 
+  - task: NuGetAuthenticate@1
+    displayName: 'Authenticate Azure Artifacts feeds'
+
   - task: VSBuild@1
     displayName: 'Build (Visual Studio)'
     inputs:

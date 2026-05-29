@@ -27,6 +27,8 @@ pr: none
 extends:
   template: azure-pipelines/MicroBuild.1ES.Official.yml@MicroBuildTemplate
   parameters:
+    settings:
+      networkIsolationPolicy: Permissive,CFSClean
     sdl:
       sbom:
         enabled: false
@@ -73,6 +75,9 @@ extends:
             powershell -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -UseBasicParsing 'https://dot.net/v1/dotnet-install.ps1'))) $(DotNet10InstallArgs) -InstallDir C:\ToolCache\dotnet"
             dotnet --info
           displayName: 'Install .NET 10.x'
+
+        - task: NuGetAuthenticate@1
+          displayName: 'Authenticate Azure Artifacts feeds'
 
         - task: VSBuild@1
           displayName: 'Build Solution'
