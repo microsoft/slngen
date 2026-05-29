@@ -9,7 +9,7 @@ variables:
   ArtifactsDirectory: artifacts
   BuildConfiguration: 'Release'
   BuildPlatform: 'Any CPU'
-  MSBuildArgs: '"/Property:Platform=$(BuildPlatform);Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectory)\msbuild.binlog"'
+  MSBuildArgs: '"/Property:Platform=$(BuildPlatform);Configuration=$(BuildConfiguration)" "/p:RestoreConfigFile=$(Build.SourcesDirectory)\NuGet.config" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectory)\msbuild.binlog"'
   SignType: 'Real'
   # Not using "--channel 10.0 --quality daily", see https://github.com/microsoft/slngen/issues/456.
   # Sourcing the SDK version from global.json so this pipeline stays in lockstep with the
@@ -29,6 +29,8 @@ pr: none
 extends:
   template: azure-pipelines/MicroBuild.1ES.Official.yml@MicroBuildTemplate
   parameters:
+    settings:
+      networkIsolationPolicy: Permissive,CFSClean
     sdl:
       sbom:
         enabled: false
@@ -75,6 +77,9 @@ extends:
             powershell -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -UseBasicParsing 'https://dot.net/v1/dotnet-install.ps1'))) $(DotNet10InstallArgs) -InstallDir C:\ToolCache\dotnet"
             dotnet --info
           displayName: 'Install .NET 10.x'
+
+        - task: NuGetAuthenticate@1
+          displayName: 'Authenticate Azure Artifacts feeds'
 
         - task: VSBuild@1
           displayName: 'Build Solution'

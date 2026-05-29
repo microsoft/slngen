@@ -5,7 +5,7 @@ variables:
   ArtifactsDirectoryName: 'artifacts'
   BuildConfiguration: 'Debug'
   BuildPlatform: 'Any CPU'
-  MSBuildArgs: '"/Property:Platform=$(BuildPlatform);Configuration=$(BuildConfiguration)"'
+  MSBuildArgs: '"/Property:Platform=$(BuildPlatform);Configuration=$(BuildConfiguration)" "/p:RestoreConfigFile=$(Build.SourcesDirectory)\NuGet.config"'
   SignType: 'Test'
   # Not using "--channel 10.0 --quality daily", see https://github.com/microsoft/slngen/issues/456.
   # Sourcing the SDK version from global.json so this pipeline stays in lockstep with the
@@ -56,6 +56,9 @@ jobs:
       dotnet --info
     displayName: 'Install .NET 10.x (Windows)'
     condition: eq(variables.osName, 'Windows')
+
+  - task: NuGetAuthenticate@1
+    displayName: 'Authenticate Azure Artifacts feeds'
 
   - task: VSBuild@1
     displayName: 'Build (Visual Studio)'
