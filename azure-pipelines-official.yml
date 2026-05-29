@@ -11,8 +11,10 @@ variables:
   BuildPlatform: 'Any CPU'
   MSBuildArgs: '"/Property:Platform=$(BuildPlatform);Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectory)\msbuild.binlog"'
   SignType: 'Real'
-  # Not using "--channel 10.0 --quality daily", see https://github.com/microsoft/slngen/issues/456
-  DotNet10InstallArgs: '-version 10.0.100'
+  # Not using "--channel 10.0 --quality daily", see https://github.com/microsoft/slngen/issues/456.
+  # Sourcing the SDK version from global.json so this pipeline stays in lockstep with the
+  # repo's pinned SDK version automatically — bump global.json and CI follows.
+  DotNet10InstallArgs: '-JSonFile $(Build.SourcesDirectory)\global.json'
 
 trigger:
   batch: true
