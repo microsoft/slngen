@@ -11,10 +11,9 @@ variables:
   BuildPlatform: 'Any CPU'
   MSBuildArgs: '"/Property:Platform=$(BuildPlatform);Configuration=$(BuildConfiguration)" "/p:RestoreConfigFile=$(Build.SourcesDirectory)\NuGet.config" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectory)\msbuild.binlog"'
   SignType: 'Real'
-  # Not using "--channel 10.0 --quality daily", see https://github.com/microsoft/slngen/issues/456.
-  # Sourcing the SDK version from global.json so this pipeline stays in lockstep with the
-  # repo's pinned SDK version automatically — bump global.json and CI follows.
-  DotNet10InstallArgs: '-JSonFile $(Build.SourcesDirectory)\global.json'
+  # Follow global.json's rollForward/allowPrerelease policy by installing the
+  # latest .NET 10 SDK available from the daily channel.
+  DotNet10InstallArgs: '-Channel 10.0 -Quality daily'
 
 trigger:
   batch: true
