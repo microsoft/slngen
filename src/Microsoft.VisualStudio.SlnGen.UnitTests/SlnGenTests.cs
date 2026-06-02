@@ -77,7 +77,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 .Save()
                 .TryBuild("SlnGen", globalProperties, out bool result, out BuildOutput buildOutput, out _);
 
-            result.ShouldBeTrue(GetBuildOutputLog(buildOutput));
+            result.ShouldBeTrue(result ? null : GetBuildOutputLog(buildOutput));
 
             string expectedSolutionFilePath = Path.ChangeExtension(mainProject.FullPath, ".sln");
 
@@ -85,17 +85,17 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             SolutionFile solutionFile = SolutionFile.Parse(expectedSolutionFilePath);
 
-            solutionFile.ProjectsInOrder.Select(i => Path.GetFullPath(i.AbsolutePath))
-                .ShouldBe(
-                new string[]
-                {
-                    mainProject,
-                    projectA,
-                    projectB,
-                    projectC,
-                    projectD,
-                },
-                GetBuildOutputLog(buildOutput));
+            string[] actualProjects = solutionFile.ProjectsInOrder.Select(i => Path.GetFullPath(i.AbsolutePath)).ToArray();
+            string[] expectedProjects =
+            {
+                mainProject,
+                projectA,
+                projectB,
+                projectC,
+                projectD,
+            };
+
+            actualProjects.ShouldBe(expectedProjects, actualProjects.SequenceEqual(expectedProjects) ? null : GetBuildOutputLog(buildOutput));
         }
 
         [Fact]
@@ -125,7 +125,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 .Save()
                 .TryBuild("SlnGen", globalProperties, out bool result, out BuildOutput buildOutput, out IDictionary<string, TargetResult> targetOutputs);
 
-            result.ShouldBeTrue(GetBuildOutputLog(buildOutput));
+            result.ShouldBeTrue(result ? null : GetBuildOutputLog(buildOutput));
 
             KeyValuePair<string, TargetResult> targetOutput = targetOutputs.ShouldHaveSingleItem();
 
@@ -181,7 +181,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 .Save()
                 .TryBuild("SlnGen", globalProperties, out bool result, out BuildOutput buildOutput, out IDictionary<string, TargetResult> targetOutputs);
 
-            result.ShouldBeTrue(GetBuildOutputLog(buildOutput));
+            result.ShouldBeTrue(result ? null : GetBuildOutputLog(buildOutput));
 
             KeyValuePair<string, TargetResult> targetOutput = targetOutputs.ShouldHaveSingleItem();
 
@@ -204,6 +204,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             }
             catch (NullReferenceException ex)
             {
+                // MSBuild 18 can throw while replaying captured events through ParallelConsoleLogger.
                 string errorsAndWarnings = string.Join(
                     Environment.NewLine,
                     buildOutput.Errors.Concat(buildOutput.Warnings));
