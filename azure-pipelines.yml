@@ -7,10 +7,7 @@ variables:
   BuildPlatform: 'Any CPU'
   MSBuildArgs: '"/Property:Platform=$(BuildPlatform);Configuration=$(BuildConfiguration)" "/p:RestoreConfigFile=$(Build.SourcesDirectory)\NuGet.config"'
   SignType: 'Test'
-  # Not using "--channel 10.0 --quality daily", see https://github.com/microsoft/slngen/issues/456.
-  # Sourcing the SDK version from global.json so this pipeline stays in lockstep with the
-  # repo's pinned SDK version automatically — bump global.json and CI follows.
-  DotNet10InstallArgs: '-JSonFile $(Build.SourcesDirectory)\global.json'
+  DotNetInstallDirectory: '$(Agent.TempDirectory)\dotnet'
 
 trigger:
   batch: 'true'
@@ -35,26 +32,36 @@ jobs:
   strategy:
     matrix:
       Windows:
-        vmImage: windows-latest
+        vmImage: windows-2025-vs2026
         osName: Windows
   displayName: 'Build and Test'
   pool:
     vmImage: $(vmImage)
   steps:
   - task: UseDotNet@2
-    displayName: 'Install .NET 8.x'
+    displayName: 'Install .NET 8 SDK'
     inputs:
+      packageType: 'sdk'
       version: '8.x'
+      installationPath: '$(DotNetInstallDirectory)'
 
   - task: UseDotNet@2
-    displayName: 'Install .NET 9.x'
+    displayName: 'Install .NET 9 SDK'
     inputs:
+      packageType: 'sdk'
       version: '9.x'
+      installationPath: '$(DotNetInstallDirectory)'
 
-  - script: |
-      powershell -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -UseBasicParsing 'https://dot.net/v1/dotnet-install.ps1'))) $(DotNet10InstallArgs) -InstallDir C:\hostedtoolcache\windows\dotnet"
+  - task: UseDotNet@2
+    displayName: 'Install .NET 10 SDK'
+    inputs:
+      packageType: 'sdk'
+      version: '10.x'
+      installationPath: '$(DotNetInstallDirectory)'
+
+  - powershell: |
       dotnet --info
-    displayName: 'Install .NET 10.x (Windows)'
+    displayName: 'Show .NET info'
     condition: eq(variables.osName, 'Windows')
 
   - task: NuGetAuthenticate@1
@@ -63,6 +70,7 @@ jobs:
   - task: VSBuild@1
     displayName: 'Build (Visual Studio)'
     inputs:
+      vsVersion: '18.0'
       msbuildArgs: '$(MSBuildArgs) "/BinaryLogger:$(ArtifactsDirectoryName)/build.binlog"'
     condition: eq(variables.osName, 'Windows')
 
