@@ -77,7 +77,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 .Save()
                 .TryBuild("SlnGen", globalProperties, out bool result, out BuildOutput buildOutput, out _);
 
-            result.ShouldBeTrue(buildOutput.GetConsoleLog());
+            result.ShouldBeTrue(GetBuildOutputLog(buildOutput));
 
             string expectedSolutionFilePath = Path.ChangeExtension(mainProject.FullPath, ".sln");
 
@@ -95,7 +95,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                     projectC,
                     projectD,
                 },
-                buildOutput.GetConsoleLog());
+                GetBuildOutputLog(buildOutput));
         }
 
         [Fact]
@@ -125,7 +125,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 .Save()
                 .TryBuild("SlnGen", globalProperties, out bool result, out BuildOutput buildOutput, out IDictionary<string, TargetResult> targetOutputs);
 
-            result.ShouldBeTrue(buildOutput.GetConsoleLog());
+            result.ShouldBeTrue(GetBuildOutputLog(buildOutput));
 
             KeyValuePair<string, TargetResult> targetOutput = targetOutputs.ShouldHaveSingleItem();
 
@@ -181,7 +181,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 .Save()
                 .TryBuild("SlnGen", globalProperties, out bool result, out BuildOutput buildOutput, out IDictionary<string, TargetResult> targetOutputs);
 
-            result.ShouldBeTrue(buildOutput.GetConsoleLog());
+            result.ShouldBeTrue(GetBuildOutputLog(buildOutput));
 
             KeyValuePair<string, TargetResult> targetOutput = targetOutputs.ShouldHaveSingleItem();
 
@@ -194,6 +194,22 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             string[] solutionLines = File.ReadAllLines(expected.FullName);
             solutionLines.ShouldContain($"# Visual Studio Version {requestedVSVersion}");
             solutionLines.ShouldContain(line => line.StartsWith($"VisualStudioVersion = {requestedVSVersion}"));
+        }
+
+        private static string GetBuildOutputLog(BuildOutput buildOutput)
+        {
+            try
+            {
+                return buildOutput.GetConsoleLog();
+            }
+            catch (NullReferenceException ex)
+            {
+                string errorsAndWarnings = string.Join(
+                    Environment.NewLine,
+                    buildOutput.Errors.Concat(buildOutput.Warnings));
+
+                return string.IsNullOrWhiteSpace(errorsAndWarnings) ? ex.ToString() : errorsAndWarnings;
+            }
         }
     }
 }
