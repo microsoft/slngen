@@ -32,7 +32,7 @@ jobs:
   strategy:
     matrix:
       Windows:
-        vmImage: windows-latest
+        vmImage: windows-2025-vs2026
         osName: Windows
   displayName: 'Build and Test'
   pool:
@@ -70,6 +70,7 @@ jobs:
   - task: VSBuild@1
     displayName: 'Build (Visual Studio)'
     inputs:
+      vsVersion: '18.0'
       msbuildArgs: '$(MSBuildArgs) "/BinaryLogger:$(ArtifactsDirectoryName)/build.binlog"'
     condition: eq(variables.osName, 'Windows')
 

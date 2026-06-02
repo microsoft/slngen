@@ -91,6 +91,7 @@ extends:
           displayName: 'Build Solution'
           inputs:
             solution: '**\*.sln'
+            vsVersion: '18.0'
             msbuildArgs: '$(MSBuildArgs)'
         - task: PublishSymbols@2
           displayName: 'Publish Symbols'
