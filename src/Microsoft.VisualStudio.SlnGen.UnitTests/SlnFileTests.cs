@@ -1493,6 +1493,127 @@ EndGlobal
                 false);
         }
 
+        [Fact]
+        public async Task SaveAsSlnx_WritesSlnxFile()
+        {
+            string projectAPath = Path.GetRandomFileName();
+            string projectBPath = Path.GetRandomFileName();
+
+            SlnProject projectA = new SlnProject
+            {
+                Configurations = new[] { "Debug", "Release" },
+                FullPath = Path.Combine(TestRootPath, projectAPath),
+                IsMainProject = true,
+                Name = Path.GetFileNameWithoutExtension(projectAPath),
+                Platforms = new[] { "AnyCPU" },
+                ProjectGuid = new Guid("C95D800E-F016-4167-8E1B-1D3FF94CE2E2"),
+                ProjectTypeGuid = new Guid("88152E7E-47E3-45C8-B5D3-DDB15B2F0435"),
+            };
+
+            SlnProject projectB = new SlnProject
+            {
+                Configurations = new[] { "Debug", "Release" },
+                FullPath = Path.Combine(TestRootPath, projectBPath),
+                Name = Path.GetFileNameWithoutExtension(projectBPath),
+                Platforms = new[] { "AnyCPU" },
+                ProjectGuid = new Guid("EAD108BE-AC70-41E6-A8C3-450C545FDC0E"),
+                ProjectTypeGuid = new Guid("F38341C3-343F-421A-AE68-94CD9ADCD32F"),
+            };
+
+            string solutionFilePath = GetTempFileName(".slnx");
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionFilePath);
+
+            serializer.ShouldNotBeNull();
+            serializer.ShouldBe(SolutionSerializers.SlnXml);
+
+            SlnFile slnFile = new SlnFile();
+            slnFile.AddProjects(new[] { projectA, projectB });
+            slnFile.Save(serializer, solutionFilePath, useFolders: false);
+
+            File.Exists(solutionFilePath).ShouldBeTrue();
+
+            string contents = File.ReadAllText(solutionFilePath);
+            contents.ShouldStartWith("<Solution");
+            contents.ShouldContain(projectA.Name);
+            contents.ShouldContain(projectB.Name);
+
+            // Round-trip through the SLNX serializer to verify a valid slnx document was produced.
+            SolutionModel roundTripped = await serializer.OpenAsync(solutionFilePath, CancellationToken.None);
+            roundTripped.SolutionProjects.Count.ShouldBe(2);
+            roundTripped.SolutionProjects.Select(p => p.Id)
+                .ShouldBe(new[] { projectA.ProjectGuid, projectB.ProjectGuid }, ignoreOrder: true);
+        }
+
+        [Fact]
+        public async Task GenerateSolutionFile_FormatSlnx_DefaultsToSlnxExtension()
+        {
+            Project[] projects =
+            {
+                ProjectCreator.Templates.SdkCsproj(path: GetTempProjectFile("ProjectA"))
+                    .Save(),
+            };
+
+            ProgramArguments programArguments = new ProgramArguments
+            {
+                LaunchVisualStudio = new[] { bool.FalseString },
+                SolutionDirectoryFullPath = new[] { TestRootPath },
+                Format = "slnx",
+            };
+
+            TestLogger testLogger = new TestLogger();
+
+            (string solutionFileFullPath, _, _, _) = SlnFile.GenerateSolutionFile(programArguments, projects, testLogger);
+
+            Path.GetExtension(solutionFileFullPath).ShouldBe(".slnx");
+            File.Exists(solutionFileFullPath).ShouldBeTrue();
+
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionFileFullPath);
+            serializer.ShouldBe(SolutionSerializers.SlnXml);
+
+            SolutionModel solution = await serializer.OpenAsync(solutionFileFullPath, CancellationToken.None);
+            solution.SolutionProjects.Count.ShouldBe(1);
+            solution.SolutionProjects.Single().ActualDisplayName.ShouldBe("ProjectA");
+
+            // The on-disk file should actually be an XML document, not the legacy .sln text format.
+            string contents = File.ReadAllText(solutionFileFullPath);
+            contents.ShouldStartWith("<Solution");
+            contents.ShouldNotContain("Microsoft Visual Studio Solution File");
+        }
+
+        [Fact]
+        public async Task GenerateSolutionFile_SolutionFilePathSlnx_UsesSlnxSerializer()
+        {
+            Project[] projects =
+            {
+                ProjectCreator.Templates.SdkCsproj(path: GetTempProjectFile("ProjectA"))
+                    .Save(),
+                ProjectCreator.Templates.SdkCsproj(path: GetTempProjectFile("ProjectB"))
+                    .Save(),
+            };
+
+            string solutionFilePath = GetTempFileName(".slnx");
+
+            ProgramArguments programArguments = new ProgramArguments
+            {
+                LaunchVisualStudio = new[] { bool.FalseString },
+                SolutionFileFullPath = new[] { solutionFilePath },
+            };
+
+            TestLogger testLogger = new TestLogger();
+
+            (string solutionFileFullPath, _, _, _) = SlnFile.GenerateSolutionFile(programArguments, projects, testLogger);
+
+            solutionFileFullPath.ShouldBe(solutionFilePath);
+            File.Exists(solutionFilePath).ShouldBeTrue();
+
+            string contents = File.ReadAllText(solutionFilePath);
+            contents.ShouldStartWith("<Solution");
+
+            SolutionModel solution = await SolutionSerializers.SlnXml.OpenAsync(solutionFilePath, CancellationToken.None);
+            solution.SolutionProjects.Count.ShouldBe(2);
+            solution.SolutionProjects.Select(p => p.ActualDisplayName).ShouldBe(new[] { "ProjectA", "ProjectB" }, ignoreOrder: true);
+        }
+
         private string GetSolutionFilePath(Project[] projects)
         {
             ProgramArguments programArguments = new ()

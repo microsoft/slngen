@@ -62,6 +62,40 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             arguments.GetConfigurations().ShouldBe(new[] { "One", "Two", "Three", "Four" });
         }
 
+        [Theory]
+        [InlineData(null, "sln")]
+        [InlineData("", "sln")]
+        [InlineData("  ", "sln")]
+        [InlineData("sln", "sln")]
+        [InlineData("SLN", "sln")]
+        [InlineData("slnx", "slnx")]
+        [InlineData("SLNX", "slnx")]
+        [InlineData("SlnX", "slnx")]
+        public void GetSolutionFileExtension_ReturnsExpected(string format, string expected)
+        {
+            ProgramArguments arguments = new ProgramArguments
+            {
+                Format = format,
+            };
+
+            arguments.GetSolutionFileExtension().ShouldBe(expected);
+        }
+
+        [Theory]
+        [InlineData("xml")]
+        [InlineData("json")]
+        [InlineData("sln2")]
+        public void GetSolutionFileExtension_ThrowsForInvalidFormat(string format)
+        {
+            ProgramArguments arguments = new ProgramArguments
+            {
+                Format = format,
+            };
+
+            Should.Throw<InvalidOperationException>(() => arguments.GetSolutionFileExtension())
+                .Message.ShouldContain(format);
+        }
+
         [Fact]
         public void GetPlatforms()
         {
