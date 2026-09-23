@@ -31,7 +31,7 @@ When the SlnGen tool uses `dotnet` rather than `MSBuild.exe` from `PATH`, it sel
 
 Run `dotnet --list-sdks` to check that .NET 10 is installed, and `dotnet --version` from the project directory to verify the selected SDK.
 
-When building SlnGen from source with a .NET 11 preview SDK, pass `-p:TargetDotNet11=true` to include the .NET 11 binaries. CI enables this automatically.
+Building SlnGen from source requires the .NET 11 RC1 SDK specified by the repository's `global.json`, or a compatible newer SDK.
 
 ## How do I control the Solution Configuration (Platforms and Configurations)
 Visual Studio and SlnGen determine the values for Platform and Configuration based on declared values in your project.

@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net472;net8.0;net9.0;net10.0</TargetFrameworks>
-    <TargetFrameworks Condition="'$(TargetDotNet11)' == 'true'">$(TargetFrameworks);net11.0</TargetFrameworks>
+    <TargetFrameworks>net472;net8.0;net9.0;net10.0;net11.0</TargetFrameworks>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.config</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <IncludeReferenceCopyLocalPathsInBuildOutputInPackage>true</IncludeReferenceCopyLocalPathsInBuildOutputInPackage>
     <IsTool>true</IsTool>
