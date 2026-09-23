@@ -17,6 +17,22 @@ SlnGen does not interact with Visual Studio at all, so if Visual Studio is havin
 ## Why doesn't SlnGen load my projects?
 SlnGen uses the standard MSBuild API to evaluate projects.  If the project contains invalid MSBUild project XML or custom build logic prevents them from being loaded, then SlnGen will not work properly.  Ensure that your projects can be evaluated before using SlnGen.
 
+## What if SlnGen does not support my .NET SDK?
+When the SlnGen tool uses `dotnet` rather than `MSBuild.exe` from `PATH`, it selects its implementation based on the SDK reported by `dotnet --info` for the current directory, including any `global.json` selection. Update SlnGen to a version that supports that SDK. If you are using an older SlnGen release with .NET 11 RC1, you can temporarily select an installed .NET 10 SDK in `global.json` instead, **provided your projects do not require .NET 11**:
+
+```json
+{
+  "sdk": {
+    "version": "10.0.100",
+    "rollForward": "latestFeature"
+  }
+}
+```
+
+Run `dotnet --list-sdks` to check that .NET 10 is installed, and `dotnet --version` from the project directory to verify the selected SDK.
+
+When building SlnGen from source with a .NET 11 preview SDK, pass `-p:TargetDotNet11=true` to include the .NET 11 binaries. CI enables this automatically.
+
 ## How do I control the Solution Configuration (Platforms and Configurations)
 Visual Studio and SlnGen determine the values for Platform and Configuration based on declared values in your project.
 

@@ -17,6 +17,8 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 "9.0.0";
 #elif NET10_0 || NETFRAMEWORK
                 "10.0.0";
+#elif NET11_0
+                "11.0.0";
 #else
                 Unknown target framework
 #endif
