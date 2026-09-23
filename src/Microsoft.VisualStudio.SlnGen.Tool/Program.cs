@@ -100,6 +100,10 @@ namespace Microsoft.VisualStudio.SlnGen
                             framework = "net10.0";
                             break;
 
+                        case "11":
+                            framework = "net11.0";
+                            break;
+
                         default:
                             Utility.WriteError(Error, "SlnGen does not currently support the .NET SDK {0} defined by in global.json.  Please update to the latest version and if you still get this error message, file an issue at https://github.com/microsoft/slngen/issues/new so it can be added.", developmentEnvironment.DotNetSdkVersion);
 

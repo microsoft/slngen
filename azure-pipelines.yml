@@ -59,6 +59,14 @@ jobs:
       version: '10.x'
       installationPath: '$(DotNetInstallDirectory)'
 
+  - task: UseDotNet@2
+    displayName: 'Install .NET 11 SDK (preview)'
+    inputs:
+      packageType: 'sdk'
+      version: '11.0.x'
+      includePreviewVersions: true
+      installationPath: '$(DotNetInstallDirectory)'
+
   - powershell: |
       dotnet --info
     displayName: 'Show .NET info'
@@ -80,6 +88,15 @@ jobs:
       command: 'build'
       arguments: '$(MSBuildArgs) "/BinaryLogger:$(ArtifactsDirectoryName)/build.binlog"'
     condition: ne(variables.osName, 'Windows')
+
+  - powershell: |
+      $dotnetDirectory = Split-Path (Get-Command dotnet).Source
+      $env:Path = "$dotnetDirectory;$env:WINDIR\System32;$env:WINDIR"
+      if ((dotnet --version) -notlike '11.*') { throw 'Expected a .NET 11 SDK' }
+      dotnet 'src\Microsoft.VisualStudio.SlnGen.Tool\bin\$(BuildConfiguration)\net8.0\slngen.dll' --version
+      if ($LASTEXITCODE -ne 0) { throw 'SlnGen failed with the .NET 11 SDK' }
+    displayName: 'Run SlnGen tool with .NET 11 SDK'
+    condition: and(succeeded(), eq(variables.osName, 'Windows'))
 
   - task: DotNetCoreCLI@2
     displayName: 'Run Unit Tests (.NET Framework v4.7.2)'
@@ -111,6 +128,14 @@ jobs:
       command: 'test'
       arguments: '--no-restore --no-build --framework net10.0 /noautorsp $(MSBuildArgs) "/BinaryLogger:$(ArtifactsDirectoryName)/test-net10.0.binlog"'
       testRunTitle: '$(osName) .NET 10.0'
+    condition: succeededOrFailed()
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Run Unit Tests (.NET 11)'
+    inputs:
+      command: 'test'
+      arguments: '--framework net11.0 /noautorsp $(MSBuildArgs) "/BinaryLogger:$(ArtifactsDirectoryName)/test-net11.0.binlog"'
+      testRunTitle: '$(osName) .NET 11.0'
     condition: succeededOrFailed()
 
   - task: PublishBuildArtifacts@1

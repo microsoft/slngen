@@ -80,6 +80,13 @@ extends:
             packageType: 'sdk'
             version: '10.x'
             installationPath: '$(DotNetInstallDirectory)'
+        - task: UseDotNet@2
+          displayName: 'Install .NET 11 SDK (preview)'
+          inputs:
+            packageType: 'sdk'
+            version: '11.0.x'
+            includePreviewVersions: true
+            installationPath: '$(DotNetInstallDirectory)'
         - powershell: |
             dotnet --info
           displayName: 'Show .NET info'
