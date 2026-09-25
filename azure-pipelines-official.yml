@@ -123,10 +123,9 @@ extends:
           displayName: 'Approve pushing packages to NuGet.org and CoreXT'
           timeoutInMinutes: 43200
           inputs:
-            notifyUsers: |
-              angerlic@microsoft.com
-              mruxmohan@microsoft.com
-            approvers: 'angerlic@microsoft.com,mruxmohan@microsoft.com'
+            notifyUsers: 'angerlic_fte@microsoft.com'
+            # "Andy Gerlicher FTE" Entra ID security group
+            approvers: 'angerlic_fte@microsoft.com'
             allowApproversToApproveTheirOwnRuns: true
             instructions: 'Approve to push the SlnGen packages from build $(Build.BuildNumber) ($(Build.SourceBranch)) to NuGet.org and the CloudBuild CoreXT feed.'
             onTimeout: 'reject'
