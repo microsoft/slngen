@@ -144,9 +144,11 @@ extends:
           - input: pipelineArtifact
             artifactName: 'artifacts'
             targetPath: '$(Pipeline.Workspace)/artifacts'
-          outputs:
-          - output: nuget
-            displayName: 'NuGet Push'
+        steps:
+        - checkout: none
+        - task: 1ES.PublishNuget@1
+          displayName: 'NuGet Push'
+          inputs:
             packageParentPath: '$(Pipeline.Workspace)/artifacts'
             packagesToPush: '$(Pipeline.Workspace)/artifacts/**/Microsoft.VisualStudio.SlnGen*.nupkg'
             nuGetFeedType: external
@@ -154,8 +156,6 @@ extends:
             publishFeedCredentials: '841455b3-9379-4c8a-89a3-ec3ba7747d31'
             publishPackageMetadata: true
             allowPackageConflicts: false
-        steps:
-        - checkout: none
 
       - job: PublishCoreXT
         displayName: 'Publish CoreXT Package'
@@ -170,16 +170,6 @@ extends:
           - input: pipelineArtifact
             artifactName: 'artifacts'
             targetPath: '$(Pipeline.Workspace)/artifacts'
-          outputs:
-          - output: nuget
-            displayName: 'NuGet Push SlnGen.CoreXT'
-            packageParentPath: '$(Pipeline.Workspace)/artifacts'
-            packagesToPush: '$(Pipeline.Workspace)/artifacts/**/SlnGen.Corext*.nupkg'
-            nuGetFeedType: external
-            # CloudBuild-Push service connection (https://pkgs.dev.azure.com/cloudbuild/_packaging/CloudBuild/nuget/v3/index.json)
-            publishFeedCredentials: 'da914f0a-3a04-4d03-b5dd-b54c2b715c00'
-            publishPackageMetadata: true
-            allowPackageConflicts: false
         steps:
         - checkout: none
         - task: NuGetToolInstaller@1
@@ -204,3 +194,13 @@ extends:
           inputs:
             nuGetServiceConnections: 'da914f0a-3a04-4d03-b5dd-b54c2b715c00'
             forceReinstallCredentialProvider: true
+        - task: 1ES.PublishNuget@1
+          displayName: 'NuGet Push SlnGen.CoreXT'
+          inputs:
+            packageParentPath: '$(Pipeline.Workspace)/artifacts'
+            packagesToPush: '$(Pipeline.Workspace)/artifacts/**/SlnGen.Corext*.nupkg'
+            nuGetFeedType: external
+            # CloudBuild-Push service connection (https://pkgs.dev.azure.com/cloudbuild/_packaging/CloudBuild/nuget/v3/index.json)
+            publishFeedCredentials: 'da914f0a-3a04-4d03-b5dd-b54c2b715c00'
+            publishPackageMetadata: true
+            allowPackageConflicts: false
