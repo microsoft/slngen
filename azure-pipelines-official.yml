@@ -109,97 +109,99 @@ extends:
             IndexSources: false
             SymbolServerType: TeamServices
 
-    - stage: Release
-      displayName: 'Release'
-      dependsOn: Build
-      condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
-      jobs:
-      - job: ApprovePackagePush
-        displayName: 'Approve package push'
-        pool: server
-        timeoutInMinutes: 43200
-        steps:
-        - task: ManualValidation@1
-          displayName: 'Approve pushing packages to NuGet.org and CoreXT'
+    # Only include the Release stage for version tag builds. This is evaluated at compile time so that
+    # non-tag builds do not reference (and require authorization for) the publishing service connections.
+    - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/tags/v') }}:
+      - stage: Release
+        displayName: 'Release'
+        dependsOn: Build
+        jobs:
+        - job: ApprovePackagePush
+          displayName: 'Approve package push'
+          pool: server
           timeoutInMinutes: 43200
-          inputs:
-            notifyUsers: 'angerlic_fte@microsoft.com'
-            # "Andy Gerlicher FTE" Entra ID security group
-            approvers: 'angerlic_fte@microsoft.com'
-            allowApproversToApproveTheirOwnRuns: true
-            instructions: 'Approve to push the SlnGen packages from build $(Build.BuildNumber) ($(Build.SourceBranch)) to NuGet.org and the CloudBuild CoreXT feed.'
-            onTimeout: 'reject'
+          steps:
+          - task: ManualValidation@1
+            displayName: 'Approve pushing packages to NuGet.org and CoreXT'
+            timeoutInMinutes: 43200
+            inputs:
+              notifyUsers: 'angerlic_fte@microsoft.com'
+              # "Andy Gerlicher FTE" Entra ID security group
+              approvers: 'angerlic_fte@microsoft.com'
+              allowApproversToApproveTheirOwnRuns: true
+              instructions: 'Approve to push the SlnGen packages from build $(Build.BuildNumber) ($(Build.SourceBranch)) to NuGet.org and the CloudBuild CoreXT feed.'
+              onTimeout: 'reject'
 
-      - job: PublishNuGetOrg
-        displayName: 'Publish NuGet.org'
-        dependsOn: ApprovePackagePush
-        pool:
-          name: 'VSEng-MicroBuildVSStable'
-          os: windows
-        templateContext:
-          type: releaseJob
-          isProduction: true
-          inputs:
-          - input: pipelineArtifact
-            artifactName: 'artifacts'
-            targetPath: '$(Pipeline.Workspace)/artifacts'
-        steps:
-        - checkout: none
-        - task: 1ES.PublishNuget@1
-          displayName: 'NuGet Push'
-          inputs:
-            packageParentPath: '$(Pipeline.Workspace)/artifacts'
-            packagesToPush: '$(Pipeline.Workspace)/artifacts/**/Microsoft.VisualStudio.SlnGen*.nupkg'
-            nuGetFeedType: external
-            # NuGet.org service connection
-            publishFeedCredentials: '841455b3-9379-4c8a-89a3-ec3ba7747d31'
-            publishPackageMetadata: true
-            allowPackageConflicts: false
+        - job: PublishNuGetOrg
+          displayName: 'Publish NuGet.org'
+          dependsOn: ApprovePackagePush
+          pool:
+            name: 'VSEng-MicroBuildVSStable'
+            os: windows
+          templateContext:
+            type: releaseJob
+            isProduction: true
+            inputs:
+            - input: pipelineArtifact
+              artifactName: 'artifacts'
+              targetPath: '$(Pipeline.Workspace)/artifacts'
+          steps:
+          - checkout: none
+          - task: 1ES.PublishNuget@1
+            displayName: 'NuGet Push'
+            inputs:
+              packageParentPath: '$(Pipeline.Workspace)/artifacts'
+              packagesToPush: '$(Pipeline.Workspace)/artifacts/**/Microsoft.VisualStudio.SlnGen*.nupkg'
+              nuGetFeedType: external
+              # NuGet.org service connection
+              publishFeedCredentials: '841455b3-9379-4c8a-89a3-ec3ba7747d31'
+              publishPackageMetadata: true
+              allowPackageConflicts: false
 
-      - job: PublishCoreXT
-        displayName: 'Publish CoreXT Package'
-        dependsOn: ApprovePackagePush
-        pool:
-          name: 'VSEng-MicroBuildVSStable'
-          os: windows
-        templateContext:
-          type: releaseJob
-          isProduction: true
-          inputs:
-          - input: pipelineArtifact
-            artifactName: 'artifacts'
-            targetPath: '$(Pipeline.Workspace)/artifacts'
-        steps:
-        - checkout: none
-        - task: NuGetToolInstaller@1
-          displayName: 'Use NuGet'
-        - task: AzureCLI@2
-          displayName: 'Override NuGet Service Connection Access Token'
-          inputs:
-            azureSubscription: 'd8767bc1-a109-4cb7-80c2-6ac1ebf4346e'
-            scriptType: pscore
-            scriptLocation: inlineScript
-            inlineScript: |
-              # Get an access token for Azure DevOps (resource id is for AzDO)
-              $accessToken = az account get-access-token --query accessToken --resource 499b84ac-1321-427f-aa17-267ca6975798 -o tsv
+        - job: PublishCoreXT
+          displayName: 'Publish CoreXT Package'
+          dependsOn: ApprovePackagePush
+          pool:
+            name: 'VSEng-MicroBuildVSStable'
+            os: windows
+          templateContext:
+            type: releaseJob
+            isProduction: true
+            inputs:
+            - input: pipelineArtifact
+              artifactName: 'artifacts'
+              targetPath: '$(Pipeline.Workspace)/artifacts'
+          steps:
+          - checkout: none
+          - task: NuGetToolInstaller@1
+            displayName: 'Use NuGet'
+          - task: AzureCLI@2
+            displayName: 'Override NuGet Service Connection Access Token'
+            inputs:
+              azureSubscription: 'd8767bc1-a109-4cb7-80c2-6ac1ebf4346e'
+              scriptType: pscore
+              scriptLocation: inlineScript
+              inlineScript: |
+                # Get an access token for Azure DevOps (resource id is for AzDO)
+                $accessToken = az account get-access-token --query accessToken --resource 499b84ac-1321-427f-aa17-267ca6975798 -o tsv
 
-              # Set the access token as a secret, so it doesn't get leaked in the logs
-              Write-Host "##vso[task.setsecret]$accessToken"
+                # Set the access token as a secret, so it doesn't get leaked in the logs
+                Write-Host "##vso[task.setsecret]$accessToken"
 
-              # Override the apitoken of the "CloudBuild-Push" NuGet service connection for the duration of this job
-              Write-Host "##vso[task.setendpoint id=da914f0a-3a04-4d03-b5dd-b54c2b715c00;field=authParameter;key=apitoken]$accessToken"
-        - task: NuGetAuthenticate@1
-          displayName: 'NuGet Authenticate'
-          inputs:
-            nuGetServiceConnections: 'da914f0a-3a04-4d03-b5dd-b54c2b715c00'
-            forceReinstallCredentialProvider: true
-        - task: 1ES.PublishNuget@1
-          displayName: 'NuGet Push SlnGen.CoreXT'
-          inputs:
-            packageParentPath: '$(Pipeline.Workspace)/artifacts'
-            packagesToPush: '$(Pipeline.Workspace)/artifacts/**/SlnGen.Corext*.nupkg'
-            nuGetFeedType: external
-            # CloudBuild-Push service connection (https://pkgs.dev.azure.com/cloudbuild/_packaging/CloudBuild/nuget/v3/index.json)
-            publishFeedCredentials: 'da914f0a-3a04-4d03-b5dd-b54c2b715c00'
-            publishPackageMetadata: true
-            allowPackageConflicts: false
+                # Override the apitoken of the "CloudBuild-Push" NuGet service connection for the duration of this job
+                Write-Host "##vso[task.setendpoint id=da914f0a-3a04-4d03-b5dd-b54c2b715c00;field=authParameter;key=apitoken]$accessToken"
+          - task: NuGetAuthenticate@1
+            displayName: 'NuGet Authenticate'
+            inputs:
+              nuGetServiceConnections: 'da914f0a-3a04-4d03-b5dd-b54c2b715c00'
+              forceReinstallCredentialProvider: true
+          - task: 1ES.PublishNuget@1
+            displayName: 'NuGet Push SlnGen.CoreXT'
+            inputs:
+              packageParentPath: '$(Pipeline.Workspace)/artifacts'
+              packagesToPush: '$(Pipeline.Workspace)/artifacts/**/SlnGen.Corext*.nupkg'
+              nuGetFeedType: external
+              # CloudBuild-Push service connection (https://pkgs.dev.azure.com/cloudbuild/_packaging/CloudBuild/nuget/v3/index.json)
+              publishFeedCredentials: 'da914f0a-3a04-4d03-b5dd-b54c2b715c00'
+              publishPackageMetadata: true
+              allowPackageConflicts: false
