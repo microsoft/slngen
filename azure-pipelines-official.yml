@@ -114,25 +114,8 @@ extends:
       dependsOn: Build
       condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
       jobs:
-      - job: ApprovePackagePush
-        displayName: 'Approve package push'
-        pool: server
-        timeoutInMinutes: 43200
-        steps:
-        - task: ManualValidation@1
-          displayName: 'Approve pushing packages to NuGet.org'
-          timeoutInMinutes: 43200
-          inputs:
-            # Groups must use the "[scope]\Group Name" syntax; Entra ID groups are scoped to [TEAM FOUNDATION]
-            notifyUsers: '[TEAM FOUNDATION]\Andy Gerlicher FTE'
-            approvers: '[TEAM FOUNDATION]\Andy Gerlicher FTE'
-            allowApproversToApproveTheirOwnRuns: true
-            instructions: 'Approve to push the SlnGen packages from build $(Build.BuildNumber) ($(Build.SourceBranch)) to NuGet.org.'
-            onTimeout: 'reject'
-
       - job: PublishNuGetOrg
         displayName: 'Publish NuGet.org'
-        dependsOn: ApprovePackagePush
         pool:
           name: 'VSEng-MicroBuildVSStable'
           os: windows
