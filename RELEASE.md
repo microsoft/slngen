@@ -35,7 +35,3 @@ Create a new release at https://github.com/microsoft/slngen/releases.  The tag m
 Creating the release tag triggers the [Official Build](https://dev.azure.com/devdiv/DevDiv/_build?definitionId=12516&_a=summary). For tags starting with `v`, the build pushes the `Microsoft.VisualStudio.SlnGen*` packages to nuget.org once it succeeds. Before creating the tag, make sure its version matches the package version the build produces.
 
 Packages published to nuget.org use the Azure DevOps Service Connection [microsoft.slngen package push](https://dev.azure.com/devdiv/DevDiv/_settings/adminservices?resourceId=ffb201f3-6f81-41bc-ace5-5231a6d327f0). The API key expires and must be regenerated periodically. If a push fails with an authentication error, update the service connection with a new API key and re-run the build.
-
-CoreXT packages are still pushed to the internal CloudBuild feed by the classic [SlnGen release](https://devdiv.visualstudio.com/DevDiv/_release?definitionId=3478). Repo maintainers are responsible for approving its **Publish CoreXT Package** stage for the release build. That stage uses the Azure DevOps Service Connection [CloudBuild-Push](https://dev.azure.com/devdiv/DevDiv/_settings/adminservices?resourceId=da914f0a-3a04-4d03-b5dd-b54c2b715c00).
-  If a push fails, you will need to regenerate a Personal Access Token with permissions to push to the [CloudBuild](https://dev.azure.com/cloudbuild/CloudBuild/_packaging?_a=feed&feed=CloudBuild) feed and update the PAT in the
-  service connection.
