@@ -123,9 +123,9 @@ extends:
           displayName: 'Approve pushing packages to NuGet.org'
           timeoutInMinutes: 43200
           inputs:
-            notifyUsers: 'angerlic_fte@microsoft.com'
-            # "Andy Gerlicher FTE" Entra ID security group
-            approvers: 'angerlic_fte@microsoft.com'
+            # Groups must use the "[scope]\Group Name" syntax; Entra ID groups are scoped to [TEAM FOUNDATION]
+            notifyUsers: '[TEAM FOUNDATION]\Andy Gerlicher FTE'
+            approvers: '[TEAM FOUNDATION]\Andy Gerlicher FTE'
             allowApproversToApproveTheirOwnRuns: true
             instructions: 'Approve to push the SlnGen packages from build $(Build.BuildNumber) ($(Build.SourceBranch)) to NuGet.org.'
             onTimeout: 'reject'
