@@ -32,11 +32,6 @@ Create a new release at https://github.com/microsoft/slngen/releases.  The tag m
 
 ## Push packages
 
-Repo maintainers are responsible for approving the stages corresponding to the [SlnGen release](https://devdiv.visualstudio.com/DevDiv/_release?definitionId=3478) with the correct tag to push non-CoreXT packages to nuget.org and CoreXT packages to the CloudBuild feed.
+Creating the release tag triggers the [Official Build](https://dev.azure.com/devdiv/DevDiv/_build?definitionId=12516&_a=summary). For tags starting with `v`, the build pushes the `Microsoft.VisualStudio.SlnGen*` packages to nuget.org once it succeeds. Before creating the tag, make sure its version matches the package version the build produces.
 
-Packages published to nuget.org use an Azure DevOps Service Connection [1ES-NuGet-Full](https://dev.azure.com/devdiv/DevDiv/_settings/adminservices?resourceId=841455b3-9379-4c8a-89a3-ec3ba7747d31).  The API key is good for one year
- and will need to be regenerated when it expires.  If a release fails, you will need to update the service connection with a new API key and re-run the deploy stage.
-
-Packages published to the internal Azure DevOps Artifacts Services feed, specifically the CoreXT packages, use an Azure DevOps Service Connection [CloudBuild-Push](https://dev.azure.com/devdiv/DevDiv/_settings/adminservices?resourceId=da914f0a-3a04-4d03-b5dd-b54c2b715c00).
-  If a push fails, you will need to regenerate a Personal Access Token with permissions to push to the [CloudBuild](https://dev.azure.com/cloudbuild/CloudBuild/_packaging?_a=feed&feed=CloudBuild) feed and update the PAT in the
-  service connection.
+Packages published to nuget.org use the Azure DevOps Service Connection [microsoft.slngen package push](https://dev.azure.com/devdiv/DevDiv/_settings/adminservices?resourceId=ffb201f3-6f81-41bc-ace5-5231a6d327f0). The API key expires and must be regenerated periodically. If a push fails with an authentication error, update the service connection with a new API key and re-run the build.

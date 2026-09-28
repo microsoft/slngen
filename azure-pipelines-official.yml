@@ -58,8 +58,18 @@ extends:
             condition: always()
             targetPath: $(ArtifactsDirectory)
             artifactName: 'artifacts'
-            # Production release jobs require an SBOM for consumed artifacts
             sbomEnabled: true
+          # 1ES PT runs outputs after network isolation stops, so the push can reach nuget.org
+          # despite the CFSClean policy.
+          - output: nuget
+            displayName: 'Push packages to nuget.org'
+            condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
+            packageParentPath: $(ArtifactsDirectory)
+            packagesToPush: '$(ArtifactsDirectory)/**/Microsoft.VisualStudio.SlnGen*.nupkg'
+            nuGetFeedType: external
+            publishFeedCredentials: 'microsoft.slngen package push'
+            publishPackageMetadata: true
+            allowPackageConflicts: false
         steps:
         - script: 'echo ##vso[task.setvariable variable=SignType;]Real'
           displayName: 'Set SignType to Real for tagged commits'
@@ -108,32 +118,3 @@ extends:
             SearchPattern: '**/bin/**/*.pdb'
             IndexSources: false
             SymbolServerType: TeamServices
-
-    - stage: Release
-      displayName: 'Release'
-      dependsOn: Build
-      condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
-      jobs:
-      - job: PublishNuGetOrg
-        displayName: 'Publish NuGet.org'
-        pool:
-          name: 'VSEng-MicroBuildVSStable'
-          os: windows
-        templateContext:
-          type: releaseJob
-          isProduction: true
-          inputs:
-          - input: pipelineArtifact
-            artifactName: 'artifacts'
-            targetPath: '$(Pipeline.Workspace)/artifacts'
-        steps:
-        - checkout: none
-        - task: 1ES.PublishNuget@1
-          displayName: 'NuGet Push'
-          inputs:
-            packageParentPath: '$(Pipeline.Workspace)/artifacts'
-            packagesToPush: '$(Pipeline.Workspace)/artifacts/**/Microsoft.VisualStudio.SlnGen*.nupkg'
-            nuGetFeedType: external
-            publishFeedCredentials: 'microsoft.slngen package push'
-            publishPackageMetadata: true
-            allowPackageConflicts: false
