@@ -123,9 +123,10 @@ extends:
           displayName: 'Approve pushing packages to NuGet.org'
           timeoutInMinutes: 43200
           inputs:
-            # Groups must use the "[scope]\Group Name" syntax; Entra ID groups are scoped to [TEAM FOUNDATION]
-            notifyUsers: '[TEAM FOUNDATION]\Andy Gerlicher FTE'
-            approvers: '[TEAM FOUNDATION]\Andy Gerlicher FTE'
+            # Members of the "Andy Gerlicher FTE" group are listed individually because the group alone
+            # was not reliably resolved as an approver. Keep this list in sync with the group.
+            notifyUsers: '[TEAM FOUNDATION]\Andy Gerlicher FTE,angerlic@microsoft.com,dshepelev@microsoft.com,mruxmohan@microsoft.com,dfederm@microsoft.com,vedurise@microsoft.com,chcasta@microsoft.com,sgangireddy@microsoft.com'
+            approvers: '[TEAM FOUNDATION]\Andy Gerlicher FTE,angerlic@microsoft.com,dshepelev@microsoft.com,mruxmohan@microsoft.com,dfederm@microsoft.com,vedurise@microsoft.com,chcasta@microsoft.com,sgangireddy@microsoft.com'
             allowApproversToApproveTheirOwnRuns: true
             instructions: 'Approve to push the SlnGen packages from build $(Build.BuildNumber) ($(Build.SourceBranch)) to NuGet.org.'
             onTimeout: 'reject'
