@@ -196,6 +196,24 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             solutionLines.ShouldContain(line => line.StartsWith($"VisualStudioVersion = {requestedVSVersion}"));
         }
 
+        [Fact]
+        public void CollapseFoldersPropertyIsForwardedToCommandLine()
+        {
+            Tasks.SlnGenToolTask task = new Tasks.SlnGenToolTask
+            {
+                GlobalProperties = $"{MSBuildPropertyNames.SlnGenCollapseFolders}=true",
+                InheritGlobalProperties = false,
+                ProjectFullPath = "Project.csproj",
+                Verbosity = "Normal",
+            };
+
+            string commandLine = (string)typeof(Tasks.SlnGenToolTask)
+                .GetMethod("GenerateCommandLineCommands", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                .Invoke(task, null);
+
+            commandLine.ShouldContain("--collapsefolders:true");
+        }
+
         private static string GetBuildOutputLog(BuildOutput buildOutput)
         {
             try
