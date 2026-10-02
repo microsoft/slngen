@@ -339,6 +339,48 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             ValidateSolutionPlatformAndConfiguration(projectD, solutionFile, "Debug", "Razzle", expectedIncludeInBuild: false);
         }
 
+        /// <summary>
+        /// Verifies the default, directory, format and name overrides of the generated solution path.
+        /// </summary>
+        [Fact]
+        public void GetSolutionFileFullPath_UsesProjectLocationAndNameByDefault()
+        {
+            ProjectCreator project = ProjectCreator.Create(Path.Combine(TestRootPath, "Dir", "MyProject.csproj")).Save();
+
+            Project msbuildProject = new Project(project.FullPath);
+
+            // Default: next to the project, named after it
+            SlnFile.GetSolutionFileFullPath(new ProgramArguments(), msbuildProject)
+                .ShouldBe(Path.Combine(TestRootPath, "Dir", "MyProject.sln"));
+
+            // --solutiondir moves the solution but keeps the name
+            SlnFile.GetSolutionFileFullPath(new ProgramArguments { SolutionDirectoryFullPath = new[] { TestRootPath } }, msbuildProject)
+                .ShouldBe(Path.Combine(TestRootPath, "MyProject.sln"));
+
+            // --format slnx changes the extension
+            SlnFile.GetSolutionFileFullPath(new ProgramArguments { Format = "slnx" }, msbuildProject)
+                .ShouldBe(Path.Combine(TestRootPath, "Dir", "MyProject.slnx"));
+
+            // --solutionfile wins over everything and is returned as specified
+            SlnFile.GetSolutionFileFullPath(new ProgramArguments { SolutionFileFullPath = new[] { "relative.sln" }, SolutionDirectoryFullPath = new[] { TestRootPath } }, msbuildProject)
+                .ShouldBe("relative.sln");
+        }
+
+        /// <summary>
+        /// Verifies that the SlnGenProjectName property names the solution.
+        /// </summary>
+        [Fact]
+        public void GetSolutionFileFullPath_UsesSlnGenProjectName()
+        {
+            ProjectCreator project = ProjectCreator
+                .Create(Path.Combine(TestRootPath, "Dir", "MyProject.csproj"))
+                .Property(MSBuildPropertyNames.SlnGenProjectName, "Custom.proj")
+                .Save();
+
+            SlnFile.GetSolutionFileFullPath(new ProgramArguments(), new Project(project.FullPath))
+                .ShouldBe(Path.Combine(TestRootPath, "Dir", "Custom.sln"));
+        }
+
         [Fact]
         public void ExistingSolutionIsReused()
         {
