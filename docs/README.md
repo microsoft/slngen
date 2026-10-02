@@ -93,6 +93,7 @@ Options:
                                           --property:WarningLevel=2;MyProperty=true
   -d|--solutiondir <path>             An optional path to the directory in which the solution file will be generated. Defaults to the same directory as the project. --solutionfile will take precedence over this switch.
   -o|--solutionfile <path>            An optional path to the solution file to generate. Defaults to the same directory as the project.
+  --solutionPerProject                Generates a separate solution for each specified project, containing only that project and its transitive project references. Cannot be combined with --solutionfile. Visual Studio is not launched.
   -v|--verbosity                      Display this amount of information in the event log. The available verbosity levels are:
                                         q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].
   --version                           Display version information only.
@@ -128,7 +129,7 @@ The following properties only apply when using SlnGen as an MSBuild target.
 | `SlnGenSolutionFileFullPath` | Specifies the full path to the Visual Studio solution file to generate.  By default, the path is the same as the project. | | ProjectPath.sln|
 | `SlnGenDevEnvFullPath` | Specifies a full path to Visual Studio's `devenv.exe` to use when opening the solution file.  By default, SlnGen will launch the program associated with the `.sln` file extension.  However, in some cases you may want to specify a custom path to Visual Studio. | | |
 | `SlnGenGlobalProperties` | Specifies MSBuild properties to set when loading projects and project references. | | `DesignTimeBuild=true;BuildingProject=false` |
-| `SlnGenVSVersion` | Specifies a Visual Studio version to include in the generated solution. | "default" or a version number | | 
+| `SlnGenVSVersion` | Specifies a Visual Studio version to include in the generated solution. | "default" or a version number | |
 | `SlnGenInheritGlobalProperties` | Indicates whether or not all global variables specified when loading the initial project should be passed around when loading project references. | `true` or `false` | `true` |
 | `SlnGenGlobalPropertiesToRemove` | Specifies a list of inherited global properties to remove when loading projects. | | |
 | `SlnGenBinLog` | Indicates whether or not SlnGen should emit a binary log. | `true` or `false` | `false` |
