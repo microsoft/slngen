@@ -23,7 +23,7 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
         private readonly Dictionary<string, List<Project>> _outerProjects = new (StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// The full paths of the projects each project depends on, merged across all of its evaluations.
+        /// The full paths of the projects each project depends on, merged across all of its instances.
         /// </summary>
         private readonly Dictionary<string, HashSet<string>> _references = new (StringComparer.OrdinalIgnoreCase);
 
@@ -37,7 +37,12 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
             {
                 string fullPath = Path.GetFullPath(project.FullPath);
 
-                // Only outer builds become solution projects, matching what a single-solution run passes on
+                // The list of projects provided by MSBuild contains a copy of each project for every
+                // combination of global properties. When generating the solution, we use the
+                // framework-independent instances to represent the project for the solution.
+                // We call these "outer" projects.
+                // Note that the same project file may still have multiple "outer" instances due to
+                // differences in other global properties.
                 if (!project.GlobalProperties.ContainsKey("TargetFramework"))
                 {
                     if (!_outerProjects.TryGetValue(fullPath, out List<Project> instances))
@@ -49,13 +54,17 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
                     instances.Add(project);
                 }
 
-                // Inner builds are indexed too, because references can exist only under a TargetFramework condition
+                // The _references dictionary treats projects as files, ignoring all the
+                // property permutations. Get or create the set of references for the
+                // current project's file.
                 if (!_references.TryGetValue(fullPath, out HashSet<string> references))
                 {
                     references = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                     _references[fullPath] = references;
                 }
 
+                // Flatten the dependencies from the current project instance
+                // to the single set of references for the project file.
                 foreach (string referencePath in GetReferencePaths(project))
                 {
                     if (!string.Equals(referencePath, fullPath, StringComparison.OrdinalIgnoreCase))
@@ -100,7 +109,8 @@ namespace Microsoft.VisualStudio.SlnGen.ProjectLoading
                 }
             }
 
-            // Paths that were never loaded (for example missing references already reported by the loader) are dropped
+            // Return the projects in the order they were discovered.
+            // Paths that were never loaded (for example missing references already reported by the loader) are dropped.
             return orderedPaths
                 .Where(_outerProjects.ContainsKey)
                 .SelectMany(i => _outerProjects[i])
