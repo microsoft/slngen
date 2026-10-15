@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation.
+// Copyright (c) Microsoft Corporation.
 //
 // Licensed under the MIT license.
 
@@ -50,7 +50,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <summary>
         /// Gets the current <see cref="DevelopmentEnvironment" />.
         /// </summary>
-        public static DevelopmentEnvironment CurrentDevelopmentEnvironment { get; internal set; }
+        public static DevelopmentEnvironment CurrentDevelopmentEnvironment { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether or not the current runtime framework is .NET Core.

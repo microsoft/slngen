@@ -111,6 +111,39 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         }
 
         /// <summary>
+        /// Verifies that each solution equals what slngen produces when run for that entry project alone, so loading
+        /// one combined graph does not change the content of any solution.
+        /// </summary>
+        [Fact]
+        public void SolutionsMatchSingleRuns()
+        {
+            ProjectCreator l1 = CreateProject("L1");
+            ProjectCreator l2 = CreateProject("L2");
+            ProjectCreator c = CreateProject("C", l2);
+            ProjectCreator b = CreateProject("B", l1);
+            ProjectCreator a = CreateProject("A", l1, c);
+
+            GenerateSolutions(new ProgramArguments(), out int exitCode, a.FullPath, b.FullPath, c.FullPath);
+
+            exitCode.ShouldBe(0);
+
+            foreach (ProjectCreator entry in new[] { a, b, c })
+            {
+                string singleSolution = Path.Combine(TestRootPath, "single", Path.GetFileName(Path.ChangeExtension(entry, ".sln")));
+
+                // Mirrors a normal single-entry run: load only this entry's graph and write everything that was loaded
+                ProjectCollection singleCollection = LoadProjects(entry.FullPath);
+
+                SlnFile.GenerateSolutionFile(
+                    new ProgramArguments { SolutionFileFullPath = new[] { singleSolution } },
+                    singleCollection.LoadedProjects.Where(i => !i.GlobalProperties.ContainsKey("TargetFramework")),
+                    new TestLogger());
+
+                GetSolutionProjects(Path.ChangeExtension(entry, ".sln")).ShouldBe(GetSolutionProjects(singleSolution), ignoreOrder: true);
+            }
+        }
+
+        /// <summary>
         /// Gets the full paths of the specified project files.
         /// </summary>
         /// <param name="projects">The project files.</param>
