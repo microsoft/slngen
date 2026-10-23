@@ -448,7 +448,22 @@ namespace Microsoft.VisualStudio.SlnGen
                 }
 
                 projectFolders.TryGetValue(project, out SolutionFolderModel projectFolder);
-                SolutionProjectModel projectModel = newSolution.AddProject(solutionPath, project.ProjectTypeGuid.ToSolutionString(), projectFolder);
+                SolutionProjectModel projectModel;
+                try
+                {
+                    projectModel = newSolution.AddProject(solutionPath, project.ProjectTypeGuid.ToSolutionString(), projectFolder);
+                }
+                catch (SolutionArgumentException e) when (e.Type == SolutionErrorType.DuplicateProjectName)
+                {
+                    string projectName = Path.GetFileNameWithoutExtension(project.FullPath);
+                    string conflictingProjects = string.Join("; ", newSolution.SolutionProjects
+                        .Where(i => i.Parent == projectFolder && string.Equals(i.ActualDisplayName, projectName, StringComparison.OrdinalIgnoreCase))
+                        .Select(i => i.FilePath.ToSolutionPath())
+                        .Append(solutionPath));
+                    logger?.LogWarning($"The solution serializer requires project names to be unique within each solution folder (case-insensitive), even when the projects are in different directories on disk. Use --folders true (or SlnGenFolders=true) to create directory-based solution folders, or assign distinct SlnGenSolutionFolder values to the conflicting projects ({conflictingProjects}).");
+                    throw;
+                }
+
                 projectModel.DisplayName = project.Name;
                 projectModel.Id = project.ProjectGuid;
             }

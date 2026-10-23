@@ -9,14 +9,57 @@ using Microsoft.Build.Utilities.ProjectCreation;
 using Shouldly;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.VisualStudio.SlnGen.UnitTests
 {
     public sealed class SlnGenTests : TestBase
     {
+        [Theory]
+        [InlineData(".sln")]
+        [InlineData(".slnx")]
+        public async Task DuplicateProjectNamesShowOnlyWarning(string extension)
+        {
+            string firstProject = CreateTempProjectFile("Common", Path.Combine("src", "Contracts", "ServiceDescription", "Common"));
+            string secondProject = CreateTempProjectFile("common", Path.Combine("src", "Services", "DatacenterManager", "DCM", "common"));
+            string solutionFilePath = GetTempFileName(extension);
+
+            using Process process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = Path.Combine(AppContext.BaseDirectory, "slngen.exe"),
+                    Arguments = $"\"{firstProject}\" \"{secondProject}\" --launch false --nologo --solutionfile \"{solutionFilePath}\"",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true,
+                },
+            };
+
+            process.Start().ShouldBeTrue();
+            Task<string> outputTask = process.StandardOutput.ReadToEndAsync();
+            Task<string> errorTask = process.StandardError.ReadToEndAsync();
+            process.WaitForExit();
+
+            string output = await outputTask;
+            string error = await errorTask;
+            process.ExitCode.ShouldBe(1, output + error);
+            output.ShouldContain("--folders true");
+            output.ShouldContain("warning");
+            output.ShouldContain("Failed");
+            output.ShouldNotContain("Success");
+            output.ShouldNotContain("Unhandled exception");
+            output.ShouldNotContain("SolutionArgumentException");
+            output.ShouldNotContain(": error :");
+            error.ShouldBeEmpty();
+            File.Exists(solutionFilePath).ShouldBeFalse();
+        }
+
         [Fact]
         public void ProjectReferencesDeterminedInCrossTargetingBuild()
         {
