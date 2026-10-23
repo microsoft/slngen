@@ -25,7 +25,7 @@
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
     <PackageVersion Include="Microsoft.VisualStudio.ProjectSystem.SDK" Version="15.8.243" />
     <PackageVersion Include="Microsoft.VisualStudio.SDK" Version="17.12.40392" />
-    <PackageVersion Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="3.12.2149" />
+    <PackageVersion Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="3.14.2075" />
     <PackageVersion Include="Microsoft.VisualStudio.SolutionPersistence" Version="1.0.52" />
     <PackageVersion Include="Microsoft.VSSDK.BuildTools" Version="18.9.820" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
