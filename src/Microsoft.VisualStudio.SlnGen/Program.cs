@@ -9,6 +9,7 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 using Microsoft.VisualStudio.SlnGen.Launcher;
 using Microsoft.VisualStudio.SlnGen.ProjectLoading;
+using Microsoft.VisualStudio.SolutionPersistence.Model;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -237,6 +238,11 @@ namespace Microsoft.VisualStudio.SlnGen
                 {
                     forwardingLogger.LogError(e.Message, e.ErrorCode, e.ProjectFile, e.LineNumber, e.ColumnNumber);
 
+                    return 1;
+                }
+                catch (SolutionArgumentException e) when (e.Type == SolutionErrorType.DuplicateProjectName)
+                {
+                    forwardingLogger.HasFailed = true;
                     return 1;
                 }
                 catch (Exception e)

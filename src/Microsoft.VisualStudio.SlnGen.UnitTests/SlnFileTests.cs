@@ -1494,6 +1494,56 @@ EndGlobal
         }
 
         [Theory]
+        [InlineData(".sln", false)]
+        [InlineData(".slnx", false)]
+        [InlineData(".sln", true)]
+        [InlineData(".slnx", true)]
+        public void SaveLogsFolderGuidanceOnlyForDuplicateProjectNames(string extension, bool duplicatePath)
+        {
+            string firstProjectPath = GetTempProjectFile("Common", directoryPath: Path.Combine("src", "Contracts", "ServiceDescription", "Common"));
+            SlnProject[] projects =
+            {
+                new SlnProject
+                {
+                    FullPath = firstProjectPath,
+                    Name = "Common",
+                    ProjectGuid = Guid.NewGuid(),
+                    ProjectTypeGuid = SlnProject.DefaultNetSdkProjectTypeGuid,
+                },
+                new SlnProject
+                {
+                    FullPath = duplicatePath ? firstProjectPath : GetTempProjectFile("common", directoryPath: Path.Combine("src", "Services", "DatacenterManager", "DCM", "common")),
+                    Name = "common",
+                    ProjectGuid = Guid.NewGuid(),
+                    ProjectTypeGuid = SlnProject.DefaultNetSdkProjectTypeGuid,
+                },
+            };
+
+            string solutionFilePath = GetTempFileName(extension);
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionFilePath);
+            TestLogger logger = new TestLogger();
+            SlnFile slnFile = new SlnFile();
+            slnFile.AddProjects(projects);
+
+            SolutionArgumentException exception = Should.Throw<SolutionArgumentException>(() => slnFile.Save(serializer, solutionFilePath, useFolders: false, logger: logger));
+            exception.Type.ShouldBe(duplicatePath ? SolutionErrorType.DuplicateItemRef : SolutionErrorType.DuplicateProjectName);
+            if (duplicatePath)
+            {
+                logger.Warnings.ShouldBeEmpty();
+            }
+            else
+            {
+                string warning = logger.Warnings.ShouldHaveSingleItem().Message;
+                warning.ShouldContain("--folders true");
+                warning.ShouldContain("SlnGenSolutionFolder");
+                warning.ShouldContain("case-insensitive");
+                warning.ShouldContain($"conflicting projects ({projects[0].FullPath.ToRelativePath(solutionFilePath).ToSolutionPath()}; {projects[1].FullPath.ToRelativePath(solutionFilePath).ToSolutionPath()})");
+            }
+
+            File.Exists(solutionFilePath).ShouldBeFalse();
+        }
+
+        [Theory]
         [InlineData(".sln", false, false, false)]
         [InlineData(".slnx", false, false, false)]
         [InlineData(".sln", true, false, false)]
@@ -1530,9 +1580,11 @@ EndGlobal
 
             string solutionFilePath = GetTempFileName(extension);
             ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionFilePath);
+            TestLogger logger = new TestLogger();
             SlnFile slnFile = new SlnFile();
             slnFile.AddProjects(projects);
-            slnFile.Save(serializer, solutionFilePath, useFolders, collapseFolders: collapseFolders);
+            slnFile.Save(serializer, solutionFilePath, useFolders, logger: logger, collapseFolders: collapseFolders);
+            logger.Warnings.ShouldNotContain(i => i.Message.Contains("--folders true"));
 
             SolutionModel solution = await serializer.OpenAsync(solutionFilePath, CancellationToken.None);
             solution.SolutionProjects.Count.ShouldBe(2);

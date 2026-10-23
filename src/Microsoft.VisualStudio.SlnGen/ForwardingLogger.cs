@@ -117,6 +117,11 @@ namespace Microsoft.VisualStudio.SlnGen
         public LoggerVerbosity Verbosity { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the operation failed without logging an error.
+        /// </summary>
+        internal bool HasFailed { get; set; }
+
+        /// <summary>
         /// Parses binary logger parameters.
         /// </summary>
         /// <param name="parameters">The parameters to parse.</param>
@@ -255,7 +260,8 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <inheritdoc />
         public void Shutdown()
         {
-            Dispatch(new BuildFinishedEventArgs(HasLoggedErrors ? "Failed" : "Success", null, !HasLoggedErrors));
+            bool succeeded = !HasLoggedErrors && !HasFailed;
+            Dispatch(new BuildFinishedEventArgs(succeeded ? "Success" : "Failed", null, succeeded));
 
             foreach (ILogger logger in Loggers)
             {
