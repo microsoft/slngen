@@ -126,6 +126,7 @@ The following properties only apply when using SlnGen as an MSBuild target.
 |--------------------------|------------------------------------------------------------------------------------------------------------|--------------------|---------|
 | `SlnGenLaunchVisualStudio` | Indicates whether or not Visual Studio should be launched to open the solution file after it is generated. | `true` or `false` | `true` |
 | `SlnGenSolutionFileFullPath` | Specifies the full path to the Visual Studio solution file to generate.  By default, the path is the same as the project. | | ProjectPath.sln|
+| `SlnGenCollapseFolders` | Indicates whether or not folders containing a single item should be collapsed into their parent folder. | `true` or `false` | `false` |
 | `SlnGenDevEnvFullPath` | Specifies a full path to Visual Studio's `devenv.exe` to use when opening the solution file.  By default, SlnGen will launch the program associated with the `.sln` file extension.  However, in some cases you may want to specify a custom path to Visual Studio. | | |
 | `SlnGenGlobalProperties` | Specifies MSBuild properties to set when loading projects and project references. | | `DesignTimeBuild=true;BuildingProject=false` |
 | `SlnGenVSVersion` | Specifies a Visual Studio version to include in the generated solution. | "default" or a version number | | 
@@ -145,6 +146,7 @@ MSBuild properties
 <PropertyGroup>
   <SlnGenLaunchVisualStudio>false</SlnGenLaunchVisualStudio>
   <SlnGenSolutionFileFullPath>$(MSBuildProjectDirectory)\$(MSBuildProjectName).sln</SlnGenSolutionFileFullPath>
+  <SlnGenCollapseFolders>true</SlnGenCollapseFolders>
   <SlnGenGlobalProperties>DoNotDoSomethingWhenLoadingProjects=true;TodayIsYesterday=false</SlnGenGlobalProperties>
   <SlnGenInheritGlobalProperties>false</SlnGenInheritGlobalProperties>
   <SlnGenGlobalPropertiesToRemove>Property1;Property2</SlnGenGlobalPropertiesToRemove>

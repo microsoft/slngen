@@ -60,6 +60,11 @@ namespace Microsoft.VisualStudio.SlnGen
         public const string SlnGenBinLog = nameof(SlnGenBinLog);
 
         /// <summary>
+        /// Represents the SlnGenCollapseFolders property.
+        /// </summary>
+        public const string SlnGenCollapseFolders = nameof(SlnGenCollapseFolders);
+
+        /// <summary>
         /// Represents the SlnGenConfiguration property.
         /// </summary>
         public const string SlnGenConfiguration = nameof(SlnGenConfiguration);
