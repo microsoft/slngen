@@ -41,6 +41,10 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
                 },
             };
 
+            string msbuildExePath = MSBuildAssemblyResolver.MSBuildExePath;
+            File.Exists(msbuildExePath).ShouldBeTrue("The MSBuild toolset selected by the test harness must exist.");
+            process.StartInfo.EnvironmentVariables["PATH"] = $"{Path.GetDirectoryName(msbuildExePath)}{Path.PathSeparator}{process.StartInfo.EnvironmentVariables["PATH"]}";
+
             process.Start().ShouldBeTrue();
             Task<string> outputTask = process.StandardOutput.ReadToEndAsync();
             Task<string> errorTask = process.StandardError.ReadToEndAsync();

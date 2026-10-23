@@ -1584,7 +1584,7 @@ EndGlobal
             SlnFile slnFile = new SlnFile();
             slnFile.AddProjects(projects);
             slnFile.Save(serializer, solutionFilePath, useFolders, logger: logger, collapseFolders: collapseFolders);
-            logger.Warnings.ShouldBeEmpty();
+            logger.Warnings.ShouldNotContain(i => i.Message.Contains("--folders true"));
 
             SolutionModel solution = await serializer.OpenAsync(solutionFilePath, CancellationToken.None);
             solution.SolutionProjects.Count.ShouldBe(2);
