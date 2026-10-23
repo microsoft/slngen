@@ -169,6 +169,8 @@ Use the following properties and items to customize the generated Solution file.
 | `SlnGenPlatform`        | Specifies an additional platform to use when generating the solution. | | |
 | `SlnGenConfiguration`   | Specifies an additional configuration to use when generating the solution. | | |
 
+Projects with the same file name in different directories can be included in separate solution folders. Use `--folders true` (or `SlnGenFolders=true`) to mirror the directory hierarchy, or assign distinct `SlnGenSolutionFolder` values. Folder collapsing preserves folders when removing them would put duplicate project names in the same solution folder.
+
 | Item | Description |
 |------|-------------|
 | `SlnGenSolutionItem` | Specifies a file to include as a solution item. |

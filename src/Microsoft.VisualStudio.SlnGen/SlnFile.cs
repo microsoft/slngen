@@ -22,7 +22,7 @@ namespace Microsoft.VisualStudio.SlnGen
     /// </summary>
     public sealed class SlnFile
     {
-        private static readonly char[] DirectorySeparatorCharacters = new char[] { Path.DirectorySeparatorChar };
+        private static readonly char[] DirectorySeparatorCharacters = new char[] { '/', '\\' };
 
         /// <summary>
         /// Gets the projects.
@@ -355,21 +355,8 @@ namespace Microsoft.VisualStudio.SlnGen
             }
 
             List<SlnProject> sortedProjects = _projects.OrderBy(i => i.IsMainProject ? 0 : 1).ThenBy(i => i.FullPath).ToList();
-            foreach (SlnProject project in sortedProjects)
-            {
-                string solutionPath = project.FullPath.ToRelativePath(rootPath).ToSolutionPath();
-
-                if (ExistingProjectGuids != null && ExistingProjectGuids.TryGetValue(solutionPath, out Guid existingProjectGuid))
-                {
-                    project.ProjectGuid = existingProjectGuid;
-                }
-
-                SolutionProjectModel projectModel = newSolution.AddProject(solutionPath, project.ProjectTypeGuid.ToSolutionString(), null);
-                projectModel.DisplayName = project.Name;
-                projectModel.Id = project.ProjectGuid;
-            }
-
             SlnHierarchy hierarchy = null;
+            Dictionary<SlnProject, SolutionFolderModel> projectFolders = new ();
 
             if (useFolders && sortedProjects.Any(i => !i.IsMainProject))
             {
@@ -378,25 +365,6 @@ namespace Microsoft.VisualStudio.SlnGen
             else if (sortedProjects.Any(i => !string.IsNullOrWhiteSpace(i.SolutionFolder)))
             {
                 hierarchy = SlnHierarchy.CreateFromProjectSolutionFolder(sortedProjects, SolutionItems);
-            }
-            else
-            {
-                // Just handle the solution items
-                foreach (var solutionItems in _solutionItems)
-                {
-                    if (solutionItems.Value.SolutionItems.Any())
-                    {
-                        SolutionFolderModel newFolder = AddFolderToModel(newSolution, solutionItems.Key, solutionItems.Value.FolderGuid);
-                        AddSolutionItemsToModel(newFolder, solutionItems.Value.SolutionItems, rootPath);
-                    }
-                }
-
-                // Nest solution folders within their parent folders
-                var solutionItemsWithParents = _solutionItems.Where(x => x.Value.ParentFolderGuid.HasValue).ToArray();
-                if (solutionItemsWithParents.Length > 0)
-                {
-                    AddNestedProjectsToModel(newSolution, solutionItemsWithParents);
-                }
             }
 
             if (hierarchy != null)
@@ -435,7 +403,27 @@ namespace Microsoft.VisualStudio.SlnGen
                     // guard against root folder
                     if (folder != hierarchy.RootFolder)
                     {
-                        SolutionFolderModel newFolder = AddFolderToModel(newSolution, folder.Name, folder.FolderGuid);
+                        Stack<string> folderNames = new ();
+                        for (SlnFolder ancestor = folder; ancestor != hierarchy.RootFolder; ancestor = ancestor.Parent)
+                        {
+                            if (!string.IsNullOrWhiteSpace(ancestor.Name))
+                            {
+                                folderNames.Push(ancestor.Name);
+                            }
+                        }
+
+                        string solutionFolderPath = string.Join(Path.DirectorySeparatorChar.ToString(), folderNames);
+                        if (ExistingProjectGuids != null && ExistingProjectGuids.TryGetValue(GetSolutionFolderPathWithForwardSlashes(solutionFolderPath), out Guid existingFolderGuid))
+                        {
+                            folder.FolderGuid = existingFolderGuid;
+                        }
+
+                        SolutionFolderModel newFolder = AddFolderToModel(newSolution, solutionFolderPath, folder.FolderGuid);
+                        foreach (SlnProject project in folder.Projects)
+                        {
+                            projectFolders.Add(project, newFolder);
+                        }
+
                         if (folder.SolutionItems.Count > 0)
                         {
                             AddSolutionItemsToModel(newFolder, folder.SolutionItems, rootPath);
@@ -448,8 +436,41 @@ namespace Microsoft.VisualStudio.SlnGen
                         AddSolutionItemsToModel(newFolder, folder.SolutionItems, rootPath);
                     }
                 }
+            }
 
-                AddHierarchyNestedProjectsToModel(newSolution, hierarchy);
+            foreach (SlnProject project in sortedProjects)
+            {
+                string solutionPath = project.FullPath.ToRelativePath(rootPath).ToSolutionPath();
+
+                if (ExistingProjectGuids != null && ExistingProjectGuids.TryGetValue(solutionPath, out Guid existingProjectGuid))
+                {
+                    project.ProjectGuid = existingProjectGuid;
+                }
+
+                projectFolders.TryGetValue(project, out SolutionFolderModel projectFolder);
+                SolutionProjectModel projectModel = newSolution.AddProject(solutionPath, project.ProjectTypeGuid.ToSolutionString(), projectFolder);
+                projectModel.DisplayName = project.Name;
+                projectModel.Id = project.ProjectGuid;
+            }
+
+            if (hierarchy == null)
+            {
+                // Just handle the solution items
+                foreach (var solutionItems in _solutionItems)
+                {
+                    if (solutionItems.Value.SolutionItems.Any())
+                    {
+                        SolutionFolderModel newFolder = AddFolderToModel(newSolution, solutionItems.Key, solutionItems.Value.FolderGuid);
+                        AddSolutionItemsToModel(newFolder, solutionItems.Value.SolutionItems, rootPath);
+                    }
+                }
+
+                // Nest solution folders within their parent folders
+                var solutionItemsWithParents = _solutionItems.Where(x => x.Value.ParentFolderGuid.HasValue).ToArray();
+                if (solutionItemsWithParents.Length > 0)
+                {
+                    AddNestedProjectsToModel(newSolution, solutionItemsWithParents);
+                }
             }
 
             HashSet<string> solutionPlatforms = Platforms != null && Platforms.Any()
@@ -478,10 +499,8 @@ namespace Microsoft.VisualStudio.SlnGen
         {
             // SolutionModel::AddFolder expects paths to have leading, trailing and inner forward slashes
             // https://github.com/microsoft/vs-solutionpersistence/blob/87ee8ea069662d55c336a9bd68fe4851d0384fa5/src/Microsoft.VisualStudio.SolutionPersistence/Model/SolutionModel.cs#L171C1-L172C1
-            return "/" + string.Join("/", GetPathWithDirectorySeparator(path).Split(DirectorySeparatorCharacters, StringSplitOptions.RemoveEmptyEntries)) + "/";
+            return "/" + string.Join("/", path.Split(DirectorySeparatorCharacters, StringSplitOptions.RemoveEmptyEntries)) + "/";
         }
-
-        private static string GetPathWithDirectorySeparator(string path) => path.Replace('\\', '/');
 
         private static SolutionFolderModel AddFolderToModel(SolutionModel newSolution, string solutionFolder, Guid folderGuid)
         {
@@ -512,30 +531,6 @@ namespace Microsoft.VisualStudio.SlnGen
             }
 
             newSolution.AddSlnProperties(slnProperties);
-        }
-
-        private static void AddHierarchyNestedProjectsToModel(SolutionModel newSolution, SlnHierarchy hierarchy)
-        {
-            var foldersWithParents = hierarchy.Folders.Where(i => i.Parent != null).ToArray();
-            if (foldersWithParents.Length > 0)
-            {
-                SolutionPropertyBag slnProperties = new ("NestedProjects", scope: PropertiesScope.PreLoad);
-                foreach (SlnFolder folder in foldersWithParents)
-                {
-                    foreach (SlnProject project in folder.Projects)
-                    {
-                        slnProperties.Add(project.ProjectGuid.ToSolutionString(), folder.FolderGuid.ToSolutionString());
-                    }
-
-                    // guard against root folder
-                    if (folder.Parent != hierarchy.RootFolder)
-                    {
-                        slnProperties.Add(folder.FolderGuid.ToSolutionString(), folder.Parent.FolderGuid.ToSolutionString());
-                    }
-                }
-
-                newSolution.AddSlnProperties(slnProperties);
-            }
         }
 
         private void AddSharedMSBuildProjectFilesToModel(SolutionModel newSolution, List<SlnProject> sortedProjects, string rootPath)
