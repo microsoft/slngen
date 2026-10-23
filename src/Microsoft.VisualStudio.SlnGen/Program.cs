@@ -216,11 +216,27 @@ namespace Microsoft.VisualStudio.SlnGen
                         return 1;
                     }
 
+                    // Reject option combinations that cannot work in multi-solution mode before doing any expensive loading
+                    if (!arguments.ValidateSolutionPerProject(forwardingLogger))
+                    {
+                        return 1;
+                    }
+
                     (TimeSpan evaluationTime, int evaluationCount) = ProjectLoader.LoadProjects(CurrentDevelopmentEnvironment.MSBuildExe, projectCollection, projectEntryPaths, arguments.GetGlobalProperties(), forwardingLogger);
 
                     if (forwardingLogger.HasLoggedErrors)
                     {
                         return 1;
+                    }
+
+                    // Multi-solution mode reuses the graph that was just loaded and never launches Visual Studio
+                    if (arguments.SolutionPerProject)
+                    {
+                        int result = SolutionPerProject.GenerateSolutions(arguments, projectCollection.LoadedProjects, projectEntryPaths, forwardingLogger);
+
+                        featureFlags.Dispose();
+
+                        return result;
                     }
 
                     (string solutionFileFullPath, int customProjectTypeGuidCount, int solutionItemCount, Guid solutionGuid) = SlnFile.GenerateSolutionFile(arguments, projectCollection.LoadedProjects.Where(i => !i.GlobalProperties.ContainsKey("TargetFramework")), forwardingLogger);
