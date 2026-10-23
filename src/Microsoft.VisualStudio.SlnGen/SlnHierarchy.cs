@@ -426,7 +426,9 @@ namespace Microsoft.VisualStudio.SlnGen
             List<SlnFolder> foldersToRemove = new List<SlnFolder>();
             foreach (SlnFolder child in folder.Folders)
             {
-                if (RemoveLeaves(child))
+                if (RemoveLeaves(child) && !folder.Projects
+                    .Concat(folder.Folders.Where(i => i != child).SelectMany(i => i.Projects))
+                    .Any(i => string.Equals(Path.GetFileNameWithoutExtension(i.FullPath), Path.GetFileNameWithoutExtension(child.Projects[0].FullPath), StringComparison.OrdinalIgnoreCase)))
                 {
                     folder.Projects.AddRange(child.Projects);
                     folder.SolutionItems.AddRange(child.SolutionItems);

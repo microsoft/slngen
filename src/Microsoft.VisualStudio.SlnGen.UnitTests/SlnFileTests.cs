@@ -923,8 +923,8 @@ EndGlobal
 
             Dictionary<string, Guid> folders = new Dictionary<string, Guid>
             {
-                ["//FolderA//"] = new Guid("9C915FE4-72A5-4368-8979-32B3983E6041"),
-                ["//FolderB//"] = new Guid("D3A9F802-38CC-4F8D-8DE9-8DF9C8B7EADC"),
+                ["/FolderA/"] = new Guid("9C915FE4-72A5-4368-8979-32B3983E6041"),
+                ["/FolderB/"] = new Guid("D3A9F802-38CC-4F8D-8DE9-8DF9C8B7EADC"),
             };
 
             Dictionary<FileInfo, Guid> projectFiles = projects.ToDictionary(i => new FileInfo(Path.Combine(solutionFilePath.DirectoryName!, i.Key)), i => i.Value);
@@ -1491,6 +1491,68 @@ EndGlobal
                 },
                 new[] { slnProject },
                 false);
+        }
+
+        [Theory]
+        [InlineData(".sln", false, false, false)]
+        [InlineData(".slnx", false, false, false)]
+        [InlineData(".sln", true, false, false)]
+        [InlineData(".slnx", true, false, false)]
+        [InlineData(".sln", true, true, false)]
+        [InlineData(".slnx", true, true, false)]
+        [InlineData(".sln", false, false, true)]
+        [InlineData(".slnx", false, false, true)]
+        [InlineData(".sln", true, false, true)]
+        [InlineData(".slnx", true, false, true)]
+        public async Task DuplicateProjectFileNamesInDifferentFolders(string extension, bool useFolders, bool collapseFolders, bool sameParentName)
+        {
+            string firstFolder = sameParentName ? Path.Combine("Contracts", "ServiceDescription", "Common") : "test";
+            string secondFolder = sameParentName ? Path.Combine("Services", "DatacenterManager", "DCM", "common") : "private";
+            SlnProject[] projects =
+            {
+                new SlnProject
+                {
+                    FullPath = GetTempProjectFile("Common", directoryPath: Path.Combine("src", firstFolder)),
+                    Name = "Common",
+                    ProjectGuid = Guid.NewGuid(),
+                    ProjectTypeGuid = SlnProject.DefaultNetSdkProjectTypeGuid,
+                    SolutionFolder = useFolders ? null : Path.Combine(firstFolder, "nested"),
+                },
+                new SlnProject
+                {
+                    FullPath = GetTempProjectFile("common", directoryPath: Path.Combine("src", secondFolder)),
+                    Name = "common",
+                    ProjectGuid = Guid.NewGuid(),
+                    ProjectTypeGuid = SlnProject.DefaultNetSdkProjectTypeGuid,
+                    SolutionFolder = useFolders ? null : Path.Combine(secondFolder, "nested"),
+                },
+            };
+
+            string solutionFilePath = GetTempFileName(extension);
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionFilePath);
+            SlnFile slnFile = new SlnFile();
+            slnFile.AddProjects(projects);
+            slnFile.Save(serializer, solutionFilePath, useFolders, collapseFolders: collapseFolders);
+
+            SolutionModel solution = await serializer.OpenAsync(solutionFilePath, CancellationToken.None);
+            solution.SolutionProjects.Count.ShouldBe(2);
+            foreach (SlnProject project in projects)
+            {
+                SolutionProjectModel savedProject = solution.SolutionProjects.Single(p => p.Id == project.ProjectGuid);
+                savedProject.ActualDisplayName.ShouldBe(project.Name);
+                string folder = project == projects[0] ? firstFolder : secondFolder;
+                string folderPath = "/" + folder.Replace(Path.DirectorySeparatorChar, '/') + "/";
+                savedProject.Parent.Path.ShouldBe(useFolders ? folderPath : folderPath + "nested/");
+                Path.GetFullPath(Path.Combine(TestRootPath, savedProject.FilePath)).ShouldBe(project.FullPath);
+            }
+
+            SlnFile.TryParseExistingSolution(solutionFilePath, out _, out IReadOnlyDictionary<string, Guid> projectGuids, out _).ShouldBeTrue();
+            slnFile.ExistingProjectGuids = projectGuids;
+            slnFile.Save(serializer, solutionFilePath, useFolders, collapseFolders: collapseFolders);
+            SolutionModel updatedSolution = await serializer.OpenAsync(solutionFilePath, CancellationToken.None);
+            updatedSolution.SolutionProjects.Select(p => p.Id).ShouldBe(projects.Select(p => p.ProjectGuid), ignoreOrder: true);
+            updatedSolution.SolutionFolders.ToDictionary(f => f.Path, f => f.Id)
+                .ShouldBe(solution.SolutionFolders.ToDictionary(f => f.Path, f => f.Id));
         }
 
         [Fact]
