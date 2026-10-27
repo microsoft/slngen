@@ -93,6 +93,7 @@ Options:
                                           --property:WarningLevel=2;MyProperty=true
   -d|--solutiondir <path>             An optional path to the directory in which the solution file will be generated. Defaults to the same directory as the project. --solutionfile will take precedence over this switch.
   -o|--solutionfile <path>            An optional path to the solution file to generate. Defaults to the same directory as the project.
+  --solutionPerProject                Generates a separate solution for each specified project, containing only that project and its transitive project references. Cannot be combined with --solutionfile. Visual Studio is not launched.
   -v|--verbosity                      Display this amount of information in the event log. The available verbosity levels are:
                                         q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].
   --version                           Display version information only.
