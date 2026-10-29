@@ -129,6 +129,9 @@ namespace Microsoft.VisualStudio.SlnGen
                 return new DevelopmentEnvironment("SlnGen must be run from a command-line window where dotnet.exe is on the PATH.");
             }
 
+            // dotnet on the PATH can be a symbolic link, but the .NET SDK resolver needs the directory that dotnet is installed in
+            dotnetFileInfo = dotnetFileInfo.ResolveLinkTarget(returnFinalTarget: true) as FileInfo ?? dotnetFileInfo;
+
             if (DotNetCoreSdkResolver.TryResolveDotNetCoreSdk(environmentProvider, dotnetFileInfo, out DevelopmentEnvironment developmentEnvironment)
                 && Utility.RunningOnWindows
                 && Utility.TryFindOnPath(environmentProvider, "MSBuild.exe", IsMSBuildExeCompatible, out FileInfo msbuildExeFileInfo))
