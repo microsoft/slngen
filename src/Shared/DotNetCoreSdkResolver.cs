@@ -96,6 +96,8 @@ namespace Microsoft.VisualStudio.SlnGen
                     break;
 
                 case 0:
+                    // The Exited event can be raised before the redirected output has been processed
+                    process.WaitForExit();
                     break;
             }
 
