@@ -187,5 +187,80 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             result.ShouldBe(new string[] { "1.csproj", "3.csproj" }, ignoreOrder: true);
         }
+
+        /// <summary>
+        /// Verifies that the --solutionPerProject switch is parsed from the command line.
+        /// </summary>
+        [Fact]
+        public void SolutionPerProjectIsParsed()
+        {
+            TestConsole console = new TestConsole();
+
+            int exitCode = Program.Execute(
+                new[] { "--solutionPerProject", "a.csproj" },
+                console,
+                (arguments, _) => arguments.SolutionPerProject ? 0 : 1);
+
+            exitCode.ShouldBe(0, console.AllOutput);
+        }
+
+        /// <summary>
+        /// Verifies that --solutionfile is rejected in multi-solution mode because it names a single file.
+        /// </summary>
+        [Fact]
+        public void SolutionPerProjectRejectsSolutionFile()
+        {
+            TestLogger logger = new TestLogger();
+
+            ProgramArguments arguments = new ProgramArguments
+            {
+                SolutionPerProject = true,
+                SolutionFileFullPath = new[] { "x.sln" },
+            };
+
+            arguments.ValidateSolutionPerProject(logger).ShouldBeFalse();
+
+            logger.ErrorMessages.ShouldHaveSingleItem().ShouldContain("--solutionfile");
+        }
+
+        /// <summary>
+        /// Verifies that explicitly requesting Visual Studio to launch only produces a warning in multi-solution mode.
+        /// </summary>
+        [Fact]
+        public void SolutionPerProjectWarnsWhenLaunchRequested()
+        {
+            TestLogger logger = new TestLogger();
+
+            ProgramArguments arguments = new ProgramArguments
+            {
+                SolutionPerProject = true,
+                LaunchVisualStudio = new[] { bool.TrueString },
+            };
+
+            arguments.ValidateSolutionPerProject(logger).ShouldBeTrue();
+
+            logger.Warnings.ShouldHaveSingleItem();
+            logger.ErrorMessages.ShouldBeEmpty();
+        }
+
+        /// <summary>
+        /// Verifies that the multi-solution checks do not apply when the switch is not specified.
+        /// </summary>
+        [Fact]
+        public void ValidateSolutionPerProjectIsNoOpWhenSwitchIsOff()
+        {
+            TestLogger logger = new TestLogger();
+
+            ProgramArguments arguments = new ProgramArguments
+            {
+                SolutionFileFullPath = new[] { "x.sln" },
+                LaunchVisualStudio = new[] { bool.TrueString },
+            };
+
+            arguments.ValidateSolutionPerProject(logger).ShouldBeTrue();
+
+            logger.ErrorMessages.ShouldBeEmpty();
+            logger.Warnings.ShouldBeEmpty();
+        }
     }
 }
