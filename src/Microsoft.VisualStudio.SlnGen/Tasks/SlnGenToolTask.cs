@@ -163,6 +163,7 @@ namespace Microsoft.VisualStudio.SlnGen.Tasks
             commandLineBuilder.AppendSwitch("--nologo");
             commandLineBuilder.AppendSwitch($"--verbosity:{Verbosity}");
             commandLineBuilder.AppendSwitch("--consolelogger:NoSummary;ForceNoAlign");
+            commandLineBuilder.AppendSwitchIfNotNull("--collapsefolders:", GetPropertyValue(MSBuildPropertyNames.SlnGenCollapseFolders));
             commandLineBuilder.AppendSwitchIfNotNull("--devenvfullpath:", GetPropertyValue(MSBuildPropertyNames.SlnGenDevEnvFullPath));
             commandLineBuilder.AppendSwitchIfNotNull("--folders:", GetPropertyValue(MSBuildPropertyNames.SlnGenFolders));
             commandLineBuilder.AppendSwitchIfNotNull("--launch:", GetPropertyValue(MSBuildPropertyNames.SlnGenLaunchVisualStudio));
