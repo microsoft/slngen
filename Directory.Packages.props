@@ -8,7 +8,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <MicrosoftBuildPackageVersion>17.14.28</MicrosoftBuildPackageVersion>
     <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'net8.0'">17.11.48</MicrosoftBuildPackageVersion>
-    <SystemConfigurationConfigurationManagerPackageVersion>9.0.0</SystemConfigurationConfigurationManagerPackageVersion>
+    <SystemConfigurationConfigurationManagerPackageVersion>10.0.14</SystemConfigurationConfigurationManagerPackageVersion>
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion>8.0.0</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion Condition="'$(TargetFramework)' == 'net472'">6.0.0</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
   </PropertyGroup>
