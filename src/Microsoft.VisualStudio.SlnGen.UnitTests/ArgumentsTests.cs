@@ -102,6 +102,20 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
             ProgramArguments arguments = new ProgramArguments()
             {
                 Platform = new[] { "Five", "Six;Seven,five,Eight", "eight" },
+        [Theory]
+        [InlineData(null, true)]
+        [InlineData("False", false)]
+        [InlineData("True", true)]
+        public void EnableAlwaysBuild_DefaultsToTrueAndHonorsExplicitValue(string value, bool expected)
+        {
+            ProgramArguments arguments = new ProgramArguments
+            {
+                AlwaysBuild = value is null ? null : new[] { value },
+            };
+
+            arguments.EnableAlwaysBuild().ShouldBe(expected);
+        }
+
             };
 
             arguments.GetPlatforms().ShouldBe(new[] { "Five", "Six", "Seven", "Eight" });
