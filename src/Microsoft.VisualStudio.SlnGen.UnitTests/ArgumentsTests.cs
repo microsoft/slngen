@@ -52,6 +52,27 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         }
 
         [Fact]
+        public void ForwardSlashOptionWithValueAtStartIsTranslated()
+        {
+            if (!Utility.RunningOnWindows)
+            {
+                return;
+            }
+
+            TestConsole console = new TestConsole();
+            string[] verbosity = null;
+
+            int exitCode = Program.Execute(new[] { "/v:quiet" }, console, (arguments, _) =>
+            {
+                verbosity = arguments.Verbosity;
+                return 42;
+            });
+
+            exitCode.ShouldBe(42, console.AllOutput);
+            verbosity.ShouldBe(new[] { "quiet" });
+        }
+
+        [Fact]
         public void GetConfigurations()
         {
             ProgramArguments arguments = new ProgramArguments
