@@ -18,19 +18,11 @@
 
   <UsingTask TaskName="Microsoft.VisualStudio.SlnGen.Tasks.SlnGenToolTask"
              AssemblyFile="$([MSBuild]::ValueOrDefault('$(SlnGenAssemblyFile)', '$(MSBuildThisFileDirectory)..\tools\net10.0\slngen.dll'))"
-             Condition="'$(MSBuildRuntimeType)' == 'Core' And '$([MSBuild]::VersionGreaterThanOrEquals($(MSBuildVersion), 17.13))' == 'true'" />
-
-  <UsingTask TaskName="Microsoft.VisualStudio.SlnGen.Tasks.SlnGenToolTask"
-             AssemblyFile="$([MSBuild]::ValueOrDefault('$(SlnGenAssemblyFile)', '$(MSBuildThisFileDirectory)..\tools\net9.0\slngen.dll'))"
-             Condition="'$(MSBuildRuntimeType)' == 'Core' And '$([MSBuild]::VersionGreaterThanOrEquals($(MSBuildVersion), 17.12))' == 'true'" />
-
-  <UsingTask TaskName="Microsoft.VisualStudio.SlnGen.Tasks.SlnGenToolTask"
-             AssemblyFile="$([MSBuild]::ValueOrDefault('$(SlnGenAssemblyFile)', '$(MSBuildThisFileDirectory)..\tools\net8.0\slngen.dll'))"
-             Condition="'$(MSBuildRuntimeType)' == 'Core' And '$([MSBuild]::VersionGreaterThanOrEquals($(MSBuildVersion), 17.8))' == 'true'" />
+             Condition="'$(MSBuildRuntimeType)' == 'Core' And '$([MSBuild]::VersionGreaterThanOrEquals($(MSBuildVersion), 18.0))' == 'true'" />
 
   <Target Name="SlnGen"
           DependsOnTargets="$(SlnGenDependsOn)">
-    <Error Text="SlnGen only supports .NET 8.0 or above." Condition="'$(MSBuildRuntimeType)' == 'Core' And '$(MSBuildVersion)' &lt; '17.8.0'" />
+    <Error Text="SlnGen only supports .NET 10.0 or above." Condition="'$(MSBuildRuntimeType)' == 'Core' And '$([MSBuild]::VersionLessThan($(MSBuildVersion), 18.0))' == 'true'" />
     
     <Microsoft.VisualStudio.SlnGen.Tasks.SlnGenToolTask
       BuildingSolutionFile="$([MSBuild]::ValueOrDefault('$(BuildingSolutionFile)', 'false'))"

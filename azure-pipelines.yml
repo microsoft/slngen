@@ -39,20 +39,6 @@ jobs:
     vmImage: $(vmImage)
   steps:
   - task: UseDotNet@2
-    displayName: 'Install .NET 8 SDK'
-    inputs:
-      packageType: 'sdk'
-      version: '8.x'
-      installationPath: '$(DotNetInstallDirectory)'
-
-  - task: UseDotNet@2
-    displayName: 'Install .NET 9 SDK'
-    inputs:
-      packageType: 'sdk'
-      version: '9.x'
-      installationPath: '$(DotNetInstallDirectory)'
-
-  - task: UseDotNet@2
     displayName: 'Install .NET 10 SDK'
     inputs:
       packageType: 'sdk'
@@ -60,11 +46,10 @@ jobs:
       installationPath: '$(DotNetInstallDirectory)'
 
   - task: UseDotNet@2
-    displayName: 'Install .NET 11 SDK (preview)'
+    displayName: 'Install .NET 11 SDK'
     inputs:
       packageType: 'sdk'
       version: '11.0.x'
-      includePreviewVersions: true
       installationPath: '$(DotNetInstallDirectory)'
 
   - powershell: |
@@ -93,7 +78,7 @@ jobs:
       $dotnetDirectory = Split-Path (Get-Command dotnet).Source
       $env:Path = "$dotnetDirectory;$env:WINDIR\System32;$env:WINDIR"
       if ((dotnet --version) -notlike '11.*') { throw 'Expected a .NET 11 SDK' }
-      dotnet 'src\Microsoft.VisualStudio.SlnGen.Tool\bin\$(BuildConfiguration)\net8.0\slngen.dll' --version
+      dotnet 'src\Microsoft.VisualStudio.SlnGen.Tool\bin\$(BuildConfiguration)\net10.0\slngen.dll' --version
       if ($LASTEXITCODE -ne 0) { throw 'SlnGen failed with the .NET 11 SDK' }
     displayName: 'Run SlnGen tool with .NET 11 SDK'
     condition: and(succeeded(), eq(variables.osName, 'Windows'))
@@ -105,22 +90,6 @@ jobs:
       arguments: '--no-restore --no-build --framework net472 /noautorsp $(MSBuildArgs) "/BinaryLogger:$(ArtifactsDirectoryName)/test-net472.binlog"'
       testRunTitle: '$(osName) .NET Framework v4.7.2'
     condition: and(succeededOrFailed(), eq(variables.osName, 'Windows'))
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Run Unit Tests (.NET 8)'
-    inputs:
-      command: 'test'
-      arguments: '--no-restore --no-build --framework net8.0 /noautorsp $(MSBuildArgs) "/BinaryLogger:$(ArtifactsDirectoryName)/test-net8.0.binlog"'
-      testRunTitle: '$(osName) .NET 8.0'
-    condition: succeededOrFailed()
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Run Unit Tests (.NET 9)'
-    inputs:
-      command: 'test'
-      arguments: '--no-restore --no-build --framework net9.0 /noautorsp $(MSBuildArgs) "/BinaryLogger:$(ArtifactsDirectoryName)/test-net9.0.binlog"'
-      testRunTitle: '$(osName) .NET 9.0'
-    condition: succeededOrFailed()
 
   - task: DotNetCoreCLI@2
     displayName: 'Run Unit Tests (.NET 10)'

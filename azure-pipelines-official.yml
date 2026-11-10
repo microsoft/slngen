@@ -75,29 +75,16 @@ extends:
           displayName: 'Set SignType to Real for tagged commits'
           condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
         - task: UseDotNet@2
-          displayName: 'Install .NET 8 SDK'
-          inputs:
-            packageType: 'sdk'
-            version: '8.x'
-            installationPath: '$(DotNetInstallDirectory)'
-        - task: UseDotNet@2
-          displayName: 'Install .NET 9 SDK'
-          inputs:
-            packageType: 'sdk'
-            version: '9.x'
-            installationPath: '$(DotNetInstallDirectory)'
-        - task: UseDotNet@2
           displayName: 'Install .NET 10 SDK'
           inputs:
             packageType: 'sdk'
             version: '10.x'
             installationPath: '$(DotNetInstallDirectory)'
         - task: UseDotNet@2
-          displayName: 'Install .NET 11 SDK (preview)'
+          displayName: 'Install .NET 11 SDK'
           inputs:
             packageType: 'sdk'
             version: '11.0.x'
-            includePreviewVersions: true
             installationPath: '$(DotNetInstallDirectory)'
         - powershell: |
             dotnet --info

@@ -84,17 +84,11 @@ namespace Microsoft.VisualStudio.SlnGen
                         case "5":
                         case "6":
                         case "7":
-                            Utility.WriteError(Error, "The currently configured .NET SDK {0} is not supported, SlnGen requires .NET SDK 8 or greater.", developmentEnvironment.DotNetSdkVersion);
+                        case "8":
+                        case "9":
+                            Utility.WriteError(Error, "The currently configured .NET SDK {0} is not supported, SlnGen requires .NET SDK 10 or greater.", developmentEnvironment.DotNetSdkVersion);
 
                             return (int)ExitCode.UnsupportedNETSdk;
-
-                        case "8":
-                            framework = "net8.0";
-                            break;
-
-                        case "9":
-                            framework = "net9.0";
-                            break;
 
                         case "10":
                             framework = "net10.0";
