@@ -8,7 +8,7 @@ SlnGen reads the project references of a given project to create a Visual Studio
 # Getting Started
 Download and install the latest version of Visual studio 2022. See [Installation guide](https://learn.microsoft.com/en-us/visualstudio/install/update-visual-studio?view=vs-2022)
 
-SlnGen can be installed as a .NET Core global tool. To do this, please [install .NET Core 8.0](https://dotnet.microsoft.com/download/dotnet-core/8.0) or above and run the following command:
+SlnGen can be installed as a .NET Core global tool. To do this, please [install .NET 10.0](https://dotnet.microsoft.com/download/dotnet/10.0) or above and run the following command:
 
 ```cmd
 dotnet tool install --global Microsoft.VisualStudio.SlnGen.Tool

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>slngen</ToolCommandName>
     <RollForward>LatestMajor</RollForward>
@@ -22,22 +22,6 @@
                       ReferenceOutputAssembly="false"
                       SkipGetTargetFrameworkProperties="true"
                       TargetFramework="net472" />
-    <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj"
-                      SetTargetFramework="TargetFramework=net8.0"
-                      IncludeAssets="None"
-                      OutputItemType="SlnGenBuildOutput"
-                      PrivateAssets="All"
-                      ReferenceOutputAssembly="false"
-                      SkipGetTargetFrameworkProperties="true"
-                      TargetFramework="net8.0" />
-    <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj"
-                      SetTargetFramework="TargetFramework=net9.0"
-                      IncludeAssets="None"
-                      OutputItemType="SlnGenBuildOutput"
-                      PrivateAssets="All"
-                      ReferenceOutputAssembly="false"
-                      SkipGetTargetFrameworkProperties="true"
-                      TargetFramework="net9.0" />
     <ProjectReference Include="..\Microsoft.VisualStudio.SlnGen\Microsoft.VisualStudio.SlnGen.csproj"
                       SetTargetFramework="TargetFramework=net10.0"
                       IncludeAssets="None"
