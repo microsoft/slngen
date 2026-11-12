@@ -505,6 +505,8 @@ EndGlobal
 
             (string _, int customProjectTypeGuidCount, int solutionItemCount, Guid solutionGuid) = SlnFile.GenerateSolutionFile(programArguments, projects, testLogger);
 
+            solutionGuid.ShouldBe(new Guid("AA784BCF-D76D-4DD7-91D2-79E6A14A4DE2"));
+
             string actualSolutionText = File.ReadAllText(solutionFileFullPath);
 
             actualSolutionText.ShouldBe(solutionText, StringCompareShould.IgnoreLineEndings);
