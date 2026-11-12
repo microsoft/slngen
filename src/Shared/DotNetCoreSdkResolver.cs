@@ -44,7 +44,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 {
                     Arguments = "--info",
                     CreateNoWindow = true,
-                    FileName = "dotnet",
+                    FileName = dotnetFileInfo.FullName,
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     WorkingDirectory = environmentProvider.CurrentDirectory,
