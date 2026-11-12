@@ -97,7 +97,7 @@ namespace Microsoft.VisualStudio.SlnGen
         /// </remarks>
         public bool UseSimpleProjectRootElementCacheConcurrency
         {
-            get => !string.Equals(_environmentProvider.GetEnvironmentVariable(UseSimpleProjectRootElementCacheConcurrencyEnvironmentVariableName), "1");
+            get => string.Equals(_environmentProvider.GetEnvironmentVariable(UseSimpleProjectRootElementCacheConcurrencyEnvironmentVariableName), "1");
             set => _environmentProvider.SetEnvironmentVariable(UseSimpleProjectRootElementCacheConcurrencyEnvironmentVariableName, value ? "1" : null);
         }
 
