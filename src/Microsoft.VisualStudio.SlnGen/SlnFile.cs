@@ -95,23 +95,7 @@ namespace Microsoft.VisualStudio.SlnGen
 
             IReadOnlyCollection<string> solutionItems = SlnProject.GetSolutionItems(projectList, logger).ToList();
 
-            string solutionFileFullPath = arguments.SolutionFileFullPath?.LastOrDefault();
-
-            if (solutionFileFullPath.IsNullOrWhiteSpace())
-            {
-                string solutionDirectoryFullPath = arguments.SolutionDirectoryFullPath?.LastOrDefault();
-
-                if (solutionDirectoryFullPath.IsNullOrWhiteSpace())
-                {
-                    solutionDirectoryFullPath = firstProject.DirectoryPath;
-                }
-
-                var firstProjectName = firstProject.GetPropertyValueOrDefault(MSBuildPropertyNames.SlnGenProjectName, Path.GetFileName(firstProject.FullPath));
-
-                string solutionFileName = Path.ChangeExtension(firstProjectName, arguments.GetSolutionFileExtension());
-
-                solutionFileFullPath = Path.Combine(solutionDirectoryFullPath!, solutionFileName);
-            }
+            string solutionFileFullPath = GetSolutionFileFullPath(arguments, firstProject);
 
             logger.LogMessageHigh($"Generating Visual Studio solution \"{Path.GetFullPath(solutionFileFullPath)}\" ...");
 
@@ -306,6 +290,35 @@ namespace Microsoft.VisualStudio.SlnGen
         public void AddSolutionItems(Guid? parentFolderGuid, string folderPath, Guid folderGuid, IEnumerable<string> items)
         {
             _solutionItems.Add(folderPath, new SlnItem(parentFolderGuid, folderGuid, items));
+        }
+
+        /// <summary>
+        /// Determines where the solution file for a main project is written.
+        /// </summary>
+        /// <param name="arguments">The current <see cref="ProgramArguments" />.</param>
+        /// <param name="firstProject">The main project, which names the solution and picks its default directory.</param>
+        /// <returns>The solution file path, exactly as specified or derived (a relative path stays relative).</returns>
+        internal static string GetSolutionFileFullPath(ProgramArguments arguments, Project firstProject)
+        {
+            string solutionFileFullPath = arguments.SolutionFileFullPath?.LastOrDefault();
+
+            if (solutionFileFullPath.IsNullOrWhiteSpace())
+            {
+                string solutionDirectoryFullPath = arguments.SolutionDirectoryFullPath?.LastOrDefault();
+
+                if (solutionDirectoryFullPath.IsNullOrWhiteSpace())
+                {
+                    solutionDirectoryFullPath = firstProject.DirectoryPath;
+                }
+
+                var firstProjectName = firstProject.GetPropertyValueOrDefault(MSBuildPropertyNames.SlnGenProjectName, Path.GetFileName(firstProject.FullPath));
+
+                string solutionFileName = Path.ChangeExtension(firstProjectName, arguments.GetSolutionFileExtension());
+
+                solutionFileFullPath = Path.Combine(solutionDirectoryFullPath!, solutionFileName);
+            }
+
+            return solutionFileFullPath;
         }
 
         /// <summary>
