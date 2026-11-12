@@ -284,6 +284,7 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
 
             GetFolderStructureAsString(hierarchy.Folders).ShouldBe(
                 $@" - 
+Solution Items - Solution Items
 zoo - zoo
 zoo{Path.DirectorySeparatorChar}foo - foo
 zoo{Path.DirectorySeparatorChar}foo{Path.DirectorySeparatorChar}bar - bar
@@ -291,8 +292,33 @@ zoo{Path.DirectorySeparatorChar}foo{Path.DirectorySeparatorChar}bar{Path.Directo
 zoo{Path.DirectorySeparatorChar}foo{Path.DirectorySeparatorChar}bar{Path.DirectorySeparatorChar}baz1 - baz1",
                 StringCompareShould.IgnoreLineEndings);
 
-            hierarchy.RootFolder.SolutionItems[0].ShouldBe(solutionItems[0]);
-            hierarchy.RootFolder.SolutionItems[1].ShouldBe(solutionItems[1]);
+            SlnFolder solutionItemsFolder = hierarchy.RootFolder.Folders.Single(folder => folder.Name == "Solution Items");
+            solutionItemsFolder.SolutionItems.ShouldBe(solutionItems);
+        }
+
+        [Fact]
+        public void NestedSolutionItemsAreAttachedToEachFolder()
+        {
+            string folderPath = Path.Combine("zoo", "foo", "bar");
+            string[] solutionItems =
+            {
+                Path.Combine(folderPath, "A.txt"),
+            };
+
+            SlnHierarchy hierarchy = SlnHierarchy.CreateFromProjectSolutionFolder(
+                Array.Empty<SlnProject>(),
+                new Dictionary<string, IReadOnlyCollection<string>>
+                {
+                    [folderPath] = solutionItems,
+                });
+
+            SlnFolder zoo = hierarchy.RootFolder.Folders.ShouldHaveSingleItem();
+            SlnFolder foo = zoo.Folders.ShouldHaveSingleItem();
+            SlnFolder bar = foo.Folders.ShouldHaveSingleItem();
+            zoo.Name.ShouldBe("zoo");
+            foo.Name.ShouldBe("foo");
+            bar.Name.ShouldBe("bar");
+            bar.SolutionItems.ShouldBe(solutionItems);
         }
 
         private static string GetFolderStructureAsString(IEnumerable<SlnFolder> folders)

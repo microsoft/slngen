@@ -237,11 +237,10 @@ namespace Microsoft.VisualStudio.SlnGen
 
                             // add the folder to the folder map
                             hierarchy._pathToSlnFolderMap.Add(nestedFolderPath, nested);
+                            parent.Folders.Add(nested);
                         }
-                        else
-                        {
-                            parent = nested;
-                        }
+
+                        parent = nested;
                     }
 
                     // add the solution items to the folder
