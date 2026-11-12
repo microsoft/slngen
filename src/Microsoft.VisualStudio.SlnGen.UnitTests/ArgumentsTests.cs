@@ -82,6 +82,20 @@ namespace Microsoft.VisualStudio.SlnGen.UnitTests
         }
 
         [Theory]
+        [InlineData(null, true)]
+        [InlineData("False", false)]
+        [InlineData("True", true)]
+        public void EnableAlwaysBuild_DefaultsToTrueAndHonorsExplicitValue(string value, bool expected)
+        {
+            ProgramArguments arguments = new ProgramArguments
+            {
+                AlwaysBuild = value is null ? null : new[] { value },
+            };
+
+            arguments.EnableAlwaysBuild().ShouldBe(expected);
+        }
+
+        [Theory]
         [InlineData("xml")]
         [InlineData("json")]
         [InlineData("sln2")]
