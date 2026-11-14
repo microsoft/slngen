@@ -78,31 +78,15 @@ namespace Microsoft.VisualStudio.SlnGen
 
                 if (useDotnet)
                 {
-                    switch (developmentEnvironment.DotNetSdkMajorVersion)
+                    var version = EnvironmentProvider.Version;
+                    if (version.Major < 10)
                     {
-                        case "3":
-                        case "5":
-                        case "6":
-                        case "7":
-                        case "8":
-                        case "9":
-                            Utility.WriteError(Error, "The currently configured .NET SDK {0} is not supported, SlnGen requires .NET SDK 10 or greater.", developmentEnvironment.DotNetSdkVersion);
+                        Utility.WriteError(Error, "The currently configured .NET SDK {0} is not supported, SlnGen requires .NET SDK 10 or greater.", developmentEnvironment.DotNetSdkVersion);
 
-                            return (int)ExitCode.UnsupportedNETSdk;
-
-                        case "10":
-                            framework = "net10.0";
-                            break;
-
-                        case "11":
-                            framework = "net11.0";
-                            break;
-
-                        default:
-                            Utility.WriteError(Error, "SlnGen does not currently support the .NET SDK {0} defined by in global.json.  Please update to the latest version and if you still get this error message, file an issue at https://github.com/microsoft/slngen/issues/new so it can be added.", developmentEnvironment.DotNetSdkVersion);
-
-                            return (int)ExitCode.UnknownNETSdk;
+                        return (int)ExitCode.UnsupportedNETSdk;
                     }
+
+                    framework = $"net{version.Major}.{version.Minor}";
                 }
                 else
                 {
