@@ -207,7 +207,6 @@ namespace Microsoft.VisualStudio.SlnGen
                     forwardingLogger.LogMessageLow("  FrameworkDescription: \"{0}\"", RuntimeInformation.FrameworkDescription);
                     forwardingLogger.LogMessageLow("  DotNetCoreVersion: \"{0}\"", CurrentDevelopmentEnvironment.DotNetSdkVersion);
                     forwardingLogger.LogMessageLow("  DotNetSdkMajorVersion: \"{0}\"", CurrentDevelopmentEnvironment.DotNetSdkMajorVersion);
-                    forwardingLogger.LogMessageLow("  IsCorext: \"{0}\"", CurrentDevelopmentEnvironment.IsCorext);
                     forwardingLogger.LogMessageLow("  MSBuildDll: \"{0}\"", CurrentDevelopmentEnvironment.MSBuildDll);
                     forwardingLogger.LogMessageLow("  MSBuildExe: \"{0}\"", CurrentDevelopmentEnvironment.MSBuildExe);
                     forwardingLogger.LogMessageLow("  VisualStudio: \"{0}\"", CurrentDevelopmentEnvironment.VisualStudio?.InstallationPath);
