@@ -505,9 +505,37 @@ EndGlobal
 
             (string _, int customProjectTypeGuidCount, int solutionItemCount, Guid solutionGuid) = SlnFile.GenerateSolutionFile(programArguments, projects, testLogger);
 
+            solutionGuid.ShouldBe(new Guid("AA784BCF-D76D-4DD7-91D2-79E6A14A4DE2"));
+
             string actualSolutionText = File.ReadAllText(solutionFileFullPath);
 
             actualSolutionText.ShouldBe(solutionText, StringCompareShould.IgnoreLineEndings);
+        }
+
+        [Fact]
+        public void GenerateSolutionFileReturnsSavedSolutionGuidForNewSolution()
+        {
+            string solutionFileFullPath = GetTempFileName(".sln");
+
+            ProgramArguments programArguments = new ProgramArguments
+            {
+                LaunchVisualStudio = new[] { bool.FalseString },
+                SolutionFileFullPath = new[] { solutionFileFullPath },
+            };
+
+            Project[] projects =
+            {
+                ProjectCreator.Templates.SdkCsproj(path: GetTempProjectFile("ProjectA"))
+                    .Save(),
+            };
+
+            (string _, int _, int _, Guid solutionGuid) = SlnFile.GenerateSolutionFile(programArguments, projects, new TestLogger());
+
+            solutionGuid.ShouldNotBe(Guid.Empty);
+
+            SlnFile.TryParseExistingSolution(solutionFileFullPath, out Guid savedSolutionGuid, out _, out _).ShouldBeTrue();
+
+            solutionGuid.ShouldBe(savedSolutionGuid);
         }
 
         [Fact]

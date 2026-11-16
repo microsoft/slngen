@@ -177,7 +177,7 @@ namespace Microsoft.VisualStudio.SlnGen
                 slnFile.Save(serializer, solutionFileFullPath, enableFolders, logger, arguments.EnableCollapseFolders(), arguments.EnableAlwaysBuild());
             }
 
-            return (solutionFileFullPath, customProjectTypeGuids.Count, solutionItems.Count, solutionGuid);
+            return (solutionFileFullPath, customProjectTypeGuids.Count, solutionItems.Count, slnFile.SolutionGuid);
         }
 
         /// <summary>
