@@ -323,7 +323,7 @@ Examples:
         /// Gets a value indicating whether or not to always include the project in the build even if it has no matching configuration
         /// </summary>
         /// <returns>true to always include the project in the build even if it has no matching configuration, otherwise false.</returns>
-        public bool EnableAlwaysBuild() => GetBoolean(AlwaysBuild);
+        public bool EnableAlwaysBuild() => GetBoolean(AlwaysBuild, defaultValue: true);
 
         /// <summary>
         /// Gets the file extension to use for the auto-generated solution file based on the <see cref="Format" /> argument.
