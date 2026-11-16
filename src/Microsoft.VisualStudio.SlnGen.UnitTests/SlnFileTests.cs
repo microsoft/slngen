@@ -1608,6 +1608,45 @@ EndGlobal
         }
 
         [Fact]
+        public async Task SolutionItemFoldersKeepTheirGuidsWhenProjectsUseSolutionFolders()
+        {
+            Guid defaultSolutionItemsGuid = new Guid("B283EBC2-E01F-412D-9339-FD56EF114549");
+            Guid docsFolderGuid = new Guid("5D1D4F31-9C43-4E67-9A0F-2E3C6B3E4A11");
+            SlnProject project = new SlnProject
+            {
+                FullPath = GetTempProjectFile("ProjectA"),
+                Name = "ProjectA",
+                ProjectGuid = Guid.NewGuid(),
+                ProjectTypeGuid = SlnProject.DefaultNetSdkProjectTypeGuid,
+                SolutionFolder = "zoo",
+            };
+
+            string solutionFilePath = GetTempFileName(".sln");
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionFilePath);
+            SlnFile slnFile = new SlnFile();
+            slnFile.AddProjects(new[] { project });
+            slnFile.AddSolutionItems(new[] { Path.Combine(TestRootPath, "README.md") });
+            slnFile.AddSolutionItems(Path.Combine("zoo", "docs"), docsFolderGuid, new[] { Path.Combine(TestRootPath, "docs.md") });
+            slnFile.AddSolutionItems("other", new[] { Path.Combine(TestRootPath, "other.md") });
+
+            slnFile.Save(serializer, solutionFilePath, useFolders: false);
+
+            SolutionModel solution = await serializer.OpenAsync(solutionFilePath, CancellationToken.None);
+            SolutionFolderModel solutionItemsFolder = solution.SolutionFolders.Single(f => f.Path == "/Solution Items/");
+            solutionItemsFolder.Id.ShouldBe(defaultSolutionItemsGuid);
+            solutionItemsFolder.Files.ShouldBe(new[] { "README.md" });
+
+            SolutionFolderModel docsFolder = solution.SolutionFolders.Single(f => f.Path == "/zoo/docs/");
+            docsFolder.Id.ShouldBe(docsFolderGuid);
+            docsFolder.Files.ShouldBe(new[] { "docs.md" });
+
+            // "other" also uses the default GUID, so it must get a distinct one to avoid duplicate folder IDs.
+            SolutionFolderModel otherFolder = solution.SolutionFolders.Single(f => f.Path == "/other/");
+            otherFolder.Id.ShouldNotBe(defaultSolutionItemsGuid);
+            otherFolder.Files.ShouldBe(new[] { "other.md" });
+        }
+
+        [Fact]
         public async Task SaveAsSlnx_WritesSlnxFile()
         {
             string projectAPath = Path.GetRandomFileName();
