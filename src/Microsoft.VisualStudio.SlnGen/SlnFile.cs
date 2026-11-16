@@ -365,6 +365,7 @@ namespace Microsoft.VisualStudio.SlnGen
             else if (sortedProjects.Any(i => !string.IsNullOrWhiteSpace(i.SolutionFolder)))
             {
                 hierarchy = SlnHierarchy.CreateFromProjectSolutionFolder(sortedProjects, SolutionItems);
+                ApplySolutionItemFolderGuids(hierarchy, _solutionItems);
             }
 
             if (hierarchy != null)
@@ -515,6 +516,25 @@ namespace Microsoft.VisualStudio.SlnGen
             // SolutionModel::AddFolder expects paths to have leading, trailing and inner forward slashes
             // https://github.com/microsoft/vs-solutionpersistence/blob/87ee8ea069662d55c336a9bd68fe4851d0384fa5/src/Microsoft.VisualStudio.SolutionPersistence/Model/SolutionModel.cs#L171C1-L172C1
             return "/" + string.Join("/", path.Split(DirectorySeparatorCharacters, StringSplitOptions.RemoveEmptyEntries)) + "/";
+        }
+
+        /// <summary>
+        /// Applies the GUIDs registered via <see cref="AddSolutionItems(Guid?, string, Guid, IEnumerable{string})" /> to the matching
+        /// solution folders so they remain stable across generations. GUIDs already assigned to another folder are skipped.
+        /// </summary>
+        private static void ApplySolutionItemFolderGuids(SlnHierarchy hierarchy, IReadOnlyDictionary<string, SlnItem> solutionItems)
+        {
+            HashSet<Guid> usedGuids = new ();
+
+            foreach (SlnFolder folder in hierarchy.Folders)
+            {
+                if (folder == hierarchy.RootFolder || !solutionItems.TryGetValue(folder.FullPath, out SlnItem item) || !usedGuids.Add(item.FolderGuid))
+                {
+                    continue;
+                }
+
+                folder.FolderGuid = item.FolderGuid;
+            }
         }
 
         private static SolutionFolderModel AddFolderToModel(SolutionModel newSolution, string solutionFolder, Guid folderGuid)
