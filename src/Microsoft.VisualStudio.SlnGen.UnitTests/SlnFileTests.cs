@@ -513,6 +513,32 @@ EndGlobal
         }
 
         [Fact]
+        public void GenerateSolutionFileReturnsSavedSolutionGuidForNewSolution()
+        {
+            string solutionFileFullPath = GetTempFileName(".sln");
+
+            ProgramArguments programArguments = new ProgramArguments
+            {
+                LaunchVisualStudio = new[] { bool.FalseString },
+                SolutionFileFullPath = new[] { solutionFileFullPath },
+            };
+
+            Project[] projects =
+            {
+                ProjectCreator.Templates.SdkCsproj(path: GetTempProjectFile("ProjectA"))
+                    .Save(),
+            };
+
+            (string _, int _, int _, Guid solutionGuid) = SlnFile.GenerateSolutionFile(programArguments, projects, new TestLogger());
+
+            solutionGuid.ShouldNotBe(Guid.Empty);
+
+            SlnFile.TryParseExistingSolution(solutionFileFullPath, out Guid savedSolutionGuid, out _, out _).ShouldBeTrue();
+
+            solutionGuid.ShouldBe(savedSolutionGuid);
+        }
+
+        [Fact]
         public void ProjectsNotBuildable()
         {
             const string solutionText = @"
