@@ -4,7 +4,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -81,28 +80,25 @@ namespace Microsoft.VisualStudio.SlnGen
 
                 if (useDotnet)
                 {
-                    if (!int.TryParse(developmentEnvironment.DotNetSdkMajorVersion, NumberStyles.None, CultureInfo.InvariantCulture, out int sdkMajorVersion))
+                    switch (SlnGenFramework.TryGetDotNetFramework(developmentEnvironment.DotNetSdkMajorVersion, slnGenDirectory, out framework))
                     {
-                        Utility.WriteError(Error, "Unable to determine the major version of the .NET SDK {0}.", developmentEnvironment.DotNetSdkVersion);
+                        case SlnGenFrameworkResult.Success:
+                            break;
 
-                        return (int)ExitCode.UnknownNETSdk;
-                    }
+                        case SlnGenFrameworkResult.UnsupportedSdkVersion:
+                            Utility.WriteError(Error, "The currently configured .NET SDK {0} is not supported, SlnGen requires .NET SDK {1} or greater.", developmentEnvironment.DotNetSdkVersion, SlnGenFramework.MinimumDotNetSdkMajorVersion);
 
-                    if (sdkMajorVersion < 10)
-                    {
-                        Utility.WriteError(Error, "The currently configured .NET SDK {0} is not supported, SlnGen requires .NET SDK 10 or greater.", developmentEnvironment.DotNetSdkVersion);
+                            return (int)ExitCode.UnsupportedNETSdk;
 
-                        return (int)ExitCode.UnsupportedNETSdk;
-                    }
+                        case SlnGenFrameworkResult.SdkVersionNotAvailable:
+                            Utility.WriteError(Error, "This version of SlnGen does not support the currently configured .NET SDK {0}.  Please update to the latest version of SlnGen or use a global.json to select a supported .NET SDK.  If you still get this error message, file an issue at https://github.com/microsoft/slngen/issues/new so it can be added.", developmentEnvironment.DotNetSdkVersion);
 
-                    // SlnGen must run on the same major version of .NET as the SDK's MSBuild, so only use a build that exactly matches the SDK
-                    framework = $"net{sdkMajorVersion}.0";
+                            return (int)ExitCode.UnknownNETSdk;
 
-                    if (!Directory.Exists(Path.Combine(slnGenDirectory, framework)))
-                    {
-                        Utility.WriteError(Error, "SlnGen does not currently support the .NET SDK {0} defined in global.json.  Please update to the latest version and if you still get this error message, file an issue at https://github.com/microsoft/slngen/issues/new so it can be added.", developmentEnvironment.DotNetSdkVersion);
+                        default:
+                            Utility.WriteError(Error, "Unable to determine the major version of the currently configured .NET SDK {0}.", developmentEnvironment.DotNetSdkVersion);
 
-                        return (int)ExitCode.UnknownNETSdk;
+                            return (int)ExitCode.UnknownNETSdk;
                     }
                 }
                 else
