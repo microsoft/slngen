@@ -48,11 +48,6 @@ namespace Microsoft.VisualStudio.SlnGen
         public IReadOnlyCollection<string> Errors { get; }
 
         /// <summary>
-        /// Gets a value indicating whether the current build environment is CoreXT.
-        /// </summary>
-        public bool IsCorext { get; private set; }
-
-        /// <summary>
         /// Gets or sets a <see cref="FileInfo" /> object for the MSBuild.dll that was found.
         /// </summary>
         public FileInfo MSBuildDll { get; set; }
@@ -79,39 +74,6 @@ namespace Microsoft.VisualStudio.SlnGen
         /// <returns>A <see cref="DevelopmentEnvironment" /> object containing information about the current development environment.</returns>
         public static DevelopmentEnvironment LoadCurrentDevelopmentEnvironment(IEnvironmentProvider environmentProvider)
         {
-            string msbuildToolset = environmentProvider.GetEnvironmentVariable("MSBuildToolset")?.Trim();
-
-            if (!msbuildToolset.IsNullOrWhiteSpace())
-            {
-                string msbuildToolsPath = environmentProvider.GetEnvironmentVariable($"MSBuildToolsPath_{msbuildToolset}")?.Trim();
-
-                if (!msbuildToolsPath.IsNullOrWhiteSpace())
-                {
-#if NETFRAMEWORK
-                    if (!Version.TryParse(environmentProvider.GetEnvironmentVariable("VisualStudioVersion") ?? string.Empty, out Version visualStudioVersion))
-                    {
-                        return new DevelopmentEnvironment("The VisualStudioVersion environment variable must be set in CoreXT");
-                    }
-
-                    if (visualStudioVersion.Major <= 14)
-                    {
-                        return new DevelopmentEnvironment("MSBuild.Corext version 15.0 or greater is required");
-                    }
-
-                    return new DevelopmentEnvironment
-                    {
-                        MSBuildExe = GetPathToMSBuildExe(new FileInfo(Path.Combine(msbuildToolsPath!, "MSBuild.exe"))),
-                        IsCorext = true,
-                        VisualStudio = VisualStudioConfiguration.GetLaunchableInstances()
-                            .Where(i => !i.IsBuildTools && i.HasMSBuild && i.InstallationVersion.Major == visualStudioVersion.Major)
-                            .OrderByDescending(i => i.InstallationVersion)
-                            .FirstOrDefault(),
-                    };
-#else
-                    return new DevelopmentEnvironment("The .NET Core version of SlnGen is not supported in CoreXT.  You must use the .NET Framework version via the SlnGen.Corext package");
-#endif
-                }
-            }
 #if NETFRAMEWORK
             if (Utility.TryFindOnPath(environmentProvider, "MSBuild.exe", IsMSBuildExeCompatible, out FileInfo msbuildExeFileInfo))
             {

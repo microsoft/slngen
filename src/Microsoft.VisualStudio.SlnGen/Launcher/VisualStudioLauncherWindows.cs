@@ -60,10 +60,7 @@ namespace Microsoft.VisualStudio.SlnGen.Launcher
 
             if (visualStudioInstance == null)
             {
-                logger.LogError(
-                    Program.CurrentDevelopmentEnvironment.IsCorext
-                        ? $"Could not find a Visual Studio {environmentProvider.GetEnvironmentVariable("VisualStudioVersion")} installation.  Please do one of the following:\n a) Specify a full path to devenv.exe via the -vs command-line argument\n b) Update your corext.config to specify a version of MSBuild.Corext that matches a Visual Studio version you have installed\n c) Install a version of Visual Studio that matches the version of MSBuild.Corext in your corext.config"
-                        : "Could not find a Visual Studio installation.  Please run from a command window that has MSBuild.exe on the PATH or specify the full path to devenv.exe via the -vs command-line argument");
+                logger.LogError("Could not find a Visual Studio installation.  Please run from a command window that has MSBuild.exe on the PATH or specify the full path to devenv.exe via the -vs command-line argument");
 
                 return false;
             }
