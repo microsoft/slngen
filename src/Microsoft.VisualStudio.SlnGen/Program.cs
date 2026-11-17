@@ -297,7 +297,7 @@ namespace Microsoft.VisualStudio.SlnGen
                     {
                         if (args[i][0] == '/')
                         {
-                            if (args[i].Length == 2 || (i >= 3 && args.Length > i && args[i].Length >= 3 && args[i][2] == ':'))
+                            if (args[i].Length == 2 || (args[i].Length >= 3 && args[i][2] == ':'))
                             {
                                 args[i] = $"-{args[i].Substring(1)}";
                             }
