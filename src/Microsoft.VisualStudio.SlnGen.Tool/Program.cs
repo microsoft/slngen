@@ -73,20 +73,33 @@ namespace Microsoft.VisualStudio.SlnGen
 
                 bool useDotnet = developmentEnvironment.MSBuildExe == null;
 
+                string slnGenDirectory = Path.GetFullPath(Path.Combine(thisAssemblyFileInfo.DirectoryName!, "..", thisAssemblyFileInfo.DirectoryName!.EndsWith("any") ? ".." : string.Empty, "slngen"));
+
                 // Default to .NET Framework on Windows if MSBuild.exe is on the PATH
                 string framework = Utility.RunningOnWindows && !useDotnet ? "net472" : string.Empty;
 
                 if (useDotnet)
                 {
-                    var version = EnvironmentProvider.Version;
-                    if (version.Major < 10)
+                    switch (SlnGenFramework.TryGetDotNetFramework(developmentEnvironment.DotNetSdkMajorVersion, slnGenDirectory, out framework))
                     {
-                        Utility.WriteError(Error, "The currently configured .NET SDK {0} is not supported, SlnGen requires .NET SDK 10 or greater.", developmentEnvironment.DotNetSdkVersion);
+                        case SlnGenFrameworkResult.Success:
+                            break;
 
-                        return (int)ExitCode.UnsupportedNETSdk;
+                        case SlnGenFrameworkResult.UnsupportedSdkVersion:
+                            Utility.WriteError(Error, "The currently configured .NET SDK {0} is not supported, SlnGen requires .NET SDK {1} or greater.", developmentEnvironment.DotNetSdkVersion, SlnGenFramework.MinimumDotNetSdkMajorVersion);
+
+                            return (int)ExitCode.UnsupportedNETSdk;
+
+                        case SlnGenFrameworkResult.SdkVersionNotAvailable:
+                            Utility.WriteError(Error, "This version of SlnGen does not support the currently configured .NET SDK {0}.  Please update to the latest version of SlnGen or use a global.json to select a supported .NET SDK.  If you still get this error message, file an issue at https://github.com/microsoft/slngen/issues/new so it can be added.", developmentEnvironment.DotNetSdkVersion);
+
+                            return (int)ExitCode.UnknownNETSdk;
+
+                        default:
+                            Utility.WriteError(Error, "Unable to determine the major version of the currently configured .NET SDK {0}.", developmentEnvironment.DotNetSdkVersion);
+
+                            return (int)ExitCode.UnknownNETSdk;
                     }
-
-                    framework = $"net{version.Major}.{version.Minor}";
                 }
                 else
                 {
@@ -102,7 +115,7 @@ namespace Microsoft.VisualStudio.SlnGen
                     framework = "net472";
                 }
 
-                FileInfo slnGenFileInfo = new FileInfo(Path.Combine(thisAssemblyFileInfo.DirectoryName!, "..", thisAssemblyFileInfo.DirectoryName!.EndsWith("any") ? ".." : string.Empty, "slngen", framework, useDotnet ? "slngen.dll" : "slngen.exe"));
+                FileInfo slnGenFileInfo = new FileInfo(Path.Combine(slnGenDirectory, framework, useDotnet ? "slngen.dll" : "slngen.exe"));
 
                 if (!slnGenFileInfo.Exists)
                 {
