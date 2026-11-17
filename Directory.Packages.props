@@ -6,7 +6,7 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <MicrosoftBuildPackageVersion>17.14.28</MicrosoftBuildPackageVersion>
+    <MicrosoftBuildPackageVersion>18.12.2</MicrosoftBuildPackageVersion>
     <SystemConfigurationConfigurationManagerPackageVersion>10.0.14</SystemConfigurationConfigurationManagerPackageVersion>
   </PropertyGroup>
   <ItemGroup>
