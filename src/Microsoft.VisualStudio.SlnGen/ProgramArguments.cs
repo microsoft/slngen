@@ -287,6 +287,15 @@ Examples:
         public string[] SolutionFileFullPath { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether a separate solution should be generated for each entry project.
+        /// </summary>
+        [Option(
+            "--solutionPerProject",
+            CommandOptionType.NoValue,
+            Description = "Generates a separate solution for each specified project, containing only that project and its transitive project references.  Cannot be combined with --solutionfile.  Visual Studio is not launched.")]
+        public bool SolutionPerProject { get; set; }
+
+        /// <summary>
         /// Gets or sets the verbosity to use.
         /// </summary>
         [Option(
@@ -550,6 +559,36 @@ Examples:
                     yield return path;
                 }
             }
+        }
+
+        /// <summary>
+        /// Validates the combination of options used with <see cref="SolutionPerProject" />.
+        /// </summary>
+        /// <param name="logger">A <see cref="ISlnGenLogger" /> to report errors and warnings to.</param>
+        /// <returns>true if the arguments are valid, otherwise false.</returns>
+        internal bool ValidateSolutionPerProject(ISlnGenLogger logger)
+        {
+            // The checks only apply to the multi-solution mode
+            if (!SolutionPerProject)
+            {
+                return true;
+            }
+
+            // A single output file cannot hold several solutions
+            if (SolutionFileFullPath?.Any(i => !i.IsNullOrWhiteSpace()) == true)
+            {
+                logger.LogError("The --solutionfile option cannot be used with --solutionPerProject because multiple solution files are generated.  Use --solutiondir to choose an output directory.");
+
+                return false;
+            }
+
+            // Tell the user explicitly requested launching is ignored rather than silently skipping it
+            if (TryGetBoolean(LaunchVisualStudio) == true)
+            {
+                logger.LogWarning("Visual Studio is not launched when --solutionPerProject is specified.");
+            }
+
+            return true;
         }
 
         private bool GetBoolean(string[] values, bool defaultValue = false)
