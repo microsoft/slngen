@@ -1767,6 +1767,46 @@ EndGlobal
             solution.SolutionProjects.Select(p => p.ActualDisplayName).ShouldBe(new[] { "ProjectA", "ProjectB" }, ignoreOrder: true);
         }
 
+        [Theory]
+        [InlineData(".sln")]
+        [InlineData(".slnx")]
+        public async Task GenerateSolutionFile_RelativeSolutionFilePath_UsesAbsolutePath(string extension)
+        {
+            Project[] projects =
+            {
+                ProjectCreator.Templates.SdkCsproj(path: GetTempProjectFile("ProjectA"))
+                    .Save(),
+            };
+
+            string solutionFileName = Path.GetFileName(GetTempFileName(extension));
+            string expectedSolutionFilePath = Path.GetFullPath(solutionFileName);
+
+            ProgramArguments programArguments = new ProgramArguments
+            {
+                LaunchVisualStudio = new[] { bool.FalseString },
+                SolutionFileFullPath = new[] { solutionFileName },
+            };
+
+            try
+            {
+                (string solutionFileFullPath, _, _, _) = SlnFile.GenerateSolutionFile(programArguments, projects, new TestLogger());
+
+                solutionFileFullPath.ShouldBe(expectedSolutionFilePath);
+                File.Exists(expectedSolutionFilePath).ShouldBeTrue();
+
+                ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionFileFullPath);
+                SolutionModel solution = await serializer.OpenAsync(solutionFileFullPath, CancellationToken.None);
+                SolutionProjectModel project = solution.SolutionProjects.ShouldHaveSingleItem();
+
+                Path.GetFullPath(Path.Combine(Path.GetDirectoryName(solutionFileFullPath), project.FilePath))
+                    .ShouldBe(projects[0].FullPath);
+            }
+            finally
+            {
+                File.Delete(expectedSolutionFilePath);
+            }
+        }
+
         private string GetSolutionFilePath(Project[] projects)
         {
             ProgramArguments programArguments = new ()
